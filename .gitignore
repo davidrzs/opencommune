@@ -1,0 +1,49 @@
+# secrets and local config
+.env
+
+# python
+.venv/
+__pycache__/
+*.pyc
+*.egg-info/
+.pytest_cache/
+.ruff_cache/
+.mypy_cache/
+.coverage
+dist/
+build/
+
+# operating system
+.DS_Store
+
+# pipeline data: raw documents contain names; never commit
+data/*
+!data/communes.yaml
+!data/archive-sources.yaml
+!data/linked-sources.yaml
+!data/cantons.yaml
+
+# editor
+.idea/
+.vscode/
+
+# the coverage register is tracked
+!data/register/
+
+# Rust
+server/target/
+
+# local tool state
+.claude/
+
+# Svelte frontend
+frontend/node_modules/
+frontend/.svelte-kit/
+frontend/build/
+frontend/test-results/
+frontend/playwright-report/
+
+# private working notes, decision records and local agent instructions, never published
+notes/
+docs/decisions/
+CLAUDE.local.md

@@ -1,0 +1,73 @@
+//! OpenCommune web server: the JSON API, MCP over streamable HTTP and the static front end, all
+//! reading the SQLite database the Python pipeline builds. See `API.md` and `CONVENTIONS.md`.
+
+pub mod config;
+pub mod db;
+pub mod error;
+pub mod mcp;
+pub mod models;
+pub mod routes;
+pub mod usage;
+
+use std::path::Path;
+
+use axum::Router;
+use axum::extract::{MatchedPath, Request};
+use axum::http::{HeaderName, HeaderValue, header};
+use axum::middleware;
+use sqlx::SqlitePool;
+use tower_http::compression::CompressionLayer;
+use tower_http::services::{ServeDir, ServeFile};
+use tower_http::set_header::SetResponseHeaderLayer;
+use tower_http::trace::{DefaultOnResponse, TraceLayer};
+use tracing::Level;
+
+use crate::usage::Usage;
+
+#[derive(Clone)]
+pub struct AppState {
+    /// The archive database, read-only.
+    pub db: SqlitePool,
+    /// The dataset, read-only, when configured.
+    pub dataset: Option<SqlitePool>,
+    /// Usage statistics, when enabled.
+    pub usage: Option<Usage>,
+}
+
+/// The whole site: API routes, `/mcp`, and the front end with `index.html` for every other path
+/// (the single-page app routes on the client).
+pub fn app(state: AppState, static_dir: &Path, mcp_allowed_hosts: &[String]) -> Router {
+    let index = ServeFile::new(static_dir.join("index.html"));
+    let assets = ServeDir::new(static_dir).fallback(index);
+    // file names under _app/immutable carry a content hash
+    let immutable = Router::new()
+        .fallback_service(ServeDir::new(static_dir.join("_app/immutable")))
+        .layer(SetResponseHeaderLayer::overriding(
+            header::CACHE_CONTROL,
+            HeaderValue::from_static("public, max-age=31536000, immutable"),
+        ));
+    let trace = TraceLayer::new_for_http()
+        .make_span_with(|request: &Request| {
+            // the route template only: no raw path, query string or address
+            let route = request
+                .extensions()
+                .get::<MatchedPath>()
+                .map_or("static", MatchedPath::as_str);
+            tracing::info_span!("request", method = %request.method(), route)
+        })
+        .on_response(DefaultOnResponse::new().level(Level::DEBUG));
+    Router::new()
+        .merge(routes::router())
+        .route_service("/mcp", mcp::service(state.clone(), mcp_allowed_hosts))
+        .nest("/_app/immutable", immutable)
+        .fallback_service(assets)
+        .layer(middleware::from_fn_with_state(state.clone(), usage::count))
+        .layer(trace)
+        .layer(CompressionLayer::new())
+        // the site is not for search engines
+        .layer(SetResponseHeaderLayer::if_not_present(
+            HeaderName::from_static("x-robots-tag"),
+            HeaderValue::from_static("noindex, nofollow"),
+        ))
+        .with_state(state)
+}

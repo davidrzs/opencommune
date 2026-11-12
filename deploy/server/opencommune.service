@@ -1,0 +1,23 @@
+[Unit]
+Description=OpenCommune web server (website, JSON API, MCP)
+After=network.target
+
+[Service]
+ExecStart=/opt/opencommune/opencommune-server
+Environment=BIND=127.0.0.1:8000
+Environment=DATABASE_PATH=/opt/opencommune/data/opencommune.db
+Environment=STATIC_DIR=/opt/opencommune/site
+Environment=USAGE_PATH=/var/lib/opencommune/usage.sqlite3
+Environment=MCP_ALLOWED_HOSTS=opencommune.ch,www.opencommune.ch,localhost,127.0.0.1
+# Optional: the votes and finance dataset.
+Environment=DATASET_PATH=/opt/opencommune/data/dataset.sqlite
+DynamicUser=yes
+StateDirectory=opencommune
+ProtectSystem=strict
+ProtectHome=yes
+PrivateTmp=yes
+NoNewPrivileges=yes
+Restart=on-failure
+
+[Install]
+WantedBy=multi-user.target
