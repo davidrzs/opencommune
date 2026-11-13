@@ -1,0 +1,178 @@
+{
+ "type": "object",
+ "additionalProperties": false,
+ "required": [
+  "main_type",
+  "sections",
+  "other_name",
+  "title",
+  "body_name",
+  "body_kind",
+  "years",
+  "date",
+  "languages",
+  "personal_data"
+ ],
+ "properties": {
+  "main_type": {
+   "type": "string",
+   "enum": [
+    "minutes",
+    "decision_list",
+    "decision_extract",
+    "invitation_agenda",
+    "meeting_booklet",
+    "proposal",
+    "commission_report",
+    "member_request",
+    "executive_answer",
+    "budget",
+    "accounts",
+    "financial_plan",
+    "audit_report",
+    "credit_settlement",
+    "statistics",
+    "annual_report",
+    "regulation",
+    "tariff",
+    "contract",
+    "zoning_plan",
+    "map_or_drawing",
+    "technical_study",
+    "permit_notice",
+    "public_notice",
+    "job_advert",
+    "bulletin",
+    "vote_result",
+    "form",
+    "leaflet",
+    "event",
+    "other",
+    "unclear"
+   ]
+  },
+  "sections": {
+   "type": "array",
+   "items": {
+    "type": "object",
+    "additionalProperties": false,
+    "required": [
+     "type",
+     "first_page",
+     "last_page"
+    ],
+    "properties": {
+     "type": {
+      "type": "string",
+      "enum": [
+       "minutes",
+       "decision_list",
+       "decision_extract",
+       "invitation_agenda",
+       "proposal",
+       "commission_report",
+       "member_request",
+       "executive_answer",
+       "budget",
+       "accounts",
+       "financial_plan",
+       "audit_report",
+       "credit_settlement",
+       "statistics",
+       "annual_report",
+       "regulation",
+       "tariff",
+       "contract",
+       "zoning_plan",
+       "map_or_drawing",
+       "technical_study",
+       "permit_notice",
+       "public_notice",
+       "job_advert",
+       "bulletin",
+       "vote_result",
+       "form",
+       "leaflet",
+       "event",
+       "other",
+       "unclear"
+      ]
+     },
+     "first_page": {
+      "type": "integer"
+     },
+     "last_page": {
+      "type": "integer"
+     }
+    }
+   }
+  },
+  "other_name": {
+   "type": [
+    "string",
+    "null"
+   ]
+  },
+  "title": {
+   "type": [
+    "string",
+    "null"
+   ]
+  },
+  "body_name": {
+   "type": [
+    "string",
+    "null"
+   ]
+  },
+  "body_kind": {
+   "type": "string",
+   "enum": [
+    "citizens_assembly",
+    "parliament",
+    "executive",
+    "commission",
+    "administration",
+    "commune",
+    "other_public_body",
+    "private",
+    "unknown"
+   ]
+  },
+  "years": {
+   "type": "array",
+   "items": {
+    "type": "integer"
+   }
+  },
+  "date": {
+   "type": [
+    "string",
+    "null"
+   ],
+   "format": "date"
+  },
+  "languages": {
+   "type": "array",
+   "items": {
+    "type": "string",
+    "enum": [
+     "de",
+     "fr",
+     "it",
+     "rm",
+     "en",
+     "other"
+    ]
+   }
+  },
+  "personal_data": {
+   "type": "string",
+   "enum": [
+    "yes",
+    "no",
+    "unclear"
+   ]
+  }
+ }
+}

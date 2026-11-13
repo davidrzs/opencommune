@@ -1,0 +1,14 @@
+{
+ "code_sha256": "762a118590bdddac2ce2716e7e181a58174d86e4a790baef537724925f53f212",
+ "completion_window": "24h",
+ "dpi": 75,
+ "jpeg_quality_first_then_if_too_large": [
+  75,
+  50
+ ],
+ "max_pages": 150,
+ "max_patches": 2500,
+ "max_request_bytes": 100000000,
+ "model": "gpt-6-luna",
+ "store": false
+}

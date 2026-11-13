@@ -1,0 +1,124 @@
+{
+ "type": "object",
+ "additionalProperties": false,
+ "required": [
+  "document_kind",
+  "sections",
+  "title",
+  "body_name",
+  "body_kind",
+  "years",
+  "date",
+  "languages",
+  "personal_data"
+ ],
+ "properties": {
+  "document_kind": {
+   "type": "string",
+   "enum": [
+    "meeting_booklet",
+    "bulletin",
+    "standalone"
+   ]
+  },
+  "sections": {
+   "type": "array",
+   "items": {
+    "type": "object",
+    "additionalProperties": false,
+    "required": [
+     "type",
+     "first_page",
+     "last_page"
+    ],
+    "properties": {
+     "type": {
+      "type": "string",
+      "enum": [
+       "minutes",
+       "decisions",
+       "vote_result",
+       "budget",
+       "accounts",
+       "invitation_agenda",
+       "proposal",
+       "member_request",
+       "regulation",
+       "report",
+       "notice",
+       "plan_or_map",
+       "news",
+       "other",
+       "unclear"
+      ]
+     },
+     "first_page": {
+      "type": "integer"
+     },
+     "last_page": {
+      "type": "integer"
+     }
+    }
+   }
+  },
+  "title": {
+   "type": [
+    "string",
+    "null"
+   ]
+  },
+  "body_name": {
+   "type": [
+    "string",
+    "null"
+   ]
+  },
+  "body_kind": {
+   "type": "string",
+   "enum": [
+    "parliament",
+    "citizens_assembly",
+    "executive",
+    "commission",
+    "commune",
+    "other_public_body",
+    "private",
+    "unknown"
+   ]
+  },
+  "years": {
+   "type": "array",
+   "items": {
+    "type": "integer"
+   }
+  },
+  "date": {
+   "type": [
+    "string",
+    "null"
+   ],
+   "format": "date"
+  },
+  "languages": {
+   "type": "array",
+   "items": {
+    "type": "string",
+    "enum": [
+     "de",
+     "fr",
+     "it",
+     "rm",
+     "en",
+     "other"
+    ]
+   }
+  },
+  "personal_data": {
+   "type": "string",
+   "enum": [
+    "yes",
+    "no"
+   ]
+  }
+ }
+}
