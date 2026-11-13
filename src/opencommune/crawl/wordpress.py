@@ -100,11 +100,14 @@ def load_sources(path: Path | None = None) -> list[ArchiveSourceConfig]:
     return sources
 
 
-def validate_sources(configs, entries=None):
-    """Reject stale or ambiguous tracked attribution before making any requests."""
+def validate_sources(configs, entries=None, *, snapshot_optional=False):
+    """Reject stale or ambiguous tracked attribution before making any requests. A crawl needs the
+    BFS snapshot; with `snapshot_optional`, a check without it (no data directory, as in CI) skips
+    the identity comparison."""
     sources = [ArchiveSourceConfig.model_validate(c) for c in configs]
     register = {e.bfs_id: e for e in (load_register() if entries is None else entries)}
     identities = bfs_register()
+    compare = bool(identities) or not snapshot_optional
     if len({c.bfs_id for c in sources}) != len(sources):
         raise ValueError("duplicate archive source BFS ID")
     for source in sources:
@@ -112,8 +115,7 @@ def validate_sources(configs, entries=None):
         identity = identities.get(source.bfs_id)
         if (
             entry is None
-            or identity is None
-            or identity[1] != entry.canton
+            or (compare and (identity is None or identity[1] != entry.canton))
             or entry.vendor != "wordpress"
             or not entry.website
             or not same_site(entry.website, source.website)

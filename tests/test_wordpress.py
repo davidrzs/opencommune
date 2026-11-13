@@ -193,6 +193,15 @@ def test_source_validation_rejects_registry_mismatch_without_network(site):
         wordpress.validate_sources([config(), config()], [entry()])
 
 
+def test_check_without_the_bfs_snapshot_skips_only_the_identity(site, monkeypatch):
+    monkeypatch.setattr(wordpress, "bfs_register", lambda: {})
+    with pytest.raises(ValueError, match="mismatch"):
+        wordpress.validate_sources([config()], [entry()])
+    assert wordpress.validate_sources([config()], [entry()], snapshot_optional=True) == [config()]
+    with pytest.raises(ValueError, match="mismatch"):
+        wordpress.validate_sources([config()], [entry(vendor="i-web")], snapshot_optional=True)
+
+
 def test_failed_download_is_not_retried_per_page_or_without_explicit_retry(site):
     routes, calls, client, polite = site
     routes[PAGE1] = (200, json.dumps([media(HOST + "/bad.pdf")]), {"X-WP-TotalPages": "2"})
@@ -317,7 +326,7 @@ def test_cli_validates_only_the_selected_sources(monkeypatch):
     monkeypatch.setattr(wordpress, "load_sources", lambda: [good, stale])
     seen = []
 
-    def validate(sources, entries=None):
+    def validate(sources, entries=None, snapshot_optional=False):
         if any(s.bfs_id == 9999 for s in sources):
             raise ValueError("9999: registry or website mismatch; review required")
         seen.extend(sources)

@@ -224,9 +224,13 @@ def load_sources(path: Path | None = None):
     )
 
 
-def validate_sources(sources, entries=None):
+def validate_sources(sources, entries=None, *, snapshot_optional=False):
+    """Reject sources whose register entry or BFS identity changed. A crawl needs the BFS snapshot;
+    with `snapshot_optional`, a check without it (no data directory, as in CI) skips the identity
+    comparison."""
     entries = {e.bfs_id: e for e in (load_register() if entries is None else entries)}
     identities = bfs_register()
+    compare = bool(identities) or not snapshot_optional
     if len({c.bfs_id for c in sources}) != len(sources):
         raise ValueError("duplicate linked archive BFS ID")
     for c in sources:
@@ -234,8 +238,7 @@ def validate_sources(sources, entries=None):
         identity = identities.get(c.bfs_id)
         if (
             e is None
-            or identity is None
-            or identity[1] != e.canton
+            or (compare and (identity is None or identity[1] != e.canton))
             or e.website != c.website
             or e.vendor != c.vendor
         ):

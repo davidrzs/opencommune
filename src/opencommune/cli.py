@@ -206,6 +206,7 @@ def wordpress_command(
     refresh: bool = typer.Option(False),
 ):
     """Configure, fetch or check the WordPress archives (data/archive-sources.yaml)."""
+    from .communes import bfs_register
     from .crawl import wordpress
 
     if mode not in {"configure", "fetch", "check"}:
@@ -225,9 +226,12 @@ def wordpress_command(
                 raise ValueError("BFS id missing from archive-sources.yaml")
             sources = [s for s in sources if s.bfs_id in wanted]
         # only the sources this run uses: an entry under review elsewhere does not block a list
-        wordpress.validate_sources(sources)
+        wordpress.validate_sources(sources, snapshot_optional=mode == "check")
         if mode == "check":
-            typer.echo(f"{len(sources)} WordPress archive sources valid")
+            where = "with" if bfs_register() else "without"
+            typer.echo(
+                f"{len(sources)} WordPress archive sources valid, checked {where} the BFS snapshot"
+            )
             return
         wordpress.run_fetch(
             sources,
@@ -258,6 +262,7 @@ def linked_archive_command(
     retry_failed: bool = typer.Option(False),
 ):
     """Fetch or check the linked archives (data/linked-sources.yaml)."""
+    from .communes import bfs_register
     from .crawl import linked_archive
 
     if mode not in {"fetch", "check"}:
@@ -270,9 +275,12 @@ def linked_archive_command(
                 raise ValueError("BFS id missing from linked-sources.yaml")
             sources = [s for s in sources if s.bfs_id in wanted]
         # only the sources this run uses: an entry under review elsewhere does not block a list
-        sources = linked_archive.validate_sources(sources)
+        sources = linked_archive.validate_sources(sources, snapshot_optional=mode == "check")
         if mode == "check":
-            typer.echo(f"{len(sources)} linked archive sources valid")
+            where = "with" if bfs_register() else "without"
+            typer.echo(
+                f"{len(sources)} linked archive sources valid, checked {where} the BFS snapshot"
+            )
             return
         linked_archive.run_fetch(
             sources,

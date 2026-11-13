@@ -219,6 +219,19 @@ def test_configuration_identity_and_saved_inventory_must_match(site):
     assert calls == before
 
 
+def test_check_without_the_bfs_snapshot_skips_only_the_identity(site, monkeypatch):
+    entry = site[0]
+    config = source(document_urls=[HOST + "/a.pdf"])
+    monkeypatch.setattr(archive, "bfs_register", lambda: {})
+    with pytest.raises(ValueError, match="identity"):
+        archive.validate_sources([config], [entry])
+    assert archive.validate_sources([config], [entry], snapshot_optional=True) == [config]
+    with pytest.raises(ValueError, match="identity"):
+        archive.validate_sources(
+            [config], [entry.model_copy(update={"vendor": "wordpress"})], snapshot_optional=True
+        )
+
+
 @pytest.mark.parametrize("shared", [False, True])
 def test_new_commune_is_visible_only_after_pdf_download(site, monkeypatch, tmp_path, shared):
     _, routes, _, _, _ = site
