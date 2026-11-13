@@ -1,0 +1,1843 @@
+# Register of commune publications, canton TI. What each commune publishes and whether it is collected; see docs/REGISTER.md.
+- bfs_id: 5001
+  name: Arbedo-Castione
+  canton: TI
+  status: configured
+  website: https://www.arbedocastione.ch
+  vendor: ticino-cms
+  reachable: true
+  checked: 2026-09-08
+  checked_by: listing review
+  notes: Verbale della seduta since Dec 2019; document links carry a volatile panntime= parameter (https://www.arbedocastione.ch/Verbale-della-seduta-del-15122025-616a2a00?i=1&pannorg=4414&panntime=...&MasterId=g1_1807)
+    so every run re-downloads (sha check discards duplicates); needs strip_params.
+  publications:
+  - body: parliament
+    kind: minutes
+    status: configured
+    listing_url: https://www.arbedocastione.ch/Atti-Consiglio-Comunale-478eac00
+    from: '2019-12-16'
+    to: '2025-12-15'
+    how: html_links, 1 hop, a[href*='?i=1'], text_regex ^Verbale
+- bfs_id: 5002
+  name: Bellinzona
+  canton: TI
+  status: configured
+  website: https://www.bellinzona.ch
+  vendor: custom
+  reachable: true
+  checked: 2026-10-19
+  checked_by: crawler dry run (unverified)
+  publications:
+  - body: parliament
+    kind: minutes
+    status: configured
+    listing_url: https://www.bellinzona.ch/Sedute
+    how: 'html_links, 2 hops: session pages, then Verbale and Pubblicazione risoluzioni (PDF). Current legislature
+      (2024-2028) from the page; older legislatures (2017-2021, 2021-2024) through a second source that posts form#fric_11761
+      with fric_11761_cat0 = 569 and 570 and the form''s hidden inputs (form step). Dry run: 104 documents 2017-2026,
+      every date matching its session title (two-day sessions dated to the second day); minutes (Verbale) are published
+      from 2021 on, resolutions from 2017. Robots Crawl-delay 30'
+- bfs_id: 5003
+  name: Cadenazzo
+  canton: TI
+  status: configured
+  website: http://www.cadenazzo.ch
+  vendor: custom
+  reachable: true
+  checked: 2026-09-11
+  checked_by: listing and PDF review
+  notes: Mixed document types, some undated, are archived without inferred decision tags. Council documents identify
+    the Consiglio comunale, so the body is the parliament.
+  publications:
+  - body: parliament
+    kind: documents
+    status: configured
+    listing_url: https://www.cadenazzo.ch/Risoluzioni-e-ordini-del-giorno-35668a00?vis=2
+    how: html_links; public municipal PDF archive including related documents; one actual PDF checked
+- bfs_id: 5009
+  name: Isone
+  canton: TI
+  status: configured
+  website: https://www.isone.ch
+  vendor: custom
+  reachable: true
+  checked: 2026-09-11
+  checked_by: listing and PDF review
+  notes: Mixed document types, some undated, are archived without inferred decision tags. Council documents identify
+    the Consiglio comunale, so the body is the parliament.
+  publications:
+  - body: parliament
+    kind: documents
+    status: configured
+    listing_url: https://www.isone.ch/Estratti-risoluzioni-2aac4c00
+    how: html_links; public municipal PDF archive including related documents; one actual PDF checked
+- bfs_id: 5010
+  name: Lumino
+  canton: TI
+  status: configured
+  website: http://www.lumino.ch
+  vendor: custom
+  reachable: true
+  checked: &id001 2026-09-10
+  checked_by: crawler dry run (unverified)
+  notes: Public PDFs of the official website are collected as untagged documents (linked-sources.yaml); their URLs
+    give no date or document category.
+  publications:
+  - body: parliament
+    kind: decisions
+    status: configured
+    listing_url: https://www.lumino.ch/Sedute-del-Consiglio-comunale-04399800
+    how: 'html_links, Ticino CMS: council sessions page (Decisioni, Convocazione, Seduta items via ?i=1); resignations
+      and entries into office excluded; dry run: 131 documents with the executive source, 2024-2026'
+  - body: executive
+    kind: decisions
+    status: configured
+    listing_url: https://www.lumino.ch/Risoluzioni-municipali-b98c0b00?param_sla=&ris_n=131&ric_caller=0&fric=4111&ris_pg={0..6}&param_cat0=0&param_cat1=0&param_textsearch=&param_data=0000-00-00&param_data1=0000-00-00&param_data2=0000-00-00&param_parint=0&catinv=
+    how: html_links, Risoluzioni municipali list pages ris_pg 0..6 (ris_n=131), 'Seduta di Municipio del ...' items;
+      Crawl-delay 30
+- bfs_id: 5017
+  name: Sant'Antonino
+  canton: TI
+  status: configured
+  website: https://www.santonino.ch/
+  vendor: wordpress
+  reachable: true
+  checked: 2026-10-18
+  checked_by: crawler dry run (unverified)
+  notes: The broad archive collects the commune's public PDFs, untagged (linked-sources.yaml).
+  publications:
+  - body: parliament
+    kind: extracts
+    status: configured
+    listing_url: https://www.santonino.ch/comunicazioni-consiglio-comunale/
+    how: 'html_links, 1 hop over the ''Comunicazioni Consiglio Comunale'' and ''Messaggi municipali'' pages: PUBBLICAZIONE
+      DELLE RISOLUZIONI, CONVOCAZIONE and ''YYYY - MM nn'' download links (smd_process_download); undated titles;
+      dry run: 29 documents'
+- bfs_id: 5048
+  name: Acquarossa
+  canton: TI
+  status: blocked_robots
+  website: http://www.acquarossa.ch
+  vendor: wordpress
+  reachable: true
+  checked: &id002 2026-09-10
+  checked_by: listing review
+  notes: 'Consiglio comunale; listing readable back to 2008, PDF downloads blocked by robots.txt'
+  publications:
+  - body: parliament
+    kind: minutes
+    status: blocked_robots
+    listing_url: https://www.acquarossa.ch/documenti-consiglio-comunale/verbali-approvati/
+    from: '2008-04-14'
+    to: '2026-03-17'
+    obstacle: 'robots.txt says ''Disallow: /*.pdf$'' and ''/*.PDF$'', so the crawler refuses every download (error
+      kind robots); the wp_media endpoint would return the same .pdf URLs'
+    how: 'WordPress document list, 4 pages joined by a ''li.next a'' pager (next_selector works): 65 dated ''Verbale
+      seduta ordinaria/straordinaria/costitutiva <date>'' back to 2008 in 6 requests'
+- bfs_id: 5049
+  name: Blenio
+  canton: TI
+  status: configured
+  website: https://blenio.assolo.net/
+  vendor: custom
+  reachable: true
+  checked: 2026-10-18
+  checked_by: crawler dry run (unverified)
+  notes: The official address http://www.comuneblenio.ch/ redirects (HTTP 307) to https://blenio.assolo.net/, where
+    the council listing is. Public PDFs of the official website are collected as untagged documents (linked-sources.yaml);
+    their URLs give no date or document category.
+  publications:
+  - body: parliament
+    kind: extracts
+    status: configured
+    listing_url: https://blenio.assolo.net/Comune-di-Blenio-d95c6b00?fric=3847&param_cat0=0&param_cat1=0&param_cat2=0&param_cat3=0&param_cat4=0&catinv=70&param_textsearch=&param_data=0000-00-00&param_data1=0000-00-00&param_data2=0000-00-00&param_parint=0
+    how: 'html_links, 1 hop: Ticino CMS lists on the home page (Cons. com. - Estratto risoluzioni, newest 5) and
+      Messaggi municipali page: ?i=1 items; crawl delay 30; dry run on the 3 newest pages: 5 documents, 2025-2026'
+- bfs_id: 5050
+  name: Serravalle
+  canton: TI
+  status: configured
+  website: https://www.serravalle.ch
+  vendor: custom
+  reachable: true
+  checked: 2026-09-11
+  checked_by: listing and PDF review
+  notes: Mixed document types, some undated, are archived without inferred decision tags. Council documents identify
+    the Consiglio comunale, so the body is the parliament.
+  publications:
+  - body: parliament
+    kind: documents
+    status: configured
+    listing_url: https://www.serravalle.ch/Politica/Documenti-Consiglio-comunale/Risoluzioni-ff4ee300
+    how: html_links; public municipal PDF archive including related documents; one actual PDF checked
+- bfs_id: 5061
+  name: Airolo
+  canton: TI
+  status: candidate
+  website: http://www.comuneairolo.ch
+  vendor: custom
+  reachable: true
+  checked: 2026-10-19
+  checked_by: crawler dry run (unverified)
+  notes: 'Automated probe: the home page links no page about minutes or a council. The broad archive collects the
+    commune''s public PDFs, untagged (linked-sources.yaml). No council page with documents; the albo comunale lists
+    building notices and announcements only, no council resolutions or messages.'
+  publications: []
+- bfs_id: 5063
+  name: Bedretto
+  canton: TI
+  status: configured
+  website: https://www.bedretto.ch
+  vendor: custom
+  reachable: true
+  checked: 2026-10-19
+  checked_by: crawler dry run (unverified)
+  notes: Public PDFs of the official website are collected as untagged documents (linked-sources.yaml); their URLs
+    give no date or document category.
+  publications:
+  - body: assembly
+    kind: minutes
+    status: configured
+    listing_url: https://www.bedretto.ch/Albo-comunale-04399800
+    how: 'Albo comunale (four pages, ris_pg): Assemblea comunale items (convocazione 11.12.2018, assemblea 16.12.2018,
+      risoluzioni 19.12.2021), dated from the title; the links (?i=1) serve the PDF; assemblea patriziale items
+      excluded; nothing newer online. Crawl-delay 30. Dry run 3 documents'
+- bfs_id: 5071
+  name: Dalpe
+  canton: TI
+  status: configured
+  website: http://www.dalpe.ch
+  vendor: wordpress
+  reachable: true
+  checked: 2026-10-19
+  checked_by: crawler dry run (unverified)
+  notes: The broad archive collects the commune's public PDFs, untagged (linked-sources.yaml).
+  publications:
+  - body: assembly
+    kind: documents
+    status: configured
+    listing_url: https://dalpe.ch/?page_id=119
+    how: 'Assemblea page: current files under /albo/Assemblee Comunali ed elezioni comunali/ (MM, preventivo, convocazione);
+      election files excluded by file name; only the current session is online, undated; dry run 9 documents'
+- bfs_id: 5072
+  name: Faido
+  canton: TI
+  status: configured
+  website: https://www.faido.ch
+  vendor: custom
+  reachable: true
+  checked: 2026-10-18
+  checked_by: crawler dry run (unverified)
+  notes: The broad archive collects the commune's public PDFs, untagged (linked-sources.yaml).
+  publications:
+  - body: parliament
+    kind: agenda
+    status: configured
+    listing_url: https://www.faido.ch/Sedute-del-Consiglio-comunale-e-ordini-del-giorno-5089f900
+    how: 'html_links, 1 hop: Sedute del Consiglio comunale (convocations and orders of the day 2024-2026) and NEW-Messaggi
+      pages 0..2 (MM with annexes); no minutes or resolutions found; robots Crawl-delay 30; dry run: 102 documents'
+- bfs_id: 5073
+  name: Giornico
+  canton: TI
+  status: configured
+  website: https://www.giornico.ch
+  vendor: custom
+  reachable: true
+  checked: 2026-09-11
+  checked_by: listing and PDF review
+  notes: Mixed document types, some undated, are archived without inferred decision tags. Council documents identify
+    the Consiglio comunale, so the body is the parliament.
+  publications:
+  - body: parliament
+    kind: documents
+    status: configured
+    listing_url: https://www.giornico.ch/Convocazioni-e-risoluzioni-del-Consiglio-comunale-9d3edf00
+    how: html_links; public municipal PDF archive including related documents; one actual PDF checked
+- bfs_id: 5076
+  name: Personico
+  canton: TI
+  status: configured
+  website: https://www.personico.ch
+  vendor: wordpress
+  reachable: true
+  checked: 2026-10-19
+  checked_by: crawler dry run (unverified)
+  publications:
+  - body: parliament
+    kind: decisions
+    status: configured
+    listing_url: https://www.personico.ch/wp-json/wp/v2/media
+    how: 'WordPress media list (wp_media, all PDFs, filtered by title): Consiglio comunale convocations and published
+      resolutions 2022-2026 dated by the session date in the file name; files named only by a day-month prefix (0109_Pubblicazione
+      CC) or without a date stay undated. Dry run 26 documents.'
+- bfs_id: 5077
+  name: Pollegio
+  canton: TI
+  status: configured
+  website: https://www.pollegio.ch/
+  vendor: custom
+  reachable: true
+  checked: 2026-10-19
+  checked_by: crawler dry run (unverified)
+  notes: 'The broad archive collects the commune''s public PDFs, untagged (linked-sources.yaml). Documenti del Consiglio
+    Comunale list (ris_n=73, ris_pg 0..4): verbali, pubblicazione risoluzioni, convocazioni, MM reports 2024-2026;
+    interpellations name council members (office holders); dry run 73 documents.'
+  publications:
+  - body: parliament
+    kind: minutes
+    status: configured
+    listing_url: https://www.pollegio.ch/Documenti-del-Consiglio-Comunale-25380f00?param_sla=&ris_n=73&ric_caller=0&fric=4152&ris_pg={0..4}&param_cat0=0&param_cat1=0&param_textsearch=&param_data=0000-00-00&param_data1=0000-00-00&param_data2=0000-00-00&param_parint=0&catinv=
+    how: 'html_links, 1 hop over the Ticino CMS list (?i=1 items), crawl delay 30 s; dry run: 73 documents 2024-2026'
+- bfs_id: 5079
+  name: Quinto
+  canton: TI
+  status: blocked_robots
+  website: https://www.tiquinto.ch
+  vendor: wordpress
+  reachable: true
+  checked: 2026-10-19
+  checked_by: crawler dry run (unverified)
+  notes: 'Automated probe: the WordPress media library lists dated PDFs. robots.txt disallows /*.pdf$ and /*.PDF$,
+    so the WordPress media PDFs cannot be fetched.'
+  publications:
+  - body: assembly
+    kind: minutes
+    status: candidate
+    listing_url: https://www.tiquinto.ch/wp-json/wp/v2/media?search=verbale&mime_type=application/pdf&per_page=20
+    to: '2026-03-16'
+    how: 'automated probe: WordPress media endpoint answers; 27 files match, newest 2026-03-16, e.g. ''2026 Verbale
+      16 marzo''; body inferred from the URL'
+- bfs_id: 5091
+  name: Ascona
+  canton: TI
+  status: needs_feature
+  website: https://www.ascona.ch
+  vendor: ticino-cms
+  reachable: true
+  checked: *id002
+  checked_by: listing review
+  publications:
+  - body: parliament
+    kind: minutes
+    status: needs_feature
+    listing_url: https://www.ascona.ch/Sedute-del-Consiglio-Comunale
+    from: '2021-10-05'
+    to: '2026-06-09'
+    obstacle: 'context: row tried: 18 ''Verbale delle discussioni'' found on page 1, 0 dated; the anchor''s closest
+      tr is the row of an inner one-cell table, the session date is an h3 in the preceding sibling tr of an ancestor
+      table; one anchor says ''discussioni'' but its URL says ''risoluzioni'' (site error)'
+    how: 'date from the nearest preceding text (context: preceding); selector: a.ElelinkLink-Doc with text_regex
+      ^Verbale delle discussioni; the pager says 42 sessions over 3 pages (ris_pg=1, ris_pg=2; pages 2 and 3 not
+      fetched); Crawl-delay 30'
+  notes: 'Consiglio comunale; 20 sessions on page 1 alone (Oct 2021 to Jun 2026), about 42 sessions over 3 pages
+    2012-2026; ''Verbale delle risoluzioni'' next to it; context: row does not reach the date; needs the preceding-text
+    date rule. The broad archive collects the commune''s public PDFs, untagged (linked-sources.yaml).'
+- bfs_id: 5096
+  name: Brione sopra Minusio
+  canton: TI
+  status: configured
+  website: http://www.brione.ch
+  vendor: custom
+  reachable: true
+  checked: 2026-09-11
+  checked_by: listing and PDF review
+  notes: Mixed document types, some undated, are archived without inferred decision tags. Council documents identify
+    the Consiglio comunale, so the body is the parliament.
+  publications:
+  - body: parliament
+    kind: documents
+    status: configured
+    listing_url: https://www.brione.ch/Risoluzioni-del-Consiglio-Comunale-94812900
+    how: html_links; public municipal PDF archive including related documents; one actual PDF checked
+- bfs_id: 5097
+  name: Brissago
+  canton: TI
+  status: configured
+  website: http://www.brissago.ch
+  vendor: wordpress
+  reachable: true
+  checked: 2026-10-18
+  checked_by: crawler dry run (unverified)
+  publications:
+  - body: parliament
+    kind: minutes
+    status: configured
+    listing_url: https://www.brissago.ch/wp-json/wp/v2/media?search=verbale
+    how: 'wp_media searches verbale and risoluzioni: Verbale delle discussioni and risoluzioni; dry run on the 3
+      newest pages: 10 documents, 2002-2026'
+- bfs_id: 5108
+  name: Gordola
+  canton: TI
+  status: configured
+  website: https://www.gordola.ch
+  vendor: ticino-cms
+  reachable: true
+  checked: 2026-09-08
+  checked_by: listing review
+  notes: published resolutions of the Consiglio comunale (decision record), no verbatim Verbali online
+  publications:
+  - body: parliament
+    kind: decisions
+    status: configured
+    listing_url: https://www.gordola.ch/Risoluzioni-Consiglio-comunale-8ecf0300
+    from: '2010-03-29'
+    to: '2026-06-08'
+    how: html_links, 1 hop, paged listing_urls
+- bfs_id: 5112
+  name: Lavertezzo
+  canton: TI
+  status: configured
+  website: https://www.lavertezzo.ch
+  vendor: custom
+  reachable: true
+  checked: 2026-10-19
+  checked_by: crawler dry run (unverified)
+  notes: robots.txt disallows the document paths; nothing is collected for the broad archive. The broad archive
+    collects the commune's public PDFs, untagged (linked-sources.yaml).
+  publications:
+  - body: executive
+    kind: decisions
+    status: configured
+    listing_url: https://www.lavertezzo.ch/documenti-albo-comunale/pubblicazione-risoluzioni-del-municipio/anno-2021
+    how: 'Pubblicazione risoluzioni del Municipio, one jDownloads page per year 2021-2026 (two pages each, ?start=30):
+      the weekly publication notices of Municipio resolutions, dated by the notice date in the file name (send/.../NNN-YYYY-MM-DD);
+      titles are only ''Download'' (the row holds just the date). The yearly index (indice) is excluded. Consiglio
+      comunale documents are not online outside /images/PDF/, which robots.txt disallows. Dry run 213 documents.'
+- bfs_id: 5113
+  name: Locarno
+  canton: TI
+  status: blocked_robots
+  website: https://www.locarno.ch
+  vendor: custom
+  reachable: true
+  checked: &id003 2026-09-06
+  checked_by: crawler dry run (unverified)
+  notes: 'robots.txt (User-agent: *) disallows /files/, where every council document sits (Verbali Consiglio comunale,
+    Messaggi municipali under /files/documenti/). Not configured.'
+  publications:
+  - body: parliament
+    kind: minutes
+    status: blocked_robots
+    listing_url: https://www.locarno.ch/it/verbali-consiglio-comunale
+    obstacle: Documents under /files/, disallowed by robots.txt
+- bfs_id: 5115
+  name: Losone
+  canton: TI
+  status: configured
+  website: http://www.losone.ch
+  vendor: custom
+  reachable: true
+  checked: 2026-09-11
+  checked_by: listing and PDF review
+  notes: Mixed document types, some undated, are archived without inferred decision tags. Council documents identify
+    the Consiglio comunale, so the body is the parliament.
+  publications:
+  - body: parliament
+    kind: documents
+    status: configured
+    listing_url: https://www.losone.ch/Verbali-76816f00
+    how: html_links; public municipal PDF archive including related documents; one actual PDF checked
+- bfs_id: 5117
+  name: Mergoscia
+  canton: TI
+  status: configured
+  website: https://www.comune-mergoscia.ch
+  vendor: custom
+  reachable: true
+  checked: 2026-10-19
+  checked_by: crawler dry run (unverified)
+  notes: The commune site is www.comune-mergoscia.ch (Assolo); mergoscia.ch is the village association. Crawl-delay
+    30. Configured from a dry run, see the publication how.
+  publications:
+  - body: assembly
+    kind: documents
+    status: configured
+    listing_url: https://www.comune-mergoscia.ch/Messaggi-municipali-861f7d00
+    how: 'Assolo pages Messaggi municipali and Decisioni del Municipio: ?i=1 document for MM, Rapporti della Commissione
+      della gestione and Pubblicazione risoluzioni dell''Assemblea; notices, ordinances and procurement lists excluded;
+      mostly undated (MM numbers only); dry run 34 documents 2023-2026'
+- bfs_id: 5118
+  name: Minusio
+  canton: TI
+  status: configured
+  website: http://www.minusio.ch
+  vendor: custom
+  reachable: true
+  checked: 2026-09-10
+  checked_by: listing review
+  notes: Table rows 'Verbale Consiglio comunale 15.06.2026' -> /Verbale-Consiglio-comunale-15062026-603d0a00?i=1&pannorg=5435&panntime=1788853389,
+    served as application/pdf; 16 verbali 2024-2026, all dated. Whether panntime stays stable across renders is
+    not tested (it changes on sibling sites).
+  publications:
+  - body: parliament
+    kind: minutes
+    status: configured
+    listing_url: https://www.minusio.ch/Verbali-09cb0900
+    from: '2024'
+    to: '2026'
+    how: html_links, 1 hop
+- bfs_id: 5120
+  name: Muralto
+  canton: TI
+  status: configured
+  website: https://www.muralto.ch/
+  vendor: custom
+  reachable: true
+  checked: 2026-10-18
+  checked_by: crawler dry run (unverified)
+  notes: The broad archive collects the commune's public PDFs, untagged (linked-sources.yaml).
+  publications:
+  - body: parliament
+    kind: minutes
+    status: configured
+    listing_url: https://www.muralto.ch/Sedute-del-Consiglio-comunale/IT-3f656400
+    how: 'html_links, 1 hop: Sedute del Consiglio comunale page with Verbale and MM (?i=1 links, 2023-2026); naturalisation
+      MMs and resignations excluded; robots Crawl-delay 30'
+- bfs_id: 5121
+  name: Orselina
+  canton: TI
+  status: candidate
+  website: http://www.orselina.ch
+  vendor: custom
+  reachable: true
+  checked: 2026-10-19
+  checked_by: crawler dry run (unverified)
+  notes: 'Automated probe: no dated minutes PDFs on the page tested (https://www.orselina.ch/downdoc.php?id_doc=4426&lng=1&i=1&vis=2&rif=41b0c919d5).
+    The broad archive collects the commune''s public PDFs, untagged (linked-sources.yaml). The home page links only
+    the patriziato''s assembly resolutions; no council documents found on the linked nodes.'
+  publications: []
+- bfs_id: 5125
+  name: Ronco sopra Ascona
+  canton: TI
+  status: blocked_network
+  website: http://www.ronco-s-ascona.ch
+  vendor: wordpress
+  reachable: false
+  checked: 2026-10-19
+  checked_by: crawler dry run (unverified)
+  notes: robots.txt answers HTTP 500; nothing else is requested.
+  publications: []
+- bfs_id: 5131
+  name: Tenero-Contra
+  canton: TI
+  status: configured
+  website: https://www.tenero-contra.ch
+  vendor: custom
+  reachable: true
+  checked: 2026-10-19
+  checked_by: crawler dry run (unverified)
+  notes: The broad archive collects the commune's public PDFs, untagged (linked-sources.yaml).
+  publications:
+  - body: parliament
+    kind: decisions
+    status: configured
+    listing_url: https://www.tenero-contra.ch/Risoluzioni-del-Consiglio-Comunale-a0f22a00
+    how: 'Risoluzioni del Consiglio Comunale and Messaggi municipali pages with their result pages (ris_pg): Pubblicazione
+      delle risoluzioni del Consiglio comunale del DD.MM.YYYY (the session date, 2013-2026) and the council convocations,
+      dated from the title; messaggi municipali, preventivi and consuntivi undated. Municipio resolutions not included.
+      Crawl-delay 30. Dry run 133 documents'
+- bfs_id: 5136
+  name: Onsernone
+  canton: TI
+  status: configured
+  website: http://www.onsernone.swiss
+  vendor: custom
+  reachable: true
+  checked: 2026-10-19
+  checked_by: crawler dry run (unverified)
+  notes: Public PDFs of the official website are collected as untagged documents (linked-sources.yaml); their URLs
+    give no date or document category.
+  publications:
+  - body: parliament
+    kind: minutes
+    status: configured
+    listing_url: https://www.onsernone.swiss/Verbali-Consiglio-Comunale-e9f4e000?param_sla=&ris_n=43&ric_caller=0&fric=3679&ris_pg={0..3}&param_cat0=0&param_cat1=0&param_textsearch=&param_data=0000-00-00&param_data1=0000-00-00&param_data2=0000-00-00&param_parint=0&catinv=
+    how: Ticino CMS Verbali Consiglio Comunale list, ris_pg 0..3, PDF items only (docx and xls versions skipped);
+      dry run 24 verbali 2016-2024; Crawl-delay 30
+- bfs_id: 5138
+  name: Cugnasco-Gerra
+  canton: TI
+  status: configured
+  website: https://www.cugnasco-gerra.ch
+  vendor: custom
+  reachable: true
+  checked: 2026-10-19
+  checked_by: crawler dry run (unverified)
+  notes: Public PDFs of the official website are collected as untagged documents (linked-sources.yaml); their URLs
+    give no date or document category.
+  publications:
+  - body: parliament
+    kind: decisions
+    status: configured
+    listing_url: https://www.cugnasco-gerra.ch/Documenti-del-Consiglio-Comunale-478eac00
+    how: 'Documenti del Consiglio Comunale with its result pages (ris_pg): convocations, risoluzioni and protocollo
+      risoluzioni of the Consiglio comunale, dated from the title (session date). Excluded: the Protocollo risoluzioni
+      titled 20 febbraio 2026 for the session of 23.02.2026 (contradictory), messages whose title quotes another
+      act''s date (bilancio al 1 gennaio 2008), the school consortium''s accounts, naturalisations and resignations.
+      Crawl-delay 30. Dry run 162 documents'
+- bfs_id: 5141
+  name: Agno
+  canton: TI
+  status: configured
+  website: https://www.agno.ch
+  vendor: custom
+  reachable: true
+  checked: 2026-09-08
+  checked_by: listing review
+  notes: '''Pubblicazione risoluzioni'' per session (decision record); sibling system of the Ticino CMS; links (downdoc.php?id_doc=...&pannorg=4790&panntime=...)
+    carry a volatile panntime= parameter, needs strip_params'
+  publications:
+  - body: parliament
+    kind: decisions
+    status: configured
+    listing_url: https://www.agno.ch/index.php?node=318&lng=1&rif=6055cba7a6
+    from: '2021-12-13'
+    to: '2026-06-10'
+    how: html_links, 1 hop
+- bfs_id: 5143
+  name: Aranno
+  canton: TI
+  status: configured
+  website: https://www.aranno.ch
+  vendor: custom
+  reachable: true
+  checked: 2026-10-19
+  checked_by: crawler dry run (unverified)
+  notes: The broad archive collects the commune's public PDFs, untagged (linked-sources.yaml). The assembly resolution
+    notices (AC) carry the publication date, about a week after the assembly, so they are excluded; the CC notices
+    carry the session date.
+  publications:
+  - body: parliament
+    kind: extracts
+    status: configured
+    listing_url: https://www.aranno.ch/Sedute-del-Consiglio-comunale-04399800
+    how: 'Sedute del Consiglio comunale page: ?i=1 convocations and resolution notices of the CC dated from their
+      titles (2025-2026); assembly convocations 2021-2025 kept, assembly resolution notices excluded (publication
+      dates); dry run 15 dated documents; the source also lists https://www.aranno.ch/Preventivi-e-consuntivi-478eac00
+      (Preventivi e consuntivi page: MM messages on budgets and accounts 2021-2026, undated; dry run 12 documents)'
+- bfs_id: 5144
+  name: Arogno
+  canton: TI
+  status: configured
+  website: https://www.arogno.ch/
+  vendor: custom
+  reachable: true
+  checked: 2026-10-23
+  checked_by: robots.txt recheck
+  notes: Every council document sits on the Webflow file host cdn.prod.website-files.com, whose robots.txt answers
+    HTTP 403; RFC 9309 treats a 4xx robots.txt as no rules, so the files are collected. Public PDFs of the official
+    website are collected as untagged documents (linked-sources.yaml); their URLs give no date or document category.
+  publications:
+  - body: parliament
+    kind: decisions
+    status: configured
+    listing_url: https://www.arogno.ch/scopri/documenti/decisioni-del-consiglio-comunale
+    to: '2026-06-18'
+    obstacle: null
+    how: html_links, 1 hop, every PDF on the decisions page (avvisi of the Consiglio comunale, 2009 to 2026, Webflow
+      file host, robots.txt 4xx is no rule)
+- bfs_id: 5148
+  name: Bedano
+  canton: TI
+  status: configured
+  website: http://www.bedano.ch
+  vendor: custom
+  reachable: true
+  checked: 2026-10-19
+  checked_by: crawler dry run (unverified)
+  notes: Public PDFs of the official website are collected as untagged documents (linked-sources.yaml); their URLs
+    give no date or document category. Mixed public PDF listings are archived without inferred decision tags.
+  publications:
+  - body: parliament
+    kind: minutes
+    status: configured
+    listing_url: https://www.bedano.ch/Verbali-Consiglio-Comunale-89914c00
+    how: 'html_links on the Verbali page and the paged Messaggi list (ris_pg 0..9): Verbale CC and MM; resignation
+      notices and naturalisation MMs excluded; robots Crawl-delay 30; dry run: 100 documents'
+- bfs_id: 5151
+  name: Bioggio
+  canton: TI
+  status: configured
+  website: http://www.bioggio.ch
+  vendor: custom
+  reachable: true
+  checked: 2026-10-19
+  checked_by: crawler dry run (unverified)
+  notes: The broad archive collects the commune's public PDFs, untagged (linked-sources.yaml).
+  publications:
+  - body: parliament
+    kind: minutes
+    status: configured
+    listing_url: https://www.bioggio.ch/Documenti-del-Consiglio-comunale?vis=2
+    how: 'Documenti del Consiglio comunale with its result pages (ris_pg): verbali, risoluzioni, messaggi municipali,
+      mozioni, interpellanze and commission reports, dated from the title where it names the session or the act''s
+      own date, otherwise undated. Excluded: MM concerning attinenza (citizenship), naturalisations, resignations,
+      and messages or notices whose title quotes another act''s date (Preavviso ... Mozione dell''8 luglio 2026).
+      Crawl-delay 30. Dry run 323 documents'
+- bfs_id: 5154
+  name: Bissone
+  canton: TI
+  status: configured
+  website: https://bissone.ch/
+  vendor: wordpress
+  reachable: true
+  checked: 2026-10-19
+  checked_by: crawler dry run (unverified)
+  notes: 214 documents in the dry run; 4 MM rows are dated by a regulation date cited in their title.
+  publications:
+  - body: parliament
+    kind: decisions
+    status: configured
+    listing_url: https://bissone.ch/risoluzioni-del-legislativo-comunale/
+    how: 'html_links, 1 hop over two pages: Pubblicazione risoluzioni del Consiglio comunale and Messaggi municipali,
+      title from the table row; resignations excluded'
+- bfs_id: 5160
+  name: Brusino Arsizio
+  canton: TI
+  status: configured
+  website: https://www.brusinoarsizio.ch
+  vendor: wordpress
+  reachable: true
+  checked: 2026-10-19
+  checked_by: crawler dry run (unverified)
+  notes: 'html_links on the Messaggi municipali page: MM 2022-2025 (undated titles); the MM whose title carries
+    a balance date (Bilancio 01.01.2022) excluded; dry run 64 documents.'
+  publications:
+  - body: parliament
+    kind: documents
+    status: configured
+    listing_url: https://www.brusinoarsizio.ch/messaggi-municipali/
+    how: 'html_links on the Messaggi municipali page: MM 2022-2025 (undated titles); the MM whose title carries
+      a balance date (Bilancio 01.01.2022) excluded; dry run 64 documents'
+- bfs_id: 5161
+  name: Cademario
+  canton: TI
+  status: configured
+  website: https://www.cademario.ch
+  vendor: custom
+  reachable: true
+  checked: 2026-10-19
+  checked_by: crawler dry run (unverified)
+  notes: 'The broad archive collects the commune''s public PDFs, untagged (linked-sources.yaml). Albo comunale:
+    Estratto risoluzioni seduta di Municipio (weekly, date ddmmyyyy in the URL); only the current items are listed;
+    dry run 3 documents.'
+  publications:
+  - body: executive
+    kind: decisions
+    status: configured
+    listing_url: https://www.cademario.ch/Documenti-On-line/Albo-comunale-04399800
+    how: 'html_links, 1 hop: albo comunale, Estratto-risoluzioni items, date from the URL (ddmmyyyy), crawl delay
+      30 s; dry run: 3 documents'
+- bfs_id: 5162
+  name: Cadempino
+  canton: TI
+  status: configured
+  website: http://www.cadempino.ch
+  vendor: custom
+  reachable: true
+  checked: 2026-10-19
+  checked_by: crawler dry run (unverified)
+  notes: The broad archive collects the commune's public PDFs, untagged (linked-sources.yaml).
+  publications:
+  - body: parliament
+    kind: decisions
+    status: configured
+    listing_url: https://www.cadempino.ch/comune/risoluzioni/
+    how: 'Risoluzioni page: risoluzioni 2015-2026 and verbali delle discussioni 2024-2026, dated from the title
+      (session date). Excluded: risoluzioni/Avviso-risoluzioni.pdf and comunicati-avvisi/Avviso-risoluzioni.pdf,
+      each linked for several sessions (the file was overwritten, so no title date can be trusted: 16.12.2019, 12.04.2021,
+      17.05.2021, 13.12.2021, 05.06.2023, 20.06.2022, 12.12.2022, 18.12.2023). The same source also reads the Messaggi
+      municipali page: messages 2013-2026, undated (the titles carry only the message number and year); excluded
+      there the link titled MM 7/2023 piano finanziario 2025-2028, which opens MM 15/2025. Dry run 139 documents.'
+- bfs_id: 5167
+  name: Canobbio
+  canton: TI
+  status: configured
+  website: http://www.canobbio.ch
+  vendor: wordpress
+  reachable: true
+  checked: 2026-10-18
+  checked_by: crawler dry run (unverified)
+  notes: The broad archive collects the commune's public PDFs, untagged (linked-sources.yaml).
+  publications:
+  - body: parliament
+    kind: extracts
+    status: configured
+    listing_url: https://canobbio.ch/categoria_albo/consiglio-comunale/
+    how: 'html_links, 1 hop with next_selector .nav-previous a: council notice board (categoria_albo consiglio-comunale):
+      Estratto risoluzioni, Messaggi municipali, convocations; resignations and naturalisations excluded; dry run
+      (3 pages): 17 documents 2024-2026'
+- bfs_id: 5171
+  name: Caslano
+  canton: TI
+  status: configured
+  website: https://www.caslano.ch
+  vendor: ticino-cms
+  reachable: true
+  checked: 2026-09-08
+  checked_by: listing review
+  publications:
+  - body: parliament
+    kind: minutes
+    status: configured
+    listing_url: https://www.caslano.ch/Verbali-Consiglio-Comunale-fea0a100
+    from: '2021-05-11'
+    to: '2025-12-17'
+    how: html_links, 1 hop
+- bfs_id: 5176
+  name: Comano
+  canton: TI
+  status: configured
+  website: http://www.comano.ch/
+  vendor: custom
+  reachable: true
+  checked: 2026-10-19
+  checked_by: crawler dry run (unverified)
+  notes: The broad archive collects the commune's public PDFs, untagged (linked-sources.yaml).
+  publications:
+  - body: parliament
+    kind: documents
+    status: configured
+    listing_url: https://www.comano.ch/Messaggi-e-Rapporti-465cc300
+    how: 'Messaggi e Rapporti with its result pages (ris_pg): messaggi municipali and commission reports, mostly
+      undated. Excluded: resignations (MM 426 Dimissioni), naturalisations and attinenza, and titles quoting another
+      act''s date. Municipio resolution bulletins (Bollettino risoluzioni Municipali) not included. Crawl-delay
+      30. Dry run 565 documents'
+- bfs_id: 5180
+  name: Cureglia
+  canton: TI
+  status: configured
+  website: https://www.cureglia.ch/
+  vendor: custom
+  reachable: true
+  checked: 2026-10-19
+  checked_by: crawler dry run (unverified)
+  notes: Public PDFs of the official website are collected as untagged documents (linked-sources.yaml); their URLs
+    give no date or document category.
+  publications:
+  - body: parliament
+    kind: decisions
+    status: configured
+    listing_url: https://www.cureglia.ch/Risoluzioni-del-Consiglio-comunale-e9f4e000?param_sla=&ris_n=25&ric_caller=0&fric=3679&ris_pg={0..1}&param_cat0=0&param_cat1=0&param_textsearch=&param_data=0000-00-00&param_data1=0000-00-00&param_data2=0000-00-00&param_parint=0&catinv=
+    how: 'html_links over the Ticino CMS list ''Risoluzioni del Consiglio comunale'' (ris_n=25, ris_pg 0..1), ?i=1
+      items; robots Crawl-delay 30; dry run: 25 risoluzioni 2017-2025'
+- bfs_id: 5186
+  name: Grancia
+  canton: TI
+  status: configured
+  website: https://www.grancia.ch
+  vendor: wordpress
+  reachable: true
+  checked: 2026-10-19
+  checked_by: crawler dry run (unverified)
+  publications:
+  - body: parliament
+    kind: decisions
+    status: configured
+    listing_url: https://www.grancia.ch/wp-json/wp/v2/media
+    how: 'WordPress media list (wp_media, all PDFs, filtered by title): Consiglio comunale convocations and published
+      resolutions 2020-2026 dated by the session date in the file name, plus messaggi municipali (YYYYMM n), agendas
+      and resolution files without a date in their name, which stay undated. Dry run 49 documents.'
+- bfs_id: 5187
+  name: Gravesano
+  canton: TI
+  status: configured
+  website: http://www.gravesano.ch
+  vendor: custom
+  reachable: true
+  checked: 2026-10-19
+  checked_by: crawler dry run (unverified)
+  notes: Public PDFs of the official website are collected as untagged documents (linked-sources.yaml); their URLs
+    give no date or document category.
+  publications:
+  - body: parliament
+    kind: decisions
+    status: configured
+    listing_url: https://www.gravesano.ch/Risoluzioni-35668a00?param_sla=&ris_n=34&ric_caller=0&fric=4379&ris_pg={0..1}&param_cat0=0&param_cat1=0&param_textsearch=&param_data=0000-00-00&param_data1=0000-00-00&param_data2=0000-00-00&param_parint=0&catinv=
+    how: 'html_links over the Ticino CMS list ''Risoluzioni'' (ris_n=34, ris_pg 0..1), ?i=1 items; robots Crawl-delay
+      30; dry run: 34 risoluzioni 2014-2025'
+- bfs_id: 5189
+  name: Lamone
+  canton: TI
+  status: configured
+  website: http://www.lamone.ch/
+  vendor: wordpress
+  reachable: true
+  checked: 2026-10-18
+  checked_by: crawler dry run (unverified)
+  notes: The broad archive collects the commune's public PDFs, untagged (linked-sources.yaml).
+  publications:
+  - body: parliament
+    kind: documents
+    status: configured
+    listing_url: https://www.lamone.ch/istituzioni/documenti-cc/
+    how: 'html_links, 1 hop: documenti-cc page: pubblicazioni risoluzioni, convocazioni, MM, rapporti, preventivo
+      and consuntivo PDFs (icon links, title from the row); dry run on the 3 newest pages: 128 documents, 2021-2026'
+- bfs_id: 5192
+  name: Lugano
+  canton: TI
+  status: configured
+  website: https://www.lugano.ch
+  vendor: custom
+  reachable: true
+  checked: *id003
+  checked_by: listing review
+  publications:
+  - body: parliament
+    kind: minutes
+    status: configured
+    listing_url: https://www.lugano.ch/consiglio-comunale/Calendario-sedute/content/0.html?ajax=true&currentPage={1..24}
+- bfs_id: 5193
+  name: Magliaso
+  canton: TI
+  status: configured
+  website: http://www.magliaso.ch
+  vendor: custom
+  reachable: true
+  checked: 2026-10-19
+  checked_by: crawler dry run (unverified)
+  notes: Public PDFs of the official website are collected as untagged documents (linked-sources.yaml); their URLs
+    give no date or document category.
+  publications:
+  - body: parliament
+    kind: decisions
+    status: configured
+    listing_url: https://www.magliaso.ch/Risoluzioni-del-Consiglio-comunale-94812900?param_sla=&ris_n=33&ric_caller=0&fric=4166&ris_pg={0..3}&param_cat0=0&param_cat1=0&param_textsearch=&param_data=0000-00-00&param_data1=0000-00-00&param_data2=0000-00-00&param_parint=0&catinv=
+    how: 'html_links, 1 hop: Ticino CMS lists ''Risoluzioni del Consiglio comunale'' (ris_pg 0..3) and Messaggi;
+      ?i=1 items, 2015-2026; volatile panntime, pannorg; crawl delay 30'
+- bfs_id: 5194
+  name: Manno
+  canton: TI
+  status: candidate
+  website: http://www.manno.ch
+  vendor: custom
+  reachable: true
+  checked: 2026-10-19
+  checked_by: crawler dry run (unverified)
+  notes: 'Automated probe: no dated minutes PDFs on the page tested (https://www.manno.ch/manno/Il-Comune/Consiglio-comunale.html).
+    The broad archive collects the commune''s public PDFs, untagged (linked-sources.yaml). The Consiglio comunale
+    and albo comunale pages render no documents server-side.'
+  publications: []
+- bfs_id: 5196
+  name: Massagno
+  canton: TI
+  status: configured
+  website: http://www.massagno.ch
+  vendor: custom
+  reachable: true
+  checked: 2026-10-18
+  checked_by: crawler dry run (unverified)
+  notes: The broad archive collects the commune's public PDFs, untagged (linked-sources.yaml).
+  publications:
+  - body: parliament
+    kind: documents
+    status: configured
+    listing_url: https://www.massagno.ch/Documenti-del-Consiglio-comunale-73449400?param_sla=&ris_n=533&ric_caller=0&fric=3672&ris_pg={0..26}&param_cat0=0&param_cat1=0&param_textsearch=&param_data=0000-00-00&param_data1=0000-00-00&param_data2=0000-00-00&param_parint=0&catinv=
+    how: 'html_links, 1 hop over 27 result pages (533 council documents: Estratto risoluzioni, Avviso convocazione,
+      MM with commission reports); robots Crawl-delay 30, so a full run takes about 14 minutes; dry run on pages
+      0-1: 40 documents 2025-2026'
+- bfs_id: 5198
+  name: Melide
+  canton: TI
+  status: configured
+  website: https://www.melide.ch
+  vendor: custom
+  reachable: true
+  checked: 2026-10-18
+  checked_by: crawler dry run (unverified)
+  notes: The broad archive collects the commune's public PDFs, untagged (linked-sources.yaml).
+  publications:
+  - body: executive
+    kind: decisions
+    status: configured
+    listing_url: https://www.melide.ch/
+    how: 'html_links, 1 hop: home page lists the newest ''Risoluzioni municipali'' PDFs (current only; the albo
+      is rendered by script); dry run on the 3 newest pages: 5 documents, 2026'
+- bfs_id: 5199
+  name: Mezzovico-Vira
+  canton: TI
+  status: configured
+  website: http://www.mezzovico-vira.ch
+  vendor: custom
+  reachable: true
+  checked: 2026-10-19
+  checked_by: crawler dry run (unverified)
+  notes: Public PDFs of the official website are collected as untagged documents (linked-sources.yaml); their URLs
+    give no date or document category.
+  publications:
+  - body: parliament
+    kind: minutes
+    status: configured
+    listing_url: https://www.mezzovico-vira.ch/Verbali-discussioni-21d1c000?param_sla=&ris_n=29&ric_caller=0&fric=5542&ris_pg={0..1}&param_cat0=0&param_cat1=0&param_textsearch=&param_data=0000-00-00&param_data1=0000-00-00&param_data2=0000-00-00&param_parint=0&catinv=
+    how: 'html_links: Ticino CMS lists Verbali discussioni (ris_pg 0..1) and Messaggi municipali, row context for
+      titles; crawl delay 30 s; dry run: 86 documents 2012-2024'
+- bfs_id: 5203
+  name: Morcote
+  canton: TI
+  status: configured
+  website: https://www.morcote.ch
+  vendor: custom
+  reachable: true
+  checked: 2026-10-19
+  checked_by: crawler dry run (unverified)
+  notes: The broad archive collects the commune's public PDFs, untagged (linked-sources.yaml). The Ticino CMS Messaggi
+    list (ris_pg 0..3) serves the PDFs of MM 1077-1138 and the commission reports directly; undated.
+  publications:
+  - body: parliament
+    kind: documents
+    status: configured
+    listing_url: https://www.morcote.ch/Messaggi?param_sla=&ris_n=64&snumint1=69498&ric_caller=0&fric=4886&ris_pg={0..3}&param_cat0=0&param_cat1=0&param_textsearch=&param_data=0000-00-00&param_data1=0000-00-00&param_data2=0000-00-00&param_parint=0&catinv=
+    how: 'html_links, 1 hop over the Ticino CMS Messaggi list (ris_pg 0..3): MM-... and Rapporto-... items serve
+      the PDF directly; MM 1077-1138 and commission reports; undated; dry run 96'
+- bfs_id: 5205
+  name: Muzzano
+  canton: TI
+  status: configured
+  website: https://www.muzzano.ch
+  vendor: custom
+  reachable: true
+  checked: 2026-10-19
+  checked_by: crawler dry run (unverified)
+  notes: Public PDFs of the official website are collected as untagged documents (linked-sources.yaml); their URLs
+    give no date or document category.
+  publications:
+  - body: parliament
+    kind: minutes
+    status: configured
+    listing_url: https://www.muzzano.ch/Documenti-del-Consiglio-276d8a00
+    how: Documenti del Consiglio, Pubblicazione risoluzioni (2 pages) and Messaggi municipali (5 pages) lists; the
+      page links serve the PDF directly (checked once, body not read). Convocazioni and published resolutions 2020-2026
+      dated from the title (seduta del DD mese YYYY), messaggi municipali undated (numbered NN-YYYY). volatile_params
+      panntime, pannorg, MasterId. Crawl-delay 30. Dry run 201 documents.
+- bfs_id: 5206
+  name: Neggio
+  canton: TI
+  status: configured
+  website: https://www.neggio.ch
+  vendor: wordpress
+  reachable: true
+  checked: 2026-10-19
+  checked_by: crawler dry run (unverified)
+  notes: Consiglio comunale documents through the WordPress media library.
+  publications:
+  - body: parliament
+    kind: documents
+    status: configured
+    listing_url: https://www.neggio.ch/wp-json/wp/v2/media
+    from: '2022'
+    to: '2026'
+    how: 'wp_media over all PDFs: messaggi municipali, preventivi, consuntivi, CC convocations and resolution notices
+      2022-2026; consortium and federal vote files excluded; ''verbale firmato_20251218_0001'' excluded because
+      its file-name date is the signing date, not the session of 2025-12-15'
+- bfs_id: 5208
+  name: Origlio
+  canton: TI
+  status: configured
+  website: https://www.origlio.ch
+  vendor: custom
+  reachable: true
+  checked: 2026-10-19
+  checked_by: crawler dry run (unverified)
+  notes: The broad archive collects the commune's public PDFs, untagged (linked-sources.yaml).
+  publications:
+  - body: parliament
+    kind: decisions
+    status: configured
+    listing_url: https://www.origlio.ch/comune/il-consiglio-comunale/risoluzioni
+    how: 'Risoluzioni page: estratti risoluzioni del Consiglio comunale 2014-2025 dated from the title (matches
+      the file name). The messaggi municipali page loads its list by JavaScript and is left out. Dry run 32 documents.'
+- bfs_id: 5210
+  name: Paradiso
+  canton: TI
+  status: blocked_robots
+  website: https://paradiso.ch
+  vendor: wordpress
+  reachable: true
+  checked: 2026-09-08
+  checked_by: listing review
+  notes: 34 risoluzioni PDFs discovered; not configured. The broad archive collects the commune's public PDFs, untagged
+    (linked-sources.yaml).
+  publications:
+  - body: parliament
+    kind: decisions
+    status: blocked_robots
+    listing_url: https://paradiso.ch/risoluzioni-del-consiglio-comunale/
+    from: '2014-04-28'
+    to: '2026-06-17'
+    obstacle: 'robots.txt has ''Disallow: /cms/wp-content/'' (and /wp-content/), so the download is refused'
+    how: collectable if the commune allows /cms/wp-content/ in robots.txt
+- bfs_id: 5212
+  name: Ponte Capriasca
+  canton: TI
+  status: configured
+  website: https://www.pontecapriasca.ch
+  vendor: custom
+  reachable: true
+  checked: 2026-09-10
+  checked_by: listing review
+  notes: Year select 2024-2026 (form, not tested).
+  publications:
+  - body: parliament
+    kind: decisions
+    status: configured
+    listing_url: https://pontecapriasca.ch/Sedute-del-Consiglio-comunale
+    from: '2024'
+    to: '2026'
+    how: html_links, 2 hops
+- bfs_id: 5214
+  name: Porza
+  canton: TI
+  status: configured
+  website: https://www.porza.ch
+  vendor: custom
+  reachable: true
+  checked: 2026-10-19
+  checked_by: crawler dry run (unverified)
+  notes: 'The broad archive collects the commune''s public PDFs, untagged (linked-sources.yaml). Earlier address:
+    http://www.ti.ch/porza.'
+  publications:
+  - body: parliament
+    kind: documents
+    status: configured
+    listing_url: https://www.porza.ch/Sedute-del-Consiglio-comunale-27f03d00
+    how: 'html_links, 2 hops: ''Sedute del Consiglio comunale'' (sessions since 2024-05), then each session''s ?i=1
+      items: convocazione, MM, rapporti; volatile panntime, pannorg, MasterId; crawl delay 30'
+- bfs_id: 5216
+  name: Pura
+  canton: TI
+  status: configured
+  website: https://www.pura.ch
+  vendor: custom
+  reachable: true
+  checked: 2026-10-19
+  checked_by: crawler dry run (unverified)
+  notes: The broad archive collects the commune's public PDFs, untagged (linked-sources.yaml).
+  publications:
+  - body: parliament
+    kind: documents
+    status: configured
+    listing_url: https://www.pura.ch/Documenti-del-Consiglio-comunale-73449400?param_sla=&ris_n=303&ric_caller=0&fric=3672&ris_pg={0..15}&param_cat0=0&param_cat1=0&param_textsearch=&param_data=0000-00-00&param_data1=0000-00-00&param_data2=0000-00-00&param_parint=0&catinv=
+    how: 'Documenti del Consiglio comunale list (16 pages, ris_pg 0-15, 303 entries; links serve the PDF directly):
+      risoluzioni 2009-2025 dated from the title (session date), commission reports dated by their own date in the
+      title (YYYYMMDD or YYYY.MM.DD), messaggi municipali undated; the Preventivi e consuntivi pages add budgets
+      and accounts 2014-2026, undated. Commissione petizione reports are excluded (in Ticino that commission reviews
+      citizenship applications), as are attinenza items. volatile_params panntime, MasterId, pannorg (per-request
+      parameters). Crawl-delay 30. Dry run 252 documents.'
+- bfs_id: 5221
+  name: Savosa
+  canton: TI
+  status: configured
+  website: http://www.savosa.ch
+  vendor: custom
+  reachable: true
+  checked: 2026-10-18
+  checked_by: crawler dry run (unverified)
+  notes: The broad archive collects the commune's public PDFs, untagged (linked-sources.yaml).
+  publications:
+  - body: parliament
+    kind: extracts
+    status: configured
+    listing_url: https://www.savosa.ch/Documenti-del-Consiglio-comunale-04399800?param_sla=&ris_n=36&ric_caller=0&fric=3984&ris_pg={0..3}&param_cat0=0&param_cat1=0&param_textsearch=&param_data=0000-00-00&param_data1=0000-00-00&param_data2=0000-00-00&param_parint=0&catinv=
+    how: 'html_links over the Ticino CMS council documents list (ris_pg 0..3: Estratto, Convocazione, Verbale; 13
+      on 2026-10-18) plus a second source for the messaggi municipali (ris_pg 0..6; the MM item URL serves the PDF;
+      65 in the dry run); robots Crawl-delay 30'
+  - body: parliament
+    kind: documents
+    status: configured
+    listing_url: https://www.savosa.ch/Messaggi-municipali-e6086a00?param_sla=&ris_n=131&ric_caller=0&fric=3965&ris_pg={0..6}&param_cat0=0&param_cat1=0&param_textsearch=&param_data=0000-00-00&param_data1=0000-00-00&param_data2=0000-00-00&param_parint=0&catinv=
+    how: 'messaggi municipali list, one hop: the MM-... item URL serves the PDF directly'
+- bfs_id: 5225
+  name: Sorengo
+  canton: TI
+  status: configured
+  website: https://www.sorengo.ch
+  vendor: custom
+  reachable: true
+  checked: 2026-10-19
+  checked_by: crawler dry run (unverified)
+  notes: Public PDFs of the official website are collected as untagged documents (linked-sources.yaml); their URLs
+    give no date or document category.
+  publications:
+  - body: parliament
+    kind: minutes
+    status: configured
+    listing_url: https://www.sorengo.ch/Verbali-CC-294ae700
+    how: 'Verbali CC and Pubblicazione decisioni (with result pages) and the Messaggi e rapporti commissionali page:
+      verbali and decisions 2012-2026 dated from the title (session date), about 600 messages and commission reports
+      undated. Excluded: two verbali whose page is named for another session (11.6.2024, 14.12.2021), messages whose
+      title quotes the date of the motion they answer, the receivability notice of a motion, MM 1322 and MM 1129
+      (date in the title not their own), naturalisation and resignation items. Crawl-delay 30. Dry run 700 documents.'
+- bfs_id: 5226
+  name: Capriasca
+  canton: TI
+  status: configured
+  website: https://www.capriasca.ch
+  vendor: custom
+  reachable: true
+  checked: 2026-10-18
+  checked_by: crawler dry run (unverified)
+  notes: Public PDFs of the official website are collected as untagged documents (linked-sources.yaml); their URLs
+    give no date or document category.
+  publications:
+  - body: parliament
+    kind: extracts
+    status: configured
+    listing_url: https://www.capriasca.ch/Estratti-delle-risoluzioni-e-ordini-del-giorno-2d7f5f00?param_sla=&ris_n=71&ric_caller=0&fric=5338&ris_pg={0..8}&param_cat0=0&param_cat1=0&param_textsearch=&param_data=0000-00-00&param_data1=0000-00-00&param_data2=0000-00-00&param_parint=0&catinv=
+    how: 'html_links, 1 hop over the two pager series of the page (ris_n=71 resolutions, ris_pg 0-8; ris_n=73 convocations,
+      ris_pg 0-9): links with ?i=1 titled ''Estratto delle risoluzioni ...'' and ''Avviso di convocazione ...''
+      are the PDFs themselves; panntime and pannorg volatile; robots Crawl-delay 30 (a full run is about 20 listing
+      pages, 10 minutes); dry run on pages 0-1 of each: 32 documents 2022-2026'
+- bfs_id: 5227
+  name: Torricella-Taverne
+  canton: TI
+  status: configured
+  website: https://www.torricella-taverne.ch
+  vendor: wordpress
+  reachable: true
+  checked: 2026-09-08
+  checked_by: listing review
+  publications:
+  - body: parliament
+    kind: minutes
+    status: configured
+    listing_url: https://www.torricella-taverne.ch/verbali-e-risoluzioni-cc/
+    from: '2021-03-29'
+    to: '2025-12-22'
+    obstacle: 'partial: Verbali delle discussioni of the Consiglio comunale; 6 undated'
+    how: html_links, 1 hop, url_regex verb*.pdf (icon anchors with empty text), titles fall back to the file name
+- bfs_id: 5230
+  name: Vernate
+  canton: TI
+  status: configured
+  website: https://www.vernate.ch
+  vendor: wordpress
+  reachable: true
+  checked: 2026-10-19
+  checked_by: crawler dry run (unverified)
+  publications:
+  - body: parliament
+    kind: decisions
+    status: configured
+    listing_url: https://www.vernate.ch/c/albo/risoluzioni-consiglio-comunale/
+    how: 'Risoluzioni Consiglio comunale page: published resolutions of the Consiglio comunale 2021-2026, dated
+      by the session date in their row (context row, prefer_context_date), because some files are scans named by
+      their scan time (20240531_104825_0250 for the session of 27.05.2024). Dry run 10 documents.'
+- bfs_id: 5231
+  name: Vezia
+  canton: TI
+  status: configured
+  website: https://www.vezia.ch/
+  vendor: wordpress
+  reachable: true
+  checked: 2026-10-19
+  checked_by: crawler dry run (unverified)
+  notes: The broad archive collects the commune's public PDFs, untagged (linked-sources.yaml).
+  publications:
+  - body: parliament
+    kind: minutes
+    status: configured
+    listing_url: https://www.vezia.ch/Documenti-del-Consiglio-comunale-73449400
+    how: 'Documenti del Consiglio comunale with its result pages (ris_pg): verbali and estratti delle risoluzioni
+      2016-2026, dated from the title (session date). Excluded as contradictory: the verbale titled 19.05.2025 whose
+      page is named for 12.12.2024, and the one titled 16.12.2021 named for 18.10.2021. Crawl-delay 30. Dry run
+      48 documents.'
+- bfs_id: 5233
+  name: Vico Morcote
+  canton: TI
+  status: configured
+  website: https://www.vicomorcote.ch
+  vendor: custom
+  reachable: true
+  checked: 2026-10-19
+  checked_by: crawler dry run (unverified)
+  notes: Public PDFs of the official website are collected as untagged documents (linked-sources.yaml); their URLs
+    give no date or document category.
+  publications:
+  - body: assembly
+    kind: minutes
+    status: configured
+    listing_url: https://www.vicomorcote.ch/Sedute-e-risoluzioni-3b232300
+    how: 'Sedute e risoluzioni page: ?i=1 download links titled Verbale or Avviso risoluzioni; patriziato excluded;
+      dry run 30 documents, 29 dated 2019-2026'
+- bfs_id: 5236
+  name: Collina d'Oro
+  canton: TI
+  status: configured
+  website: https://www.collinadoro.swiss
+  vendor: ticino-cms
+  reachable: true
+  checked: 2026-09-08
+  checked_by: listing review
+  notes: the homepage is a splash page ('Entra'), the site starts at /Home
+  publications:
+  - body: parliament
+    kind: minutes
+    status: configured
+    listing_url: https://www.collinadoro.swiss/Verbali-delle-sedute
+    from: '2021-05-17'
+    to: '2026-04-20'
+    how: html_links, 1 hop, paged listing_urls
+- bfs_id: 5237
+  name: Alto Malcantone
+  canton: TI
+  status: configured
+  website: https://www.altomalcantone.ch
+  vendor: custom
+  reachable: true
+  checked: 2026-10-19
+  checked_by: crawler dry run (unverified)
+  notes: Public PDFs of the official website are collected as untagged documents (linked-sources.yaml); their URLs
+    give no date or document category.
+  publications:
+  - body: parliament
+    kind: minutes
+    status: configured
+    listing_url: https://www.altomalcantone.ch/Verbali-sedute-8e0b0200?param_sla=&ris_n=28&ric_caller=0&fric=4336&ris_pg={0..1}&param_cat0=0&param_cat1=0&param_textsearch=&param_data=0000-00-00&param_data1=0000-00-00&param_data2=0000-00-00&param_parint=0&catinv=
+    how: 'html_links over the Ticino CMS list ''Verbali sedute'' (ris_n=28, ris_pg 0..1), ?i=1 items titled ''Verbale
+      della seduta del ...''; robots Crawl-delay 30; dry run: 28 verbali 2018-2026'
+- bfs_id: 5238
+  name: Monteceneri
+  canton: TI
+  status: configured
+  website: https://www.monteceneri.ch
+  vendor: custom
+  reachable: true
+  checked: 2026-09-08
+  checked_by: listing review
+  notes: '''Pubblicazione risoluzioni'' per session (decision record); no verbatim Verbali'
+  publications:
+  - body: parliament
+    kind: decisions
+    status: configured
+    listing_url: https://www.monteceneri.ch/it/consiglio-comunale
+    from: '2010-12-14'
+    to: '2026-06-15'
+    how: html_links, 1 hop, 'Sedute' accordion
+- bfs_id: 5239
+  name: Tresa
+  canton: TI
+  status: configured
+  website: https://www.tresa.ch/
+  vendor: wordpress
+  reachable: true
+  checked: 2026-10-19
+  checked_by: crawler dry run (unverified)
+  notes: Tresa was formed in 2021 (Croglio, Monteggio, Ponte Tresa, Sessa).
+  publications:
+  - body: parliament
+    kind: minutes
+    status: configured
+    listing_url: https://www.tresa.ch/wp-json/wp/v2/media?search=risoluzion
+    how: 'wp_media searches risoluzion, convocazione, MM, preventivo and consuntivo: Risoluzioni Verbale, Estratto
+      delle risoluzioni and Pubblicazione delle risoluzioni CC del ... dated from the title (the session date);
+      Decreto di convocazione CC dated by the session; messaggi municipali (MM) with the commission reports (CdG,
+      CdP, COP) and the preventivi and consuntivi, undated. The Pubblicazione risoluzione D.M.YYYY notices are excluded:
+      their date is sometimes the publication date (15.6.2023 for the session of 14.6.2023). Resignations (dimissioni,
+      rinuncia) excluded. Dry run 201 documents, 2021-2026'
+- bfs_id: 5240
+  name: Val Mara
+  canton: TI
+  status: configured
+  website: https://www.valmara.ch/
+  vendor: custom
+  reachable: true
+  checked: 2026-10-19
+  checked_by: crawler dry run (unverified)
+  notes: Public PDFs of the official website are collected as untagged documents (linked-sources.yaml); their URLs
+    give no date or document category. Val Mara was formed in 2022 (Maroggia, Melano, Rovio).
+  publications:
+  - body: parliament
+    kind: decisions
+    status: configured
+    listing_url: https://www.valmara.ch/Consiglio-Comunale
+    how: 'Consiglio Comunale page, Risoluzioni: Risoluzioni seduta del DD.MM.YYYY 2022-2026, dated from the title;
+      plus the Messaggi municipali pages of the legislatures 2024-28 and 2022-24 (MM nn-yy, undated); MM 03-26 is
+      excluded because its title names the date of the motion it answers. Crawl-delay 30. Dry run 36 documents'
+- bfs_id: 5242
+  name: Balerna
+  canton: TI
+  status: configured
+  website: http://www.balerna.ch
+  vendor: custom
+  reachable: true
+  checked: 2026-10-19
+  checked_by: crawler dry run (unverified)
+  notes: Public PDFs of the official website are collected as untagged documents (linked-sources.yaml); their URLs
+    give no date or document category. Mixed public PDF listings are archived without inferred decision tags.
+  publications:
+  - body: parliament
+    kind: decisions
+    status: configured
+    listing_url: https://www.balerna.ch/Estratto-risoluzioni-CC-eef54900
+    how: 'Estratto risoluzioni CC page plus the Messaggi Municipali page: Risoluzioni del Consiglio Comunale del
+      D mese YYYY (2012-2026), dated from the title; messaggi municipali (MM nn/YYYY) undated. Excluded: the link
+      titled 21 ottobre 2024 that points to the file of 17 giugno 2024 (contradictory); MM titles that quote the
+      date of the regulation they amend (del 19 giugno 1995); naturalisations and resignations. The Verbali Consiglio
+      Comunale page lists no documents. Crawl-delay 30. Dry run 291 documents'
+- bfs_id: 5249
+  name: Castel San Pietro
+  canton: TI
+  status: configured
+  website: https://castelsanpietro.ch
+  vendor: custom
+  reachable: true
+  checked: 2026-10-18
+  checked_by: crawler dry run (unverified)
+  notes: Public PDFs of the official website are collected as untagged documents (linked-sources.yaml); their URLs
+    give no date or document category.
+  publications:
+  - body: parliament
+    kind: extracts
+    status: configured
+    listing_url: https://castelsanpietro.ch/Estratto-risoluzione-del-Consiglio-comunale-94812900?param_sla=&ris_n=62&fric=3764&ric_caller=0&ris_pg={0..4}&param_cat0=0&param_cat1=0&param_textsearch=&param_data=0000-00-00&param_data1=0000-00-00&param_data2=0000-00-00&param_parint=0&catinv=
+    how: 'Ticino CMS lists: Estratto risoluzione del Consiglio comunale (62 items, ris_pg 0..4) and Sedute e ordini
+      del giorno CC (59, ris_pg 0..3); robots Crawl-delay 30'
+- bfs_id: 5250
+  name: Chiasso
+  canton: TI
+  status: configured
+  website: https://www.chiasso.ch
+  vendor: wordpress
+  reachable: true
+  checked: 2026-09-08
+  checked_by: listing review
+  notes: Risoluzioni (decision lists) of the Consiglio comunale, one PDF per session; no full verbali online; 7
+    found, 7 dated on the current legislature page.
+  publications:
+  - body: parliament
+    kind: decisions
+    status: configured
+    listing_url: https://www.chiasso.ch/documenti/risoluzioni-consiglio-comunale/
+    from: '2021-05-17'
+    to: '2026-06-15'
+    how: html_links, 2 hops (index page -> legislature sub-pages)
+- bfs_id: 5251
+  name: Coldrerio
+  canton: TI
+  status: configured
+  website: https://coldrerio.ch
+  vendor: custom
+  reachable: true
+  checked: 2026-10-18
+  checked_by: crawler dry run (unverified)
+  notes: Public PDFs of the official website are collected as untagged documents (linked-sources.yaml); their URLs
+    give no date or document category.
+  publications:
+  - body: parliament
+    kind: documents
+    status: configured
+    listing_url: https://coldrerio.ch/Messaggi-municipali-2024-28?param_sla=&ris_n=47&ric_caller=0&fric=4958&ris_pg={0..3}&param_cat0=0&param_cat1=0&param_textsearch=&param_data=0000-00-00&param_data1=0000-00-00&param_data2=0000-00-00&param_parint=0&catinv=
+    how: 'html_links, 1 hop over the Messaggi municipali pages of the 2024-2028 and 2021-2024 legislatures: Messaggio
+      Municipale, commission reports and annexes (direct PDF links); undated, MM number and year in the URL; the
+      Pubblicazione risoluzioni pages answer ''Nessun documento trovato'' on 2026-10-18; robots Crawl-delay 30;
+      dry run: 103 documents'
+- bfs_id: 5254
+  name: Mendrisio
+  canton: TI
+  status: configured
+  website: https://mendrisio.ch
+  vendor: custom
+  reachable: true
+  checked: 2026-10-19
+  checked_by: crawler dry run (unverified)
+  notes: 'The broad archive collects the commune''s public notices, untagged (linked-sources.yaml). The Consiglio
+    comunale''s archive is an Angular app on legislativo.mendrisio.ch (robots.txt allows /) that reads a public
+    JSON API: /api/public/legislations, then /api/public/sessions?legislationId=N. The configuration reads that
+    API: every session since 2009 with its convocation, resolution extract and verbale (verbali from 2016); dry
+    run 289 documents, 105 sessions from 20.07.2009 to 14.09.2026, each dated by its session (the file names carry
+    typos and issue dates). Messaggi municipali, motions and interpellations are separate API lists, not configured.'
+  publications:
+  - body: parliament
+    kind: minutes
+    status: configured
+    listing_url: https://legislativo.mendrisio.ch/api/public/legislations
+    how: 'mendrisio_legislativo, 2 hops: legislatures, then their sessions (size 100, hasNext paging); Convocazione,
+      Estratto risoluzioni and Verbale per session, dated by the session'
+- bfs_id: 5257
+  name: Morbio Inferiore
+  canton: TI
+  status: configured
+  website: https://www.morbioinf.ch
+  vendor: ticino-cms
+  reachable: true
+  checked: 2026-09-08
+  checked_by: listing review
+  notes: '''Verbale del riassunto delle discussioni'' per session; the Risoluzioni on the same page are excluded'
+  publications:
+  - body: parliament
+    kind: minutes
+    status: configured
+    listing_url: https://www.morbioinf.ch/Verbali-Consiglio-Comunale-94812900
+    from: '2022-06-14'
+    to: '2025-12-15'
+    how: html_links, 1 hop, paged listing_urls
+- bfs_id: 5260
+  name: Novazzano
+  canton: TI
+  status: configured
+  website: https://novazzano.ch
+  vendor: wordpress
+  reachable: true
+  checked: 2026-10-18
+  checked_by: crawler dry run (unverified)
+  publications:
+  - body: parliament
+    kind: minutes
+    status: configured
+    listing_url: https://www.novazzano.ch/albo-comunale/?tax%5Bwpdmcategory%5D=verbali-consiglio-comunale
+    how: 'html_links with url_attribute data-downloadurl (WordPress Download Manager): category verbali-consiglio-comunale
+      (Verbale/Pubblicazione risoluzioni) and messaggi-2013..2026 (MM); volatile parameter refresh; dry run: 334
+      documents'
+- bfs_id: 5263
+  name: Riva San Vitale
+  canton: TI
+  status: configured
+  website: https://www.rivasanvitale.ch
+  vendor: custom
+  reachable: true
+  checked: 2026-10-18
+  checked_by: crawler dry run (unverified)
+  notes: Public PDFs of the official website are collected as untagged documents (linked-sources.yaml); their URLs
+    give no date or document category.
+  publications:
+  - body: parliament
+    kind: documents
+    status: configured
+    listing_url: https://www.rivasanvitale.ch/Documenti-del-Consiglio-comunale-04399800?param_sla=&ris_n=493&ric_caller=0&fric=3686&ris_pg={0..24}&param_cat0=0&param_cat1=0&param_textsearch=&param_data=0000-00-00&param_data1=0000-00-00&param_data2=0000-00-00&param_parint=0&catinv=
+    how: 'html_links, 1 hop over the Documenti del Consiglio comunale list (493 items, 25 pages of 20; ?i=1 links:
+      Estratto decisioni, MM, rapporti); naturalisation items excluded; robots Crawl-delay 30'
+- bfs_id: 5266
+  name: Stabio
+  canton: TI
+  status: configured
+  website: https://stabio.ch
+  vendor: typo3
+  reachable: true
+  checked: 2026-09-08
+  checked_by: listing review
+  notes: Consiglio comunale publishes 'Estratto delle risoluzioni' (decision extracts) per session, not full verbali;
+    anchor text carries the size ('[254 KB PDF]')
+  publications:
+  - body: parliament
+    kind: extracts
+    status: configured
+    listing_url: https://stabio.ch/istituzioni/consiglio-comunale/sedute-consiglio-comunale
+    from: '2016-05-09'
+    to: '2026-06-08'
+    how: html_links, 3 listing_urls (current page plus archive pages 2016-2021, 2021-2024), date from file name
+      dd.mm.yyyy
+- bfs_id: 5268
+  name: Vacallo
+  canton: TI
+  status: configured
+  website: https://www.vacallo.ch/
+  vendor: custom
+  reachable: true
+  checked: 2026-10-18
+  checked_by: crawler dry run (unverified)
+  notes: Public PDFs of the official website are collected as untagged documents (linked-sources.yaml); their URLs
+    give no date or document category.
+  publications:
+  - body: parliament
+    kind: decisions
+    status: configured
+    listing_url: https://www.vacallo.ch/Risoluzioni-35657f00
+    how: 'html_links, 1 hop: Risoluzioni page, ''Pubblicazione risoluzioni ... seduta del ...'' (?i=1 file links),
+      Crawl-delay 30 honoured; dry run: 36 documents 2016-2026'
+- bfs_id: 5269
+  name: Breggia
+  canton: TI
+  status: configured
+  website: http://www.comunebreggia.ch/
+  vendor: custom
+  reachable: true
+  checked: 2026-10-19
+  checked_by: crawler dry run (unverified)
+  notes: Public PDFs of the official website are collected as untagged documents (linked-sources.yaml); their URLs
+    give no date or document category.
+  publications:
+  - body: parliament
+    kind: minutes
+    status: configured
+    listing_url: https://www.comunebreggia.ch/Verbali-Consiglio-Comunale-94812900
+    how: 'Verbali Consiglio Comunale with its result pages (ris_pg): verbali, risoluzioni and estratti of the Consiglio
+      comunale 2011-2026, dated from the title (session date). The Messaggi municipali page needs one request per
+      message page (each message has its own page with the file) and is left out. Crawl-delay 30. Dry run 43 documents'
+- bfs_id: 5281
+  name: Biasca
+  canton: TI
+  status: configured
+  website: http://www.biasca.ch
+  vendor: custom
+  reachable: true
+  checked: 2026-10-18
+  checked_by: crawler dry run (unverified)
+  notes: Public PDFs of the official website are collected as untagged documents (linked-sources.yaml); their URLs
+    give no date or document category.
+  publications:
+  - body: parliament
+    kind: decisions
+    status: configured
+    listing_url: https://www.biasca.ch/Pubblicazione-risoluzioni-2b0b3300
+    how: 'html_links, 1 hop over two pages: "Risoluzioni Consiglio comunale del ..." and the current Messaggi municipali
+      / Rapporti (?i=1 document); no archive pager; robots Crawl-delay 30; dry run: 11 documents, resolutions 2025'
+- bfs_id: 5287
+  name: Riviera
+  canton: TI
+  status: configured
+  website: https://www.comuneriviera.ch
+  vendor: ticino-cms
+  reachable: true
+  checked: 2026-09-08
+  checked_by: listing review
+  notes: same menu slug Verbali-Consiglio-Comunale-e9f4e000 as Gambarogno
+  publications:
+  - body: parliament
+    kind: minutes
+    status: configured
+    listing_url: https://www.comuneriviera.ch/Verbali-Consiglio-Comunale-e9f4e000
+    from: '2017-05-23'
+    to: '2025-12-17'
+    how: html_links, 1 hop, paged listing_urls
+- bfs_id: 5304
+  name: Bosco/Gurin
+  canton: TI
+  status: configured
+  website: https://www.bosco-gurin.ch
+  vendor: custom
+  reachable: true
+  checked: 2026-10-19
+  checked_by: crawler dry run (unverified)
+  notes: The broad archive collects the commune's public PDFs, untagged (linked-sources.yaml).
+  publications:
+  - body: assembly
+    kind: decisions
+    status: configured
+    listing_url: https://www.bosco-gurin.ch/de/gemeinde
+    how: 'Gemeinde page, news list: Avviso decisioni assemblea ordinaria 26.06.2020, Decisione assemblea costitutiva
+      5.6.2020 (dated from the title) and the MM Consuntivo 2019, dated 22.05.2020 by its publication date in the
+      list; nothing newer online. Dry run 3 documents'
+- bfs_id: 5307
+  name: Campo
+  canton: TI
+  status: not_published
+  website: https://www.campo-vallemaggia.ch/
+  vendor: joomla
+  reachable: true
+  checked: 2026-09-08
+  checked_by: listing review
+  notes: Albo comunale empty; 53 inhabitants. The broad archive collects the commune's public PDFs, untagged (linked-sources.yaml).
+- bfs_id: 5309
+  name: Cerentino
+  canton: TI
+  status: configured
+  website: https://cerentino.ch
+  vendor: custom
+  reachable: true
+  checked: 2026-10-19
+  checked_by: crawler dry run (unverified)
+  notes: The broad archive collects the commune's public PDFs, untagged (linked-sources.yaml).
+  publications:
+  - body: assembly
+    kind: documents
+    status: configured
+    listing_url: https://cerentino.ch/Albo
+    how: 'Albo: assembly convocations (dated from the title), the published assembly resolutions and the messaggi
+      municipali MM 1-3/2026 and MM 03-2025 with the preventivo 2026 (undated); CRRV consortium resolutions, votes
+      and patriziato excluded. Dry run 8 documents'
+- bfs_id: 5310
+  name: Cevio
+  canton: TI
+  status: configured
+  website: https://www.cevio.ch
+  vendor: wordpress
+  reachable: true
+  checked: 2026-10-19
+  checked_by: crawler dry run (unverified)
+  publications:
+  - body: parliament
+    kind: decisions
+    status: configured
+    listing_url: https://cevio.ch/albo-comunale/consiglio-comunale/
+    how: 'Albo comunale pages for the Consiglio comunale and the messaggi municipali: risoluzioni 2025-2026 dated
+      from the title or the file name (session date), messaggi municipali (MM 217-235) undated. Crawl-delay 10.
+      Dry run 15 documents.'
+- bfs_id: 5315
+  name: Linescio
+  canton: TI
+  status: configured
+  website: https://www.linescio.ch
+  vendor: custom
+  reachable: true
+  checked: 2026-10-19
+  checked_by: crawler dry run (unverified)
+  notes: The broad archive collects the commune's public PDFs, untagged (linked-sources.yaml).
+  publications:
+  - body: assembly
+    kind: decisions
+    status: configured
+    listing_url: https://www.linescio.ch/Albo_it
+    how: 'Albo: assembly convocations and decision notices 2021-2026, filtered by title; dated from the title or,
+      failing that, the file name, whose leading date is the posting date (Avviso di convocazione 2026.05.11 for
+      the assembly of 05.06.2026); three scanned CCF_ files undated; votes, elections, patriziato and consortium
+      notices excluded. Dry run 9 documents'
+- bfs_id: 5317
+  name: Maggia
+  canton: TI
+  status: configured
+  website: http://www.maggia.ch
+  vendor: custom
+  reachable: true
+  checked: 2026-10-18
+  checked_by: crawler dry run (unverified)
+  notes: The broad archive collects the commune's public PDFs, untagged (linked-sources.yaml).
+  publications:
+  - body: parliament
+    kind: decisions
+    status: configured
+    listing_url: https://www.maggia.ch/it/albo-comunale
+    how: html_links, 1 hop over the albo comunale (Risoluzioni Consiglio comunale, convocations) and the council
+      documents page (MM, piano finanziario); consortium resolutions excluded
+- bfs_id: 5323
+  name: Lavizzara
+  canton: TI
+  status: configured
+  website: https://lavizzara.ch
+  vendor: custom
+  reachable: true
+  checked: 2026-10-23
+  checked_by: robots.txt recheck
+  notes: lavizzara.ch/robots.txt answers HTTP 403; RFC 9309 treats a 4xx robots.txt as no rules, so the site is
+    crawled. Public PDFs of the commune's website are collected as untagged documents (linked-sources.yaml).
+  publications:
+  - body: parliament
+    kind: decisions
+    status: configured
+    listing_url: https://lavizzara.ch/it_CH/albo/risoluzioni-del-consiglio-comunale
+    to: '2025-12-18'
+    obstacle: null
+    how: html_links, 1 hop, the Risoluzioni PDFs under /public/risoluzioni-del-consiglio-comunale/ (2019 to 2025;
+      robots.txt 4xx is no rule)
+- bfs_id: 5324
+  name: Avegno Gordevio
+  canton: TI
+  status: configured
+  website: http://www.avegnogordevio.ch
+  vendor: custom
+  reachable: true
+  checked: 2026-10-19
+  checked_by: crawler dry run (unverified)
+  notes: The broad archive collects the commune's public PDFs, untagged (linked-sources.yaml).
+  publications:
+  - body: parliament
+    kind: decisions
+    status: configured
+    listing_url: https://www.avegnogordevio.ch/it/documentazione-consiglio-comunale
+    how: 'Documentazione Consiglio comunale: avvisi risoluzioni and convocazioni 2018-2026. The links have no text
+      and the file names start with the publication date, so each item is dated from its row (seduta del DD.MM.YYYY,
+      prefer_context_date); titles are the row text and begin with the publication date column. Excluded as contradictory:
+      the row for the session of 21.07.2020, whose file is a scan of 02.12.2020. Dry run 27 documents.'
+- bfs_id: 5395
+  name: Lema
+  canton: TI
+  status: configured
+  website: https://www.lema.ch/
+  vendor: custom
+  reachable: true
+  checked: 2026-10-19
+  checked_by: crawler dry run (unverified)
+  notes: Public PDFs of the official website are collected as untagged documents (linked-sources.yaml); their URLs
+    give no date or document category. Lema held its constitutive council session on 5.5.2025 (merger); the messaggi
+    pages list 2025 budgets of the former communes Astano, Miglieglia and Novaggio; their own former sites were
+    not probed. The messaggi municipali page configured as a second source with volatile_params panntime and MasterId.
+  publications:
+  - body: parliament
+    kind: minutes
+    status: configured
+    listing_url: https://www.lema.ch/Verbali-del-CC
+    how: 'Verbali del CC, Risoluzioni del CC and Documenti (convocazioni): links titled Seduta ... - D.M.YYYY, dated
+      from the title; one link titled Seduta ordinaria - 27.4.2026 on the Documenti page points to a file named
+      for the session of 10.11.2025 and is excluded as contradictory. Crawl-delay 30. Dry run 15 documents (each
+      session: convocation, minutes, resolutions)'
+  - body: parliament
+    kind: documents
+    status: configured
+    listing_url: https://www.lema.ch/Messaggi-municipali
+    how: 'Messaggi municipali page as a second source: messages and commission reports 2024-2026, undated (no own
+      date in the titles). Their links carry a per-request panntime timestamp and a MasterId; both are listed as
+      volatile_params, so a link is remembered without them and not fetched again. Crawl-delay 30. Dry run of both
+      sources 55 documents.'
+- bfs_id: 5396
+  name: Terre di Pedemonte
+  canton: TI
+  status: configured
+  website: https://www.pedemonte.ch
+  vendor: custom
+  reachable: true
+  checked: 2026-10-18
+  checked_by: crawler dry run (unverified)
+  notes: The broad archive collects the commune's public PDFs, untagged (linked-sources.yaml).
+  publications:
+  - body: parliament
+    kind: extracts
+    status: configured
+    listing_url: https://www.pedemonte.ch/Sedute-di-Consiglio-comunale-5af21900
+    how: 'html_links, 1 hop on the CC sessions page: Risoluzioni, Ordine del giorno / Convocazione and MM items,
+      whose item URLs serve the PDF directly (content-type checked from headers only); robots Crawl-delay 30; dry
+      run: 300 listed (cap; 40 Risoluzioni, 41 convocations, 219 MM) 2013-2026, partly undated'
+- bfs_id: 5397
+  name: Centovalli
+  canton: TI
+  status: configured
+  website: https://centovalli.swiss/
+  vendor: wordpress
+  reachable: true
+  checked: 2026-10-19
+  checked_by: crawler dry run (unverified)
+  notes: 'Earlier address: http://intragna.ch/. The broad archive collects the commune''s public PDFs from the WordPress
+    media library (about 1,370 items), untagged (linked-sources.yaml).'
+  publications:
+  - body: parliament
+    kind: decisions
+    status: configured
+    listing_url: https://centovalli.swiss/wp-json/wp/v2/media?search=risoluzioni
+    how: 'wp_media searches risoluzioni, verbale, messaggio (crawl delay 10 s): Risoluzioni albo and MM; dry run
+      26 documents 2016-2026, partly undated'
+- bfs_id: 5398
+  name: Gambarogno
+  canton: TI
+  status: configured
+  website: https://www.gambarogno.ch
+  vendor: ticino-cms
+  reachable: true
+  checked: 2026-09-08
+  checked_by: listing review
+  notes: paging works only with the full parameter string including ris_n (total count), which drifts as sessions
+    are added (page 0 is the bare URL, the short form ?ris_pg=1 returns page 0 again)
+  publications:
+  - body: parliament
+    kind: minutes
+    status: configured
+    listing_url: https://www.gambarogno.ch/Verbali-Consiglio-Comunale-e9f4e000
+    from: '2010-05-19'
+    to: '2025-10-13'
+    how: html_links, 1 hop, paged listing_urls ris_pg={1..3} with the full parameter string
+- bfs_id: 5399
+  name: Verzasca
+  canton: TI
+  status: configured
+  website: https://www.verzasca.swiss
+  vendor: custom
+  reachable: true
+  checked: 2026-10-19
+  checked_by: crawler dry run (unverified)
+  notes: The broad archive collects the commune's public PDFs, untagged (linked-sources.yaml).
+  publications:
+  - body: parliament
+    kind: minutes
+    status: configured
+    listing_url: https://www.verzasca.swiss/Documenti-Consiglio-comunale-d5961d00
+    how: 'Documenti Consiglio comunale (15 pages of 10): risoluzioni, convocazioni and messaggi municipali 2021-2026;
+      the page links serve the PDF directly. Resolutions and convocations dated where the title gives the session
+      date, messaggi undated (numbered NN-YYYY). Resignation messages (Dimissioni) are excluded. volatile_params
+      panntime, pannorg, MasterId. Crawl-delay 30. Dry run 142 documents.'

@@ -1,0 +1,182 @@
+# Register of commune publications, canton ZG. What each commune publishes and whether it is collected; see docs/REGISTER.md.
+- bfs_id: 1701
+  name: Baar
+  canton: ZG
+  status: configured
+  website: https://www.baar.ch
+  vendor: i-web
+  reachable: true
+  checked: &id001 2026-09-06
+  checked_by: crawler dry run (unverified)
+  publications:
+  - body: assembly
+    kind: minutes
+    status: configured
+    listing_url: https://www.baar.ch/sitzung
+    how: 'html_links, 2 hops: /sitzung (Gemeindeversammlung, 74 since 2000) -> Protokoll; Vorlage, Rechnung and
+      Geschäftsbericht also on the pages, not taken'
+- bfs_id: 1702
+  name: Cham
+  canton: ZG
+  status: configured
+  website: https://www.cham.ch
+  vendor: i-web
+  reachable: true
+  checked: &id002 2026-09-10
+  checked_by: crawler dry run (unverified)
+  publications:
+  - body: assembly
+    kind: minutes
+    status: configured
+    listing_url: https://www.cham.ch/sitzung
+    how: 'html_links, 2 hops: i-web session table /sitzung (cancelled sessions excluded), then Einwohnergemeindeversammlung;
+      GV-Vorlagen, Kurz- and Gesamtprotokoll, Rechnung, Budget, Geschäftsbericht; dry run on the 3 newest sessions:
+      16 documents (2024, 2025, 2026)'
+- bfs_id: 1703
+  name: Hünenberg
+  canton: ZG
+  status: configured
+  website: https://www.zg.ch/behoerden/gemeinden/hunenberg/de
+  vendor: onegov
+  reachable: true
+  checked: *id001
+  checked_by: listing review
+  publications:
+  - body: executive
+    kind: decisions
+    status: configured
+    listing_url: https://www.zg.ch/behoerden/gemeinden/hunenberg/de/politik/gemeinderat/Gemeinderatsbeschluesse
+- bfs_id: 1704
+  name: Menzingen
+  canton: ZG
+  status: candidate
+  website: https://www.zg.ch/behoerden/gemeinden/menzingen/de
+  vendor: onegov
+  reachable: true
+  checked: 2026-10-18
+  checked_by: crawler dry run (unverified)
+  notes: www.menzingen.ch redirects to zg.ch/behoerden/gemeinden/menzingen/de, which answers 404, and the zg.ch
+    sitemap no longer lists Menzingen pages; the site appears to be moving.
+  publications: []
+- bfs_id: 1705
+  name: Neuheim
+  canton: ZG
+  status: configured
+  website: https://www.neuheim.ch
+  vendor: i-web
+  reachable: true
+  checked: 2026-10-19
+  checked_by: crawler dry run (unverified)
+  publications:
+  - body: assembly
+    kind: minutes
+    status: configured
+    listing_url: https://www.neuheim.ch/sitzung
+    how: 'html_links, 2 hops: i-web session table /sitzung (cancelled sessions excluded; other bodies only when
+      the title starts with Kirch-, Ortsbürger-, Schul- or Kreisgemeinde, so joint sessions stay), then Protokoll,
+      Beschlüsse, Einladung/Botschaft/Weisung, Traktanden documents, Jahresrechnung, Budget, Finanzplan and Kreditabrechnung;
+      naturalisation and resignation documents excluded; dry run on the 3 newest pages: 13 documents (2024, 2025,
+      2026)'
+- bfs_id: 1706
+  name: Oberägeri
+  canton: ZG
+  status: configured
+  website: http://www.oberaegeri.ch
+  vendor: i-web
+  reachable: true
+  checked: 2026-10-18
+  checked_by: crawler dry run (unverified)
+  publications:
+  - body: assembly
+    kind: minutes
+    status: configured
+    listing_url: https://www.oberaegeri.ch/sitzung
+    how: 'html_links, 2 hops: i-web session list /sitzung, cancelled sessions excluded, then minutes, decisions,
+      invitations/Botschaft and finance documents per session; dry run on the 3 newest sessions: 11 documents (2025,
+      2026)'
+- bfs_id: 1707
+  name: Risch
+  canton: ZG
+  status: not_published
+  website: https://www.zg.ch/behoerden/gemeinden/risch-rotkreuz
+  vendor: plone
+  reachable: true
+  checked: 2026-09-08
+  checked_by: listing review
+  notes: Politik section holds the Rechtssammlung only; Plone page on zg.ch misfingerprinted as OneGov (https://www.zg.ch/behoerden/gemeinden/risch-rotkreuz).
+    The broad archive collects the commune's public PDFs (finance, regulations and assembly, including older records),
+    untagged (linked-sources.yaml).
+- bfs_id: 1708
+  name: Steinhausen
+  canton: ZG
+  status: configured
+  website: https://www.steinhausen.ch
+  vendor: custom
+  reachable: true
+  checked: 2026-09-10
+  checked_by: listing review
+  notes: Plone page on zg.ch misfingerprinted as OneGov; folder listing (type icon, title, modified date); 'Gemeinderatsbeschluesse
+    vom 31.08.2026'; executive decision extracts, current folder 2022-2026, older year folders not checked; 27 found,
+    15 dated by title; register partial (44 percent undated).
+  publications:
+  - body: executive
+    kind: extracts
+    status: configured
+    listing_url: https://www.zg.ch/behoerden/gemeinden/steinhausen/gemeinde/politik/gemeinderat/protokolle/archiv
+    from: '2022'
+    to: '2026'
+    how: html_links, 2 hops
+  - body: executive
+    kind: extracts
+    status: configured
+    listing_url: https://www.zg.ch/behoerden/gemeinden/steinhausen/gemeinde/politik/gemeinderat/protokolle
+    how: html_links, 1 hop
+- bfs_id: 1709
+  name: Unterägeri
+  canton: ZG
+  status: configured
+  website: https://www.unteraegeri.ch
+  vendor: i-web
+  reachable: true
+  checked: 2026-10-18
+  checked_by: crawler dry run (unverified)
+  publications:
+  - body: assembly
+    kind: minutes
+    status: configured
+    listing_url: https://www.unteraegeri.ch/sitzung
+    how: 'html_links, 2 hops: Einwohnergemeindeversammlung session table 2007 on: Vorlage, Detailrechnung, Protokoll
+      where published; dry run on the 3 newest sessions: 5 documents (2025, 2026)'
+- bfs_id: 1710
+  name: Walchwil
+  canton: ZG
+  status: configured
+  website: https://www.walchwil.ch
+  vendor: govis
+  reachable: true
+  checked: 2026-10-18
+  checked_by: crawler dry run (unverified)
+  notes: 'GOViS site: the home page loads its content from /route/, the assembly page is served as HTML.'
+  publications:
+  - body: assembly
+    kind: documents
+    status: configured
+    listing_url: https://www.walchwil.ch/politik/gemeindeversammlung.html/56
+    how: 'html_links, 2 hops: assembly overview (one page per assembly since 2015, date in the link text) then all
+      assets (Traktanden booklet with proposals, Kurzbericht with results); dry run full: 53 documents 2015-2026'
+- bfs_id: 1711
+  name: Zug
+  canton: ZG
+  status: configured
+  website: https://www.stadtzug.ch
+  vendor: cmi-ratsinfo
+  reachable: true
+  checked: 2026-09-06
+  checked_by: listing review
+  notes: Ratsinfo starts with the minutes of 2022-12-06; stadtzug.ch (Magnolia since the move from i-web) has no
+    older minutes.
+  publications:
+  - body: parliament
+    kind: minutes
+    status: configured
+    listing_url: https://ratsinfo.stadtzug.ch/api/meetings

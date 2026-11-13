@@ -1,0 +1,121 @@
+# Register of commune publications, canton OW. What each commune publishes and whether it is collected; see docs/REGISTER.md.
+- bfs_id: 1401
+  name: Alpnach
+  canton: OW
+  status: configured
+  website: https://www.alpnach.ch
+  vendor: i-web
+  reachable: true
+  checked: &id001 2026-09-10
+  checked_by: crawler dry run (unverified)
+  publications:
+  - body: assembly
+    kind: minutes
+    status: configured
+    listing_url: https://www.alpnach.ch/sitzung
+    how: 'html_links, 2 hops: i-web session list /sitzung, cancelled sessions excluded, then minutes, decisions,
+      invitations/Botschaft and finance documents per session; Botschaft and accounts; no minutes seen (media release
+      excluded); dry run on the 3 newest sessions: 5 documents (2025, 2026)'
+- bfs_id: 1402
+  name: Engelberg
+  canton: OW
+  status: candidate
+  website: http://www.gde-engelberg.ch
+  vendor: i-web
+  reachable: true
+  checked: 2026-10-18
+  checked_by: crawler dry run (unverified)
+  notes: 'Automated probe: no session list and no minutes page in the site map.'
+  publications:
+  - body: assembly
+    kind: minutes
+    status: candidate
+    listing_url: https://www.gde-engelberg.ch/publikationen
+    obstacle: /sitzung is 404 and there is no assembly module; /publikationen holds no budget or accounts (Talgemeinde
+      votes at /abstimmungenwahlen not examined)
+- bfs_id: 1403
+  name: Giswil
+  canton: OW
+  status: candidate
+  website: http://www.giswil.ch
+  vendor: i-web
+  reachable: true
+  checked: 2026-10-19
+  checked_by: crawler dry run (unverified)
+  notes: 'Automated probe: the session list (/sitzung) shows 32 sessions since 2010 (Gemeindeversammlung, Gemeindeversammlung
+    ABGESAGT, Gemeindeversammlung vorerst ausgesetzt); the newest three carry no minutes or decision list, and the
+    site map names no minutes page.'
+  publications:
+  - body: assembly
+    kind: minutes
+    status: candidate
+    listing_url: https://www.giswil.ch/sitzung
+    obstacle: the 2025 Gemeindeversammlung page carries no documents and /publikationen holds no assembly or finance
+      publications
+- bfs_id: 1404
+  name: Kerns
+  canton: OW
+  status: configured
+  website: https://www.kerns.ch
+  vendor: i-web
+  reachable: true
+  checked: 2026-10-18
+  checked_by: crawler dry run (unverified)
+  publications:
+  - body: assembly
+    kind: minutes
+    status: configured
+    listing_url: https://www.kerns.ch/sitzung
+    how: 'html_links, 2 hops: i-web session list /sitzung, cancelled sessions excluded, then minutes, decisions,
+      invitations/Botschaft and finance documents per session; Botschaft and agenda-item documents; no minutes seen;
+      dry run on the 3 newest sessions: 4 documents (2025, 2026)'
+- bfs_id: 1405
+  name: Lungern
+  canton: OW
+  status: configured
+  website: https://www.lungern.ch
+  vendor: i-web
+  reachable: true
+  checked: 2026-10-19
+  checked_by: crawler dry run (unverified)
+  publications:
+  - body: assembly
+    kind: minutes
+    status: configured
+    listing_url: https://www.lungern.ch/sitzung
+    how: 'html_links, 2 hops: i-web session table /sitzung (cancelled sessions excluded; other bodies only when
+      the title starts with Kirch-, Ortsbürger-, Schul- or Kreisgemeinde, so joint sessions stay), then Protokoll,
+      Beschlüsse, Einladung/Botschaft/Weisung, Traktanden documents, Jahresrechnung, Budget, Finanzplan and Kreditabrechnung;
+      naturalisation and resignation documents excluded; dry run on the 3 newest pages: 3 documents (2025)'
+- bfs_id: 1406
+  name: Sachseln
+  canton: OW
+  status: configured
+  website: https://www.sachseln.ch
+  vendor: i-web
+  reachable: true
+  checked: 2026-10-18
+  checked_by: crawler dry run (unverified)
+  publications:
+  - body: assembly
+    kind: minutes
+    status: configured
+    listing_url: https://www.sachseln.ch/sitzung
+    how: 'html_links, 2 hops: i-web session table /sitzung (cancelled sessions excluded), then the session documents
+      (minutes, decisions, proposals, accounts, budgets); dry run on the 3 newest sessions: 2 documents (2025-2026)'
+- bfs_id: 1407
+  name: Sarnen
+  canton: OW
+  status: configured
+  website: https://www.sarnen.ch
+  vendor: i-web
+  reachable: true
+  checked: 2026-10-18
+  checked_by: crawler dry run (unverified)
+  publications:
+  - body: assembly
+    kind: minutes
+    status: configured
+    listing_url: https://www.sarnen.ch/sitzung
+    how: 'html_links, 2 hops: i-web session table /sitzung (cancelled sessions excluded), then Botschaft, Rechnung
+      and EGV-Protokoll; dry run on the 3 newest sessions: 9 documents (2025, 2026)'

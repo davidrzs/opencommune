@@ -1,0 +1,453 @@
+# Register of commune publications, canton SH. What each commune publishes and whether it is collected; see docs/REGISTER.md.
+- bfs_id: 2901
+  name: Gächlingen
+  canton: SH
+  status: configured
+  website: http://www.gaechlingen.ch
+  vendor: sh-cms
+  reachable: true
+  checked: &id002 2026-09-10
+  checked_by: adapter dry run and one PDF
+  notes: 'Schaffhausen cantonal CMS: minutes as file nodes behind the assembly article''s buttons'
+  publications:
+  - body: assembly
+    kind: minutes
+    status: configured
+    listing_url: https://www.gaechlingen.ch/CMS/content?contentid=4350086&language=DE
+    how: 'sh_cms, 2 hops: assembly article node, file nodes'
+- bfs_id: 2903
+  name: Löhningen
+  canton: SH
+  status: configured
+  website: https://www.loehningen.ch
+  vendor: custom
+  reachable: true
+  checked: &id001 2026-09-10
+  checked_by: crawler dry run (unverified)
+  notes: The broad archive collects the commune's public PDFs, untagged (linked-sources.yaml).
+  publications:
+  - body: assembly
+    kind: documents
+    status: configured
+    listing_url: https://www.loehningen.ch/online-schalter/dokumente
+    how: 'html_links, Joomla documents page: assembly invitation, Budget, Jahresrechnung, Finanzplan PDFs under
+      /images/; council reports are HTML news articles (not collected); 7 documents'
+- bfs_id: 2904
+  name: Neunkirch
+  canton: SH
+  status: configured
+  website: https://www.neunkirch.ch
+  vendor: govis
+  reachable: true
+  checked: 2026-09-10
+  checked_by: listing review
+  notes: Table per session with attachments; decision notices 'Versammlungsbeschluesse vom 20. August 2026 (Teil
+    2) [pdf, 85 KB]', 'Versammlungsbeschluesse vom 18. Juni 2026 [pdf, 50 KB]', also posted as news; no full minutes;
+    4 found, 4 dated; no date range stated.
+  publications:
+  - body: assembly
+    kind: decisions
+    status: configured
+    listing_url: https://www.neunkirch.ch/politik-verwaltung/politik/gemeindeversammlung.html/58
+    how: html_links, 1 hop
+- bfs_id: 2914
+  name: Büttenhardt
+  canton: SH
+  status: configured
+  website: https://www.buettenhardt.ch
+  vendor: wordpress
+  reachable: true
+  checked: 2026-10-19
+  checked_by: crawler dry run (unverified)
+  notes: The broad archive collects the commune's public PDFs from the WordPress media library, untagged (linked-sources.yaml).
+  publications:
+  - body: assembly
+    kind: minutes
+    status: configured
+    listing_url: https://buettenhardt.ch/politik/gemeindeversammlung/
+    how: 'Gemeindeversammlung page: wp-content uploads whose file names carry DD.MM.YY(YY); Reiat intercommunal
+      documents excluded; dry run 7 documents 2024-2026'
+- bfs_id: 2915
+  name: Dörflingen
+  canton: SH
+  status: blocked_js
+  website: https://www.doerflingen.ch
+  vendor: govis
+  reachable: true
+  checked: *id001
+  checked_by: scripts/probe_vendors.py (unverified)
+  notes: GOViS site that loads its page content from /route/, which robots.txt disallows. The assembly page is empty
+    without the disallowed /route/ call.
+- bfs_id: 2917
+  name: Lohn
+  canton: SH
+  status: configured
+  website: https://www.lohn.ch
+  vendor: custom
+  reachable: true
+  checked: 2026-10-19
+  checked_by: crawler dry run (unverified)
+  notes: 'The broad archive collects the commune''s public PDFs, untagged (linked-sources.yaml). Mixed public PDF
+    listings are archived without inferred decision tags. html_links, 1 hop: GV page download_file links, Budget
+    and Rechnung only (no minutes published); dry run 4, year-only titles.'
+  publications:
+  - body: assembly
+    kind: documents
+    status: configured
+    listing_url: https://www.lohn.ch/politik/gemeindeversammlung
+    how: 'html_links, 1 hop: GV page download_file links, Budget and Rechnung only (no minutes published); dry run
+      4, year-only titles'
+- bfs_id: 2919
+  name: Stetten
+  canton: SH
+  status: configured
+  website: https://www.stetten.ch
+  vendor: wordpress
+  reachable: true
+  checked: 2026-10-19
+  checked_by: crawler dry run (unverified)
+  publications:
+  - body: assembly
+    kind: minutes
+    status: configured
+    listing_url: https://stetten.ch/wp-json/wp/v2/media?search=protokoll
+    how: 'wp_media: wp_media searches protokoll, budget, rechnung; dry run: 35 documents 2022-2026'
+- bfs_id: 2920
+  name: Thayngen
+  canton: SH
+  status: configured
+  website: https://thayngen.ch
+  vendor: sh-cms
+  reachable: true
+  checked: 2026-10-19
+  checked_by: crawler dry run (unverified)
+  notes: 'Kanton Schaffhausen CMS; the commune has an Einwohnerrat. The broad archive collects the commune''s public
+    PDFs from the download lists of the CMS, untagged (linked-sources.yaml). The Einwohnerrat minutes (Protokolle,
+    2016-2026) are a kiosk list that the CMS loads from GET /CMS/lists/list; the configuration reads that list (87
+    files in one request). Dates come only from the title or the original file name; the year-only Beschlussverzeichnisse
+    stay undated. Thayngen publishes versions of the minutes ''ohne Einbürgerungen'' when naturalisations were on
+    the agenda: those are taken, and the unmarked twin of 17.03.2022 (Protokoll 2022.03.17.pdf, probably the full
+    version) is excluded by name. Not configured: the Gemeinderat page (its list holds only members) and the Interpellationen,
+    Motionen and Vergangene Sitzungen lists. robots.txt answers 404 (no rules).'
+  publications:
+  - body: parliament
+    kind: minutes
+    status: configured
+    listing_url: https://thayngen.ch/CMS/lists/list?filter_customposttypeid_int=101&filter_generic_filetype_string=%28pdf+OR+PDF%29&filter_published_string=published&filter_approvedpaths_string=%2A%2F1845%2F60962%2F60975%2F110405%2F110408%2F111210%2F1223452%2F2257769%2F2289979%2F%2A&filter_language_string=DE&sort=sortable_datetime+desc&rows=200&start=0&mode=list
+    from: '2016-03-17'
+    to: '2026-08-27'
+    how: 'sh_cms kiosk step over the Einwohnerrat Protokolle folder (node 2289979): /CMS/lists/list with the folder''s
+      idpath, rows=200, one request. Dry run: 86 documents, 77 Protokolle dated by the session in the title (2016-03-17
+      to 2026-08-27, every title date equal to the file-name date where the file name carries one) and 9 yearly
+      Beschlussverzeichnisse undated.'
+- bfs_id: 2931
+  name: Bargen
+  canton: SH
+  status: configured
+  website: https://www.bargen.ch
+  vendor: sh-cms
+  reachable: true
+  checked: *id002
+  checked_by: adapter dry run and one PDF
+  notes: 'Schaffhausen cantonal CMS: minutes as file nodes behind the assembly article''s buttons'
+  publications:
+  - body: assembly
+    kind: minutes
+    status: configured
+    listing_url: https://www.bargen.ch/CMS/content?contentid=7690306&language=DE
+    how: 'sh_cms, 2 hops: assembly article node, file nodes'
+- bfs_id: 2932
+  name: Beringen
+  canton: SH
+  status: configured
+  website: https://www.beringen.ch
+  vendor: custom
+  reachable: true
+  checked: 2026-09-08
+  checked_by: listing review
+  notes: Einwohnerrat; file names contain spaces
+  publications:
+  - body: parliament
+    kind: minutes
+    status: configured
+    listing_url: https://www.beringen.ch/de/protokolle-einwohnerrat
+    from: '2017-01-10'
+    to: '2026-06-30'
+    how: html_links, 1 hop
+- bfs_id: 2933
+  name: Buchberg
+  canton: SH
+  status: blocked_js
+  website: http://www.buchberg.ch
+  vendor: govis
+  reachable: true
+  checked: *id001
+  checked_by: scripts/probe_vendors.py (unverified)
+  notes: GOViS site that loads its page content from /route/, which robots.txt disallows. The assembly page is empty
+    without the disallowed /route/ call.
+- bfs_id: 2936
+  name: Merishausen
+  canton: SH
+  status: configured
+  website: https://merishausen.ch
+  vendor: sh-cms
+  reachable: true
+  checked: 2026-10-19
+  checked_by: crawler dry run (unverified)
+  notes: 'Java CMS whose navigation is rendered client-side (9 anchors in the HTML, all backend links); nothing
+    to select without JavaScript; browser inspection. The broad archive collects the commune''s public PDFs from
+    the download lists of the Schaffhausen cantonal CMS, untagged (linked-sources.yaml). Configured with the sh_cms
+    adapter over the Gemeindeversammlung node 8711397 (contentButtonAdder groups Übersicht, Rechnungen, Budgets).
+    The earlier blocked_js note is superseded: the JSON node endpoint serves the groups plainly. The 2021-2022 assemblies
+    are article nodes (contenttypeid 401) holding only the agenda as text, no files; they are not collected. The
+    Rechnungen and Budgets groups are excluded: their file nodes carry no date of their own, so the adapter would
+    date them by the CMS publication date. data/linked-sources.yaml keeps its Recht und Gesetz node (regulations).'
+  publications:
+  - body: assembly
+    kind: minutes
+    status: configured
+    listing_url: https://merishausen.ch/CMS/content?contentid=8711397&language=DE
+    from: '2023-06-21'
+    to: '2026-06-17'
+    how: 'sh_cms, 2 hops: the Gemeindeversammlung node''s Übersicht button group (one labelled button per assembly,
+      ''2024-03 Gemeindeversammlung 11.12.2024''), then each file node. Dated by the assembly date in the button
+      label or the file title. No minutes are published as files, only the invitations with agenda (Einladung, Traktandenliste).
+      Excluded: the Rechnungen and Budgets groups (would carry the CMS publication date) and the usual privacy terms.
+      Dry run: 6 invitations 2023-06-21 to 2026-06-17, every date matching its title.'
+- bfs_id: 2937
+  name: Neuhausen am Rheinfall
+  canton: SH
+  status: configured
+  website: https://neuhausen.ch
+  vendor: unknown
+  reachable: true
+  checked: &id003 2026-09-06
+  checked_by: crawler dry run (unverified)
+  notes: The broad archive collects the commune's public PDFs, untagged (linked-sources.yaml).
+  publications:
+  - body: parliament
+    kind: minutes
+    status: configured
+    listing_url: https://neuhausen.ch/beschluesse_protokolle
+    how: 'html_links, one page: Einwohnerrat Beschluss- and Wortprotokolle 2005-2026. Dated by the file name''s
+      YYYYMMDD prefix where present, else the row''s session date (context row, prefer_context_date); all prefixes
+      agree with their rows except 20260924_Beschlussprotokoll in the row of 25.09.2026 (a Friday, the council sits
+      on Thursdays), which is excluded. 2005-2006 files with 6-digit names and two oddly named 2025-2026 files stay
+      undated. Dry run 316 documents.'
+- bfs_id: 2938
+  name: Rüdlingen
+  canton: SH
+  status: configured
+  website: https://www.ruedlingen.ch
+  vendor: sh-cms
+  reachable: true
+  checked: *id002
+  checked_by: adapter dry run and one PDF
+  notes: 'Schaffhausen cantonal CMS: minutes as file nodes behind the assembly article''s buttons'
+  publications:
+  - body: assembly
+    kind: minutes
+    status: configured
+    listing_url: https://www.ruedlingen.ch/CMS/content?contentid=6198033&language=DE
+    how: 'sh_cms, 2 hops: assembly article node, file nodes'
+- bfs_id: 2939
+  name: Schaffhausen
+  canton: SH
+  status: configured
+  website: https://www.stadt-schaffhausen.ch
+  vendor: i-web
+  reachable: true
+  checked: 2026-10-18
+  checked_by: crawler dry run (unverified)
+  notes: Grosser Stadtrat.
+  publications:
+  - body: parliament
+    kind: minutes
+    status: configured
+    listing_url: https://www.stadt-schaffhausen.ch/sitzungenlegislative
+    how: 'html_links, 2 hops: /sitzungenlegislative (Grosser Stadtrat, 464 sessions since 2000; /sitzung is 404)
+      -> Beschlussprotokoll and Ausführliches Protokoll'
+- bfs_id: 2951
+  name: Beggingen
+  canton: SH
+  status: configured
+  website: https://beggingen.ch
+  vendor: wordpress
+  reachable: true
+  checked: 2026-10-19
+  checked_by: crawler dry run (unverified)
+  publications:
+  - body: assembly
+    kind: minutes
+    status: configured
+    listing_url: https://beggingen.ch/wp-json/wp/v2/media?search=protokoll
+    how: 'WordPress media search (wp_media; the REST API answers at the root, the site lives under /cms2020/) for
+      protokoll, formularsatz, gemeindeversammlung and orientierungshilfe: GV Protokolle dated from the title, the
+      Orientierungshilfen (assembly guides on budget and accounts), the assembly invitation of June 2026 (month
+      precision) and the budget and accounts form sets, dated only where the file name starts with the signing date
+      (20260602, 20250623). Left out: the election protocol (Ersatzwahl), the school''s accounts, the KHV association''s
+      files and advertisements. Dry run 20 documents.'
+- bfs_id: 2952
+  name: Schleitheim
+  canton: SH
+  status: configured
+  website: https://www.schleitheim.ch
+  vendor: i-web
+  reachable: true
+  checked: 2026-10-19
+  checked_by: crawler dry run (unverified)
+  publications:
+  - body: assembly
+    kind: minutes
+    status: configured
+    listing_url: https://www.schleitheim.ch/sitzung
+    how: 'html_links, 2 hops: i-web session table /sitzung (cancelled sessions excluded; other bodies only when
+      the title starts with Kirch-, Ortsbürger-, Schul- or Kreisgemeinde, so joint sessions stay), then Protokoll,
+      Beschlüsse, Einladung/Botschaft/Weisung, Traktanden documents, Jahresrechnung, Budget, Finanzplan and Kreditabrechnung;
+      naturalisation and resignation documents excluded; dry run on the 3 newest pages: 10 documents (2025, 2026)'
+- bfs_id: 2953
+  name: Siblingen
+  canton: SH
+  status: not_found
+  website: https://www.siblingen.ch
+  vendor: sh-cms
+  reachable: true
+  checked: &id004 2026-09-11
+  checked_by: CMS node check
+  notes: 'Schaffhausen cantonal CMS: no assembly article in the home page data and none named after minutes; a person
+    should look through the navigation. The broad archive collects the commune''s public PDFs (finance, regulations
+    and assembly) from the Schaffhausen cantonal CMS, untagged (linked-sources.yaml).'
+- bfs_id: 2961
+  name: Buch
+  canton: SH
+  status: configured
+  website: https://buch-sh.ch
+  vendor: wordpress
+  reachable: true
+  checked: 2026-10-19
+  checked_by: crawler dry run (unverified)
+  notes: Finance files through the WordPress media library; protokoll and gemeindeversammlung searches return nothing.
+  publications:
+  - body: assembly
+    kind: documents
+    status: configured
+    listing_url: https://buch-sh.ch/wp-json/wp/v2/media?search=rechnung
+    from: '2026-01-14'
+    to: '2026-04-29'
+    how: 'wp_media searches rechnung, budget: Rechnungen 2022-2025 and Budgets 2024-2026; two dated from the file-name
+      prefix (2026-01-14 budget, 2026-04-29 accounts), the rest undated'
+- bfs_id: 2962
+  name: Hemishofen
+  canton: SH
+  status: configured
+  website: https://www.hemishofen.ch
+  vendor: wordpress
+  reachable: true
+  checked: 2026-10-19
+  checked_by: crawler dry run (unverified)
+  publications:
+  - body: assembly
+    kind: documents
+    status: configured
+    listing_url: https://www.hemishofen.ch/wp-json/wp/v2/media?search=protokoll
+    how: 'wp_media searches protokoll, gemeindeversammlung, rechnung, budget: Botschaften, Traktandenlisten, Rechnungen
+      2018-2025; tariffs, Merkblätter and payment slips excluded'
+- bfs_id: 2963
+  name: Ramsen
+  canton: SH
+  status: candidate
+  website: https://www.ramsen.ch
+  vendor: i-web
+  reachable: true
+  checked: 2026-10-19
+  checked_by: crawler dry run (unverified)
+  notes: 'Automated probe: the session list (/sitzung) shows 30 sessions since 2014 (Gemeindeversammlung, Gemeindeversammlung
+    (Budget 2024), Gemeindeversammlung (Budget 2025), Gemeindeversammlung (Budget 2); the newest three carry no
+    minutes or decision list, and the site map names no minutes page. Session table back to 2014, but the 2025 and
+    2022 session pages carry no documents.'
+  publications:
+  - body: assembly
+    kind: minutes
+    status: candidate
+    listing_url: https://www.ramsen.ch/sitzung
+    obstacle: session table back to 2014, but the 2025 and 2022 session pages carry no documents
+- bfs_id: 2964
+  name: Stein am Rhein
+  canton: SH
+  status: candidate
+  website: https://www.steinamrhein.ch
+  vendor: custom
+  reachable: true
+  checked: *id001
+  checked_by: scripts/probe_vendors.py (unverified)
+  notes: 'Automated probe: a page with dated PDF links. The broad archive collects the commune''s public PDFs, untagged
+    (linked-sources.yaml).'
+  publications:
+  - body: parliament
+    kind: minutes
+    status: candidate
+    listing_url: https://www.steinamrhein.ch/politik/einwohnerrat/protokolle.html/613
+    to: '2026-04-10'
+    how: 'automated probe: 32 dated PDF links on the page, newest 2026-04-10, e.g. ''Sitzungsprotokoll vom 10. April
+      2026''; body inferred from the URL'
+- bfs_id: 2971
+  name: Hallau
+  canton: SH
+  status: configured
+  website: https://www.hallau.ch
+  vendor: sh-cms
+  reachable: true
+  checked: *id002
+  checked_by: adapter dry run and one PDF
+  notes: 'Schaffhausen cantonal CMS: minutes as file nodes behind the assembly article''s buttons'
+  publications:
+  - body: assembly
+    kind: minutes
+    status: configured
+    listing_url: https://www.hallau.ch/CMS/content?contentid=4040278&language=DE
+    how: 'sh_cms, 2 hops: assembly article node, file nodes'
+- bfs_id: 2972
+  name: Oberhallau
+  canton: SH
+  status: not_published
+  website: https://www.oberhallau.ch
+  vendor: sh-cms
+  reachable: true
+  checked: *id004
+  checked_by: CMS node check
+  notes: 'Schaffhausen cantonal CMS: the assembly article carries budgets, accounts and info sheets, no minutes.
+    The broad archive collects the commune''s public PDFs (finance, regulations and assembly) from the Schaffhausen
+    cantonal CMS, untagged (linked-sources.yaml).'
+- bfs_id: 2973
+  name: Trasadingen
+  canton: SH
+  status: needs_feature
+  website: https://www.trasadingen.ch
+  vendor: wordpress
+  reachable: true
+  checked: 2026-10-19
+  checked_by: crawler dry run (unverified)
+  notes: 'Automated probe: a page named after the minutes links no PDF (subpages or JavaScript). Gemeinderat minutes
+    (Protokoll_YYYY_NN, yearly bundles 2009-2018) are WordPress Download Monitor landing pages without a file link;
+    the media library holds only two 2019 files.'
+  publications:
+  - body: executive
+    kind: minutes
+    status: needs_feature
+    listing_url: https://trasadingen.ch/verwaltung-2/gemeinderatsbeschluesse/
+    how: 'automated probe: page ''Gemeinderatsbeschlüsse'' names the minutes but links no PDF (subpages or JavaScript);
+      not examined further'
+    obstacle: Gemeinderat minutes (Protokoll_YYYY_NN, yearly bundles 2009-2018) are WordPress Download Monitor landing
+      pages without a file link; the media library holds only two 2019 files
+- bfs_id: 2974
+  name: Wilchingen
+  canton: SH
+  status: not_published
+  website: https://www.wilchingen.ch
+  vendor: sh-cms
+  reachable: true
+  checked: *id004
+  checked_by: CMS node check
+  notes: 'Schaffhausen cantonal CMS: the assembly article carries budgets, accounts and the Gmaands-Info sheets,
+    no minutes. The broad archive collects the commune''s public PDFs (finance, regulations and assembly) from the
+    Schaffhausen cantonal CMS, untagged (linked-sources.yaml).'

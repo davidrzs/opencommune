@@ -1,0 +1,74 @@
+# Register of commune publications, canton AI. What each commune publishes and whether it is collected; see docs/REGISTER.md.
+- bfs_id: 3101
+  name: Appenzell
+  canton: AI
+  status: configured
+  website: https://www.appenzell.org
+  vendor: i-web
+  reachable: true
+  checked: &id001 2026-09-10
+  checked_by: crawler dry run (unverified)
+  publications:
+  - body: assembly
+    kind: results
+    status: configured
+    listing_url: https://www.appenzell.org/bezirksgemeinde
+    how: 'html_links, 1 hop: documents on https://www.appenzell.org/bezirksgemeinde; dry run: 1 document (2026)'
+- bfs_id: 3102
+  name: Gonten
+  canton: AI
+  status: configured
+  website: http://www.gonten.ch
+  vendor: custom
+  reachable: true
+  checked: 2026-10-19
+  checked_by: crawler dry run (unverified)
+  notes: The broad archive collects the commune's public PDFs, untagged (linked-sources.yaml).
+  publications:
+  - body: assembly
+    kind: results
+    status: configured
+    listing_url: https://www.gonten.ch/portrait/aktuelles/downloads
+    how: 'html_links, Contao downloads page (?_hash= links, _hash volatile): results of the Bezirksgemeinde 2023-2026,
+      annual reports with accounts 2020-2025; dry run: 15 documents'
+- bfs_id: 3104
+  name: Schlatt-Haslen
+  canton: AI
+  status: configured
+  website: https://www.schlatt-haslen.ch
+  vendor: custom
+  reachable: true
+  checked: 2026-10-19
+  checked_by: crawler dry run (unverified)
+  notes: The broad archive collects the commune's public PDFs, untagged (linked-sources.yaml).
+  publications:
+  - body: assembly
+    kind: minutes
+    status: configured
+    listing_url: https://www.schlatt-haslen.ch/politik-verwaltung
+    how: 'Politik & Verwaltung page of the Bezirk: Protokolle der Bezirksgemeinde 2017-2026 and Protokolle der Orientierungsversammlung
+      2024-2026, dated from the file name (date_regex for 20260503, 2024-0604, 2026-0421) or the title; Jahresrechnungen
+      2016-2024 undated (year only). Presentations are left out. Dry run 20 documents.'
+- bfs_id: 3111
+  name: Oberegg
+  canton: AI
+  status: blocked_js
+  website: https://www.oberegg.ch/
+  vendor: govis
+  reachable: true
+  checked: *id001
+  checked_by: scripts/probe_vendors.py (unverified)
+  notes: GOViS site that loads its page content from /route/, which robots.txt disallows. The site map lists no
+    assembly or minutes page.
+- bfs_id: 3112
+  name: Schwende-Rüte
+  canton: AI
+  status: not_published
+  website: https://schwende-ruete.ch/
+  vendor: squarespace
+  reachable: true
+  checked: 2026-09-08
+  checked_by: listing review
+  notes: Squarespace one-pager with regulations only ('Beschluss ueber die Gebuehren'). The broad archive collects
+    the commune's public PDFs (finance, regulations and assembly, including older records), untagged (linked-sources.yaml).
+    Reports of the former communes Schwende and Rüte are filed under the current commune.

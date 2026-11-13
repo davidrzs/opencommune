@@ -1,0 +1,844 @@
+# Register of commune publications, canton GE. What each commune publishes and whether it is collected; see docs/REGISTER.md.
+- bfs_id: 6601
+  name: Aire-la-Ville
+  canton: GE
+  status: configured
+  website: http://www.aire-la-ville.ch
+  vendor: wordpress
+  reachable: true
+  checked: &id001 2026-09-10
+  checked_by: crawler dry run (unverified)
+  publications:
+  - body: parliament
+    kind: minutes
+    status: configured
+    listing_url: https://www.aire-la-ville.ch/wp-json/wp/v2/media?search=pv
+    how: 'wp_media searches pv, proces-verbal, budget, comptes (crawl delay 10 s): PV of the Conseil municipal;
+      dry run 70 documents 2015-2026'
+- bfs_id: 6602
+  name: Anières
+  canton: GE
+  status: configured
+  website: https://anieres.ch
+  vendor: wordpress
+  reachable: true
+  checked: 2026-09-08
+  checked_by: listing review
+  notes: Conseil municipal PV inside a mixed 'Documents' archive (14 pages of all kinds of documents); page 15 is
+    slack and returns 404
+  publications:
+  - body: parliament
+    kind: minutes
+    status: configured
+    listing_url: https://anieres.ch/documents/page/{1..15}/
+    from: '2021-10-19'
+    to: '2026-05-26'
+    how: html_links, 1 hop, /page/{1..15}/, text_regex 'PV du Conseil municipal du <date>'
+- bfs_id: 6603
+  name: Avully
+  canton: GE
+  status: configured
+  website: https://www.avully.ch
+  vendor: wordpress
+  reachable: true
+  checked: 2026-10-19
+  checked_by: crawler dry run (unverified)
+  notes: The broad archive collects the commune's public PDFs, untagged (linked-sources.yaml).
+  publications:
+  - body: parliament
+    kind: minutes
+    status: configured
+    listing_url: https://avully.ch/vie-politique-executif-et-deliberatif/
+    how: 'Conseil municipal page: PV 2019-2026 dated from the title (séance du ...). Excluded as contradictory:
+      the PV titled 11 novembre 2024 whose file is 2024-11-14. Commission lists and the regulation are left out.
+      Dry run 50 documents.'
+- bfs_id: 6604
+  name: Avusy
+  canton: GE
+  status: configured
+  website: https://www.avusy.ch
+  vendor: wordpress
+  reachable: true
+  checked: 2026-10-19
+  checked_by: crawler dry run (unverified)
+  notes: The broad archive collects the commune's public PDFs, untagged (linked-sources.yaml).
+  publications:
+  - body: parliament
+    kind: minutes
+    status: configured
+    listing_url: https://www.avusy.ch/proces-verbaux/
+    how: 'Procès-verbaux du Conseil municipal, all years on one page (2009-2026): PV dated from the title (Séance
+      du ...), every date matching the file name. Crawl-delay 10. Dry run 135 documents.'
+- bfs_id: 6605
+  name: Bardonnex
+  canton: GE
+  status: configured
+  website: https://www.bardonnex.ch
+  vendor: wordpress
+  reachable: true
+  checked: 2026-09-08
+  checked_by: listing review
+  notes: Conseil municipal PV (PVCM_yyyy-mm-dd.pdf), anchor text is the date; the first request answered 429, a
+    retry a few minutes later was fine; Crawl-delay 10
+  publications:
+  - body: parliament
+    kind: minutes
+    status: configured
+    listing_url: https://www.bardonnex.ch/proces-verbaux/
+    from: '2022-09-13'
+    to: '2026-05-12'
+    how: html_links, 1 hop
+- bfs_id: 6606
+  name: Bellevue
+  canton: GE
+  status: configured
+  website: http://www.mairie-bellevue.ch
+  vendor: i-web
+  reachable: true
+  checked: 2026-10-19
+  checked_by: crawler dry run (unverified)
+  publications:
+  - body: parliament
+    kind: minutes
+    status: configured
+    listing_url: https://www.mairie-bellevue.ch/seances
+    how: 'html_links, 2 hops: i-web session table /seances (cancelled and information sessions excluded), then the
+      session documents (ordre du jour, PV, préavis, extraits, délibérations; Téléchargement duplicates, naturalisation
+      and resignation documents excluded); 570 sessions back to 1935 in the table; max_follow 80 keeps about the
+      last 16 years; dry run on the 3 newest pages: 17 documents (2026)'
+- bfs_id: 6607
+  name: Bernex
+  canton: GE
+  status: configured
+  website: https://www.bernex.ch
+  vendor: iomedia-nuxt
+  reachable: true
+  checked: 2026-09-08
+  checked_by: listing review
+  publications:
+  - body: parliament
+    kind: minutes
+    status: configured
+    listing_url: https://www.bernex.ch/ma-mairie/vie-politique/conseil-municipal/seances-du-conseil-municipal-226
+    from: '2021-09-28'
+    to: '2026-02-03'
+    obstacle: 'partial: Conseil municipal; this Nuxt variant server-renders the document list; anchor text ''Proces-verbal
+      du 19 octobre approuve'' lacks the year for older items; older years may be behind a client-side year filter
+      (not verified)'
+    how: html_links, 1 hop, date_regex (20\d{2})(\d{2})(\d{2}) ymd on file names like 20211019-cm-pv11-corrige.pdf
+- bfs_id: 6608
+  name: Carouge
+  canton: GE
+  status: configured
+  website: https://www.carouge.ch
+  vendor: drupal
+  reachable: true
+  checked: 2026-10-18
+  checked_by: crawler dry run (unverified)
+  notes: 'Conseil municipal; the site publishes procès-verbaux (category 165) and délibérations (category 164) from
+    2024-01 on. Dry run: 49 documents (25 PV, 24 délibérations), matching the sitemap.'
+  publications:
+  - body: parliament
+    kind: minutes
+    status: configured
+    listing_url: https://www.carouge.ch/publications?category%5B165%5D=165&page={0..5}
+    how: 'html_links, 2 hops: publications views for categories 165 (procès-verbaux) and 164 (délibérations), then
+      the PDF on each publication page; the site publishes from 2024-01 only; widen {0..5} as pages grow (4 pages
+      per category on 2026-10-18)'
+- bfs_id: 6609
+  name: Cartigny
+  canton: GE
+  status: configured
+  website: https://www.cartigny.ch
+  vendor: wordpress
+  reachable: true
+  checked: 2026-10-19
+  checked_by: crawler dry run (unverified)
+  notes: 'wp_media searches pv, proces-verbal, budget, comptes (files on cartigny.ch, robots Crawl-delay 10); dry
+    run: 147 documents.'
+  publications:
+  - body: parliament
+    kind: minutes
+    status: configured
+    listing_url: https://www.cartigny.ch/wp-json/wp/v2/media?search=pv
+    how: wp_media searches pv, proces-verbal, budget, comptes (files on cartigny.ch, robots Crawl-delay 10)
+- bfs_id: 6610
+  name: Céligny
+  canton: GE
+  status: configured
+  website: https://www.celigny.ch
+  vendor: wordpress
+  reachable: true
+  checked: 2026-10-19
+  checked_by: crawler dry run (unverified)
+  notes: The WordPress media search finds about 33 Conseil municipal PVs and délibérations, but files named cm_pv_YYYY_<mois>_DD
+    would get wrong dates there; the configuration reads the HTML listing with French month names instead. Dry run
+    41 documents, each dated one checked against its title; délibérations with day-month-only titles stay undated.
+  publications:
+  - body: parliament
+    kind: minutes
+    status: configured
+    listing_url: https://www.celigny.ch/wp-json/wp/v2/media?search=pv
+    how: wp_media searches pv and deliberation; date_regex (\d{4})_([a-zéû]+)_(\d{1,2}) with date_order ymd for
+      the cm_pv_YYYY_<mois>_DD file names; Crawl-delay 10
+- bfs_id: 6611
+  name: Chancy
+  canton: GE
+  status: configured
+  website: http://www.chancy.ch
+  vendor: wordpress
+  reachable: true
+  checked: 2026-10-19
+  checked_by: crawler dry run (unverified)
+  publications:
+  - body: parliament
+    kind: minutes
+    status: configured
+    listing_url: https://www.chancy.ch/politique/proces-verbaux/
+    how: 'Procès-verbaux and Délibérations et résolutions pages: PV of the Conseil municipal and its délibérations
+      2015-2026, dated from the title or the session date that starts the file name. The naturalisation delegation
+      is excluded. Crawl-delay 10. Dry run 155 documents.'
+- bfs_id: 6612
+  name: Chêne-Bougeries
+  canton: GE
+  status: configured
+  website: https://chene-bougeries.ch
+  vendor: wordpress
+  reachable: true
+  checked: 2026-09-08
+  checked_by: listing review
+  notes: Conseil municipal; the full history (2020 onward) is not verified; future sessions and sessions without
+    an adopted PV yield nothing.
+  publications:
+  - body: parliament
+    kind: minutes
+    status: configured
+    listing_url: https://chene-bougeries.ch/administration-et-autorites/conseil-municipal/seances-du-conseil-municipal/
+    from: '2025-03-20'
+    to: '2026-05-19'
+    how: html_links, 2 hops (53 session event pages -> wp-file-download link /download/<cat>/<slug>/<id>/<file>.pdf),
+      max_follow 80
+- bfs_id: 6613
+  name: Chêne-Bourg
+  canton: GE
+  status: configured
+  website: https://www.chene-bourg.ch
+  vendor: iomedia-nuxt
+  reachable: true
+  checked: 2026-10-19
+  checked_by: crawler dry run (unverified)
+  notes: Conseil municipal. The broad archive collects the commune's public PDFs (accounts, regulations and council
+    pages), untagged (linked-sources.yaml). The allinone.io API is blocked and not used. Configured without the
+    robots-blocked allinone.io API. The public sitemap (sitemap.xml, robots.txt Crawl-delay 10) lists one page per
+    Conseil municipal session (/seances/seance-du-18-fevrier-2025-340), and each session page is served with its
+    documents as plain links to /media/document/0/<file>.pdf. The broad archive collects the commune's public PDFs,
+    untagged (linked-sources.yaml).
+  publications:
+  - body: parliament
+    kind: minutes
+    status: configured
+    listing_url: https://www.chene-bourg.ch/sitemap.xml
+    from: '2006-01-13'
+    to: '2026-10-01'
+    how: 'html_links, 3 hops: sitemap.xml -> sitemap/fr_N.xml -> the session pages (/seances/seance-du-<day>-<month>-<year>-<id>,
+      dated by their slug) -> the PDF links on each session page (Ordre du jour, Communications du Conseil administratif,
+      Délibérations, Procès-verbal). Each document is dated by its file name (2025-02-18-avis, pv-2025-02-18, communications-du-ca-18-02-2025)
+      or else its session. Excluded as contradictory: 20210521-avis (listed under the session of 11.05.2021, after
+      it) and the two 20190914 files (no 2019 session in the sitemap). 20201003-avis is kept as the convocation''s
+      issue date for the session of 13.10.2020. Future sessions are only collected once held. Dry run: 118 documents
+      2020-06-02 to 2026-09-22.'
+- bfs_id: 6614
+  name: Choulex
+  canton: GE
+  status: configured
+  website: http://www.choulex.ch
+  vendor: wordpress
+  reachable: true
+  checked: 2026-10-19
+  checked_by: crawler dry run (unverified)
+  notes: 'wp_media searches pv, proces-verbal, budget, comptes (crawl delay 10 s): PVCM of the Conseil municipal;
+    dry run. 65 documents 2020-2026.'
+  publications:
+  - body: parliament
+    kind: minutes
+    status: configured
+    listing_url: https://choulex.ch/wp-json/wp/v2/media?search=pv
+    how: 'wp_media searches pv, proces-verbal, budget, comptes (crawl delay 10 s): PVCM of the Conseil municipal;
+      dry run: 65 documents 2020-2026'
+- bfs_id: 6615
+  name: Collex-Bossy
+  canton: GE
+  status: configured
+  website: http://www.collex-bossy.ch
+  vendor: custom
+  reachable: true
+  checked: 2026-10-19
+  checked_by: crawler dry run (unverified)
+  notes: The broad archive collects the commune's public PDFs, untagged (linked-sources.yaml).
+  publications:
+  - body: parliament
+    kind: minutes
+    status: configured
+    listing_url: https://www.collex-bossy.ch/fr/proces-verbaux/
+    how: 'html_links, 1 hop: procès-verbaux page (older iomedia, server-rendered), ''Séance du Conseil municipal
+      du …'' PDFs under /media/document/; only the current year is listed (4 PV, 2026); crawl delay 10'
+- bfs_id: 6616
+  name: Collonge-Bellerive
+  canton: GE
+  status: configured
+  website: https://www.collonge-bellerive.ch
+  vendor: i-web
+  reachable: true
+  checked: 2026-10-18
+  checked_by: crawler dry run (unverified)
+  publications:
+  - body: parliament
+    kind: minutes
+    status: configured
+    listing_url: https://www.collonge-bellerive.ch/communiques
+    how: 'html_links, 2 hops: Conseil municipal: /communiques information list (2016 on), ''Procès-verbal'' items,
+      then the PV PDF; ordres du jour on /seances not taken; dry run on the 3 newest sessions: 2 documents (2026)'
+- bfs_id: 6617
+  name: Cologny
+  canton: GE
+  status: configured
+  website: https://www.cologny.ch
+  vendor: drupal
+  reachable: true
+  checked: 2026-09-08
+  checked_by: listing review
+  notes: Conseil municipal; 10 per page, 7 pages (about 70 PVs); anchor text 'Seance du Conseil municipal ... du
+    7 mai 2026'.
+  publications:
+  - body: parliament
+    kind: minutes
+    status: configured
+    listing_url: https://www.cologny.ch/politique-administration/conseil-municipal/proces-verbaux?page={0..8}
+    from: '2025-06-25'
+    to: '2026-05-07'
+    how: html_links, 1 hop, ?page={0..6}
+- bfs_id: 6618
+  name: Confignon
+  canton: GE
+  status: configured
+  website: http://www.confignon.ch
+  vendor: i-web
+  reachable: true
+  checked: 2026-10-18
+  checked_by: crawler dry run (unverified)
+  publications:
+  - body: parliament
+    kind: minutes
+    status: configured
+    listing_url: https://www.confignon.ch/sitzung
+    how: 'html_links, 2 hops: i-web session table /sitzung, then the session documents; only the session notices
+      (AVIS CM) are attached to the sessions; no PV found; dry run on the 3 newest pages: 3 documents (2026)'
+- bfs_id: 6619
+  name: Corsier
+  canton: GE
+  status: configured
+  website: http://www.corsier.ch
+  vendor: i-web
+  reachable: true
+  checked: 2026-10-19
+  checked_by: crawler dry run (unverified)
+  publications:
+  - body: parliament
+    kind: minutes
+    status: configured
+    listing_url: https://www.corsier.ch/seances
+    how: 'html_links, 2 hops: i-web session table /seances (cancelled and information sessions excluded), then the
+      session documents (ordre du jour, PV, préavis, extraits, délibérations; Téléchargement duplicates, naturalisation
+      and resignation documents excluded); Conseil municipal sessions on /seances (agendas, /sitzung is 404); a
+      second source takes the minutes from /procesverbaux, where each ''Téléchargement'' button (/_rte/publikation/<id>)
+      redirects (301, 302) to the PDF and its title carries the session date (yyyy.mm.dd); dry run on the 3 newest
+      pages: 11 documents (2025, 2026)'
+  - body: parliament
+    kind: minutes
+    status: configured
+    listing_url: https://www.corsier.ch/procesverbaux
+    how: 'html_links, 2 hops: i-web publications table /procesverbaux, filtered by title, then the PDFs'
+- bfs_id: 6620
+  name: Dardagny
+  canton: GE
+  status: configured
+  website: https://www.dardagny.ch
+  vendor: wordpress
+  reachable: true
+  checked: 2026-10-18
+  checked_by: crawler dry run (unverified)
+  publications:
+  - body: parliament
+    kind: minutes
+    status: configured
+    listing_url: https://dardagny.ch/conseil-municipal/
+    how: 'html_links, 1 hop: conseil-municipal page lists ''Séance du ...'' PV PDFs (presentations excluded); crawl
+      delay 10; dry run on the 3 newest pages: 106 documents, 2014-2026'
+- bfs_id: 6621
+  name: Genève
+  canton: GE
+  status: configured
+  website: https://www.geneve.ch/
+  vendor: drupal
+  reachable: true
+  checked: 2026-10-18
+  checked_by: crawler dry run (unverified)
+  notes: Conseil municipal. The XML sitemap (sitemap.xml?page=1..17) lists every session page back to 1998 (13-17
+    a year); each session page links the ordre du jour, the procès-verbal and the Mémorial parts. Mixed public PDF
+    listings are archived without inferred decision tags.
+  publications:
+  - body: parliament
+    kind: minutes
+    status: configured
+    listing_url: https://www.geneve.ch/sitemap.xml?page={1..20}
+    how: 'html_links, 2 hops: sitemap <loc> entries matching /seances-plenieres/session-DD-MM-YYYY, then the PV and
+      ODJ PDFs on each session page; the Mémorial (verbatim record, several PDFs per session) is not taken yet'
+- bfs_id: 6622
+  name: Genthod
+  canton: GE
+  status: configured
+  website: https://www.genthod.ch
+  vendor: i-web
+  reachable: true
+  checked: 2026-10-19
+  checked_by: crawler dry run (unverified)
+  publications:
+  - body: parliament
+    kind: minutes
+    status: configured
+    listing_url: https://www.genthod.ch/seances
+    how: 'html_links, 2 hops: i-web session table /seances (cancelled and information sessions excluded), then the
+      session documents (ordre du jour, PV, préavis, extraits, délibérations; Téléchargement duplicates, naturalisation
+      and resignation documents excluded); dry run on the 3 newest pages: 10 documents (2026)'
+- bfs_id: 6623
+  name: Le Grand-Saconnex
+  canton: GE
+  status: configured
+  website: https://www.grand-saconnex.ch
+  vendor: drupal
+  reachable: true
+  checked: 2026-09-08
+  checked_by: listing review
+  publications:
+  - body: parliament
+    kind: minutes
+    status: configured
+    listing_url: https://www.grand-saconnex.ch/politique/seances?f%5B0%5D=cm_archives_name%3AProc%C3%A8s-verbal&page={0..2}
+    from: '2019'
+    to: '2026-03-23'
+    obstacle: 'partial: Conseil municipal; PVs from 2025 carry the date in the file name; 2019-2024 (about 40 of
+      71) are proces-verbal_NN.pdf with the date only in a preceding h4.section-title, discovered undated'
+    how: html_links, 1 hop, facet filter with &page range; date_selector feature (preceding h4.section-title) would
+      date the 2019-2024 files
+- bfs_id: 6624
+  name: Gy
+  canton: GE
+  status: configured
+  website: https://www.mairie-gy.ch
+  vendor: i-web
+  reachable: true
+  checked: 2026-10-19
+  checked_by: crawler dry run (unverified)
+  publications:
+  - body: parliament
+    kind: minutes
+    status: configured
+    listing_url: https://www.mairie-gy.ch/seances-du-conseil
+    how: 'html_links, 2 hops: i-web session table /seances-du-conseil (cancelled sessions excluded; at most 40 sessions
+      per run), then the session documents, dated by their own title date or else by the session (Téléchargement
+      duplicates, naturalisation, resignation and election documents excluded); Conseil municipal sessions since
+      2020; dry run on the 3 newest pages: 5 documents (2026)'
+- bfs_id: 6625
+  name: Hermance
+  canton: GE
+  status: configured
+  website: https://www.hermance.ch
+  vendor: i-web
+  reachable: true
+  checked: 2026-10-19
+  checked_by: crawler dry run (unverified)
+  publications:
+  - body: parliament
+    kind: minutes
+    status: configured
+    listing_url: https://www.hermance.ch/seances
+    how: 'html_links, 2 hops: i-web session table /seances (cancelled and information sessions excluded), then the
+      session documents (ordre du jour, PV, préavis, extraits, délibérations; Téléchargement duplicates, naturalisation
+      and resignation documents excluded); Conseil municipal sessions on /seances since 2007 (/sitzung is 404);
+      each session carries its notice (Avis CM, dated in the file name); dry run on the 3 newest pages: 3 documents
+      (2026)'
+- bfs_id: 6626
+  name: Jussy
+  canton: GE
+  status: configured
+  website: https://www.jussy.ch
+  vendor: i-web
+  reachable: true
+  checked: 2026-10-19
+  checked_by: crawler dry run (unverified)
+  publications:
+  - body: parliament
+    kind: minutes
+    status: configured
+    listing_url: https://www.jussy.ch/proces-verbaux
+    how: 'html_links, 2 hops: i-web publications table /proces-verbaux, filtered by title, then the PDFs; Conseil
+      municipal minutes on /proces-verbaux since 2013; /deliberations (DEL titles without a date) left out; dry
+      run on the 3 newest pages: 3 documents (2026)'
+- bfs_id: 6627
+  name: Laconnex
+  canton: GE
+  status: configured
+  website: http://www.laconnex.ch
+  vendor: wordpress
+  reachable: true
+  checked: 2026-10-19
+  checked_by: crawler dry run (unverified)
+  publications:
+  - body: parliament
+    kind: minutes
+    status: configured
+    listing_url: https://www.laconnex.ch/politique/conseil-municipal/proces-verbaux/
+    how: 'html_links, 1 hop: ''Séance du conseil municipal du …'' PV, dated from the file name PV_yy_mmdd (titles
+      lack the year); dry run: 15 PV 2025-2026; Crawl-delay 10'
+- bfs_id: 6628
+  name: Lancy
+  canton: GE
+  status: configured
+  website: https://www.lancy.ch
+  vendor: drupal
+  reachable: true
+  checked: 2026-09-08
+  checked_by: listing review
+  notes: Conseil municipal; Drupal views load-more pager with 12 view displays. The session news pages carry the
+    ordre du jour, decisions and PV (PV after approval); about 10 sessions a year back to 2017. The configuration
+    reads a fixed number of pager pages; following the pager to its end needs a crawler feature.
+  publications:
+  - body: parliament
+    kind: minutes
+    status: configured
+    listing_url: https://www.lancy.ch/actualites?page=%2C%2C%2C%2C%2C%2C%2C%2C%2C%2C%2C{0..12}
+    from: '2025-06-19'
+    to: '2026-02-12'
+    how: html_links, 2 hops (news page -> session page), page range {0..12}, max_follow 80
+- bfs_id: 6629
+  name: Meinier
+  canton: GE
+  status: configured
+  website: https://www.meinier.ch
+  vendor: drupal
+  reachable: true
+  checked: 2026-09-08
+  checked_by: listing review
+  notes: Conseil municipal; one page; anchor text 'Seance du 7 mai' without year
+  publications:
+  - body: parliament
+    kind: minutes
+    status: configured
+    listing_url: https://www.meinier.ch/politique/archives-pv/proces-verbaux-des-seances-du-conseil-municipal
+    from: '2004-01-22'
+    to: '2026-05-07'
+    how: html_links, 1 hop, date from file name (pvcm2026-05-07em.pdf)
+- bfs_id: 6630
+  name: Meyrin
+  canton: GE
+  status: configured
+  website: https://www.meyrin.ch
+  vendor: drupal
+  reachable: true
+  checked: 2026-09-08
+  checked_by: listing review
+  notes: Conseil municipal; anchor text is the session date; annexes and presentations excluded via negative lookahead
+    because exclude_regex was not applied by html_links; Bootstrap tabs per legislature, 233 found, 230 dated, generic
+    Drupal config reads only 75 of 230.
+  publications:
+  - body: parliament
+    kind: minutes
+    status: configured
+    listing_url: https://www.meyrin.ch/fr/votre-mairie-politique-conseil-municipal/pv-des-seances
+    from: '2005-05-17'
+    to: '2026-04-28'
+    how: html_links, 1 hop, one page all years, negative lookahead in text_regex
+- bfs_id: 6631
+  name: Onex
+  canton: GE
+  status: configured
+  website: https://www.onex.ch
+  vendor: iomedia-nuxt
+  reachable: true
+  checked: 2026-09-08
+  checked_by: listing review
+  publications:
+  - body: parliament
+    kind: minutes
+    status: configured
+    listing_url: https://www.onex.ch/ma-ville/conseil-municipal/seances-du-conseil-municipal/
+    from: '2024-11-26'
+    to: '2026-05-26'
+    obstacle: 'partial: Conseil municipal; Tailwind Nuxt variant; server HTML lists the newest about 16 sessions
+      with their PVs; the year dropdown (2015-2026) is client-side and ?year= is ignored'
+    how: html_links, 1 hop over the server-rendered newest sessions; older years need the iomedia API
+- bfs_id: 6632
+  name: Perly-Certoux
+  canton: GE
+  status: configured
+  website: http://www.perly-certoux.ch
+  vendor: custom
+  reachable: true
+  checked: 2026-10-19
+  checked_by: crawler dry run (unverified)
+  notes: The broad archive collects the commune's public PDFs (finance, regulations and council, including older
+    meetings), untagged (linked-sources.yaml).
+  publications:
+  - body: parliament
+    kind: minutes
+    status: configured
+    listing_url: https://www.perly-certoux.ch/fr/politique/conseil-municipal/seances/
+    how: 'Séances page and its year pages ?year=2016-2025: convocations, PV, comptes-rendus des décisions, délibérations
+      and commission reports of the Conseil municipal, dated from the title (séance du ...) or the file name (commission
+      reports by their writing date), délibérations mostly undated. The compte-rendu titled séance du 21 mars 2024
+      whose file is crcm-15.02.2024 is excluded (contradictory). Crawl-delay 10. Dry run 173 documents'
+- bfs_id: 6633
+  name: Plan-les-Ouates
+  canton: GE
+  status: configured
+  website: https://www.plan-les-ouates.ch
+  vendor: custom
+  reachable: true
+  checked: 2026-09-08
+  checked_by: listing review
+  notes: Conseil municipal; custom CMS, not Drupal; file names yymmdd (260526_pvcm_avec_annexes.pdf).
+  publications:
+  - body: parliament
+    kind: minutes
+    status: configured
+    listing_url: https://www.plan-les-ouates.ch/pages/la-commune/conseil-municipal/pv-des-seances
+    from: '2017-01-24'
+    to: '2026-05-26'
+    how: html_links, 1 hop, one page of 'PV du <date>' anchors under /files/
+- bfs_id: 6634
+  name: Pregny-Chambésy
+  canton: GE
+  status: configured
+  website: http://www.pregny-chambesy.ch
+  vendor: i-web
+  reachable: true
+  checked: 2026-10-19
+  checked_by: crawler dry run (unverified)
+  publications:
+  - body: parliament
+    kind: minutes
+    status: configured
+    listing_url: https://www.pregny-chambesy.ch/seances
+    how: 'html_links, i-web session table /seances, then the session documents; Conseil municipal: ordres du jour
+      and procès-verbaux per session; naturalisation documents excluded; dry run on the 3 newest pages: 5 documents
+      (2026)'
+- bfs_id: 6635
+  name: Presinge
+  canton: GE
+  status: configured
+  website: http://www.presinge.ch
+  vendor: custom
+  reachable: true
+  checked: 2026-10-19
+  checked_by: crawler dry run (unverified)
+  notes: The broad archive collects the commune's public PDFs, untagged (linked-sources.yaml).
+  publications:
+  - body: parliament
+    kind: documents
+    status: configured
+    listing_url: https://www.presinge.ch/politique.php
+    how: 'Politique page, Finances: the tables of operating accounts and budget per legislature (2015-2020, 2020-2025,
+      2025-2030), undated. The annual administrative reports are left out (annual reports of small communes often
+      list civil-status events by name); the Conseil municipal''s minutes are not published on the site. Dry run
+      3 documents.'
+- bfs_id: 6636
+  name: Puplinge
+  canton: GE
+  status: candidate
+  website: http://www.puplinge.ch
+  vendor: custom
+  reachable: true
+  checked: 2026-10-18
+  checked_by: crawler dry run (unverified)
+  notes: 'Automated probe: the home page links no page about minutes or a council. The broad archive collects the
+    commune''s public PDFs, untagged (linked-sources.yaml).'
+  publications:
+  - body: parliament
+    kind: minutes
+    status: candidate
+    obstacle: iomedia Nuxt site (news on puplinge.iomedia.ch); /api/contents answers 404 tree_not_found for type
+      documents_seances and seances with site 1 and 2; the front end's actual query is not known yet
+- bfs_id: 6637
+  name: Russin
+  canton: GE
+  status: configured
+  website: https://russin.ch
+  vendor: wordpress
+  reachable: true
+  checked: 2026-10-19
+  checked_by: crawler dry run (unverified)
+  publications:
+  - body: parliament
+    kind: minutes
+    status: configured
+    listing_url: https://russin.ch/seances-proces-verbaux-du-cm/
+    how: 'Séances & PV du CM page: convocations and procès-verbaux of the Conseil municipal 2014-2026 dated from
+      the title. Excluded: the PV titled 17.04.2015, whose session was convened for 14.04.2015. Dry run 180 documents.'
+- bfs_id: 6638
+  name: Satigny
+  canton: GE
+  status: blocked_robots
+  website: https://www.satigny.ch/
+  vendor: custom
+  reachable: true
+  checked: 2026-09-08
+  checked_by: listing review
+  notes: 'robots.txt disallows PDFs (Disallow: /*.pdf$) and /fr/ for all agents.'
+  publications:
+  - body: parliament
+    kind: minutes
+    status: blocked_robots
+    listing_url: https://www.satigny.ch/seances/
+    obstacle: 'robots.txt disallows /*.pdf$ for all agents (Crawl-delay: 10); no PDF is fetched'
+    how: Collectable only if the commune allows its PDFs in robots.txt.
+- bfs_id: 6639
+  name: Soral
+  canton: GE
+  status: configured
+  website: https://www.soral.ch
+  vendor: wordpress
+  reachable: true
+  checked: 2026-10-19
+  checked_by: crawler dry run (unverified)
+  publications:
+  - body: parliament
+    kind: minutes
+    status: configured
+    listing_url: https://www.soral.ch/vie-politique/proces-verbaux/
+    how: 'Procès-verbaux page: Conseil municipal minutes 2011-2026 dated from the title (Procès-verbal du DD mois
+      YYYY). Excluded as contradictory: the PV titled 6 juin 2025 whose file is PV-02.06.25 and the PV titled 10
+      octobre 2023 whose file is PV-16.10..23. The annual administrative reports on the Finances page are left out
+      (annual reports of small communes often list civil-status events by name). Dry run 195 documents.'
+  - body: parliament
+    kind: decisions
+    status: configured
+    listing_url: https://www.soral.ch/vie-politique/resolutions-motions/
+    how: 'Second source: the Délibérations, Résolutions & Motions page, the council''s deliberations numbered YYYY
+      - N (credits, budgets, accounts, regulations), undated.'
+- bfs_id: 6640
+  name: Thônex
+  canton: GE
+  status: configured
+  website: https://www.thonex.ch
+  vendor: wordpress
+  reachable: true
+  checked: 2026-09-08
+  checked_by: listing review
+  notes: Conseil municipal; anchor text 'seance du <date>'; the 2011-2015 legislature page yields no links (probably
+    empty); executive bulletins 'Juillet - aout' with the year only in the URL not configured
+  publications:
+  - body: parliament
+    kind: minutes
+    status: configured
+    listing_url: https://www.thonex.ch/votre-mairie/le-conseil-municipal/seances-passees/
+    from: '2015-06-02'
+    to: '2026-05-12'
+    how: html_links, 1 hop, 4 listing_urls
+- bfs_id: 6641
+  name: Troinex
+  canton: GE
+  status: configured
+  website: https://troinex.ch
+  vendor: wordpress
+  reachable: true
+  checked: 2026-09-08
+  checked_by: listing review
+  notes: Conseil municipal PV (pv-cm-*.pdf) on the same page as the ordres du jour; one 2020 file is under /images/
+    (old site); 3 undated; Crawl-delay 10
+  publications:
+  - body: parliament
+    kind: minutes
+    status: configured
+    listing_url: https://troinex.ch/votre-mairie/vie-politique/conseil-municipal/
+    from: '2020-02-03'
+    to: '2026-04-20'
+    how: html_links, 1 hop
+- bfs_id: 6642
+  name: Vandoeuvres
+  canton: GE
+  status: not_published
+  website: http://www.vandoeuvres.ch
+  vendor: wordpress
+  reachable: true
+  checked: 2026-09-08
+  checked_by: listing review
+  notes: Only the newest Conseil municipal PV is published, no archive.
+  publications:
+  - body: parliament
+    kind: minutes
+    status: not_published
+    listing_url: https://www.vandoeuvres.ch/politique/seances-ordinaires/
+    from: '2026-05-11'
+    to: '2026-05-11'
+    obstacle: only the newest Conseil municipal PV (PV_CM_2026_05_11.pdf) is published, no archive; below the three-document
+      threshold, so not configured
+    how: the archive only on request from the commune
+- bfs_id: 6643
+  name: Vernier
+  canton: GE
+  status: configured
+  website: https://www.vernier.ch
+  vendor: drupal
+  reachable: true
+  checked: 2026-10-19
+  checked_by: crawler dry run (unverified)
+  notes: The broad archive collects the commune's public PDFs (document, council and finance listings), untagged
+    (linked-sources.yaml). Own configuration from the commune's site (dry run).
+  publications:
+  - body: parliament
+    kind: minutes
+    status: configured
+    listing_url: https://www.vernier.ch/seances-passees
+    how: 'html_links, 2 hops: the past-sessions page lists the Conseil municipal''s session pages (2022-2026); each
+      links the agenda, the published decisions and the minutes under /council-documents/<upload month>/, titled
+      with the session date (matches ''CM YYYY MM DD'' in every file name). The polling-station staff lists annexed
+      to two minutes are excluded (they name residents). Dry run 110 documents.'
+- bfs_id: 6644
+  name: Versoix
+  canton: GE
+  status: configured
+  website: https://www.versoix.ch
+  vendor: iomedia-classic
+  reachable: true
+  checked: 2026-09-08
+  checked_by: listing review
+  notes: Conseil municipal; iomedia classic (server-rendered, non-Nuxt); the archive goes back to 2015; sessions
+    without a PV yet (cancelled, most recent) yield nothing.
+  publications:
+  - body: parliament
+    kind: minutes
+    status: configured
+    listing_url: https://www.versoix.ch/vie-politique/conseil-municipal/seances-du-conseil/seances-du-conseil-municipal-285?archives=1&year={2015..2026}&type=CM
+    from: '2025-12-15'
+    to: '2026-05-18'
+    how: html_links, 2 hops (year archive pages {2015..2026} -> session page ?type=CM&date=<id>, anchor '2 mars
+      2026' -> /media/document/.../2026-03-02-cm-proces-verbal.pdf), max_follow 80
+- bfs_id: 6645
+  name: Veyrier
+  canton: GE
+  status: configured
+  website: https://veyrier.ch
+  vendor: wordpress
+  reachable: true
+  checked: 2026-09-08
+  checked_by: listing review
+  notes: Conseil municipal; 2022 PVs are linked through /cf_docs/<slug>/ pages that 302 to the PDF (crawler follows);
+    Deliberations (decision extracts) on the same page were left out
+  publications:
+  - body: parliament
+    kind: minutes
+    status: configured
+    listing_url: https://veyrier.ch/votre-commune/autorites-politique/deliberations-et-proces-vebaux-du-conseil-municipal/
+    from: '2018-01-23'
+    to: '2026-05-19'
+    how: html_links, 1 hop

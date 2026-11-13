@@ -1,0 +1,201 @@
+# Register of commune publications, canton NW. What each commune publishes and whether it is collected; see docs/REGISTER.md.
+- bfs_id: 1501
+  name: Beckenried
+  canton: NW
+  status: configured
+  website: https://www.beckenried.ch
+  vendor: i-web
+  reachable: true
+  checked: 2026-09-11
+  checked_by: listing and PDF review
+  notes: Public municipal document archive; pages of joint political and parish meetings are kept, parish-only meetings
+    excluded.
+  publications:
+  - body: assembly
+    kind: documents
+    status: configured
+    listing_url: https://www.beckenried.ch/sitzung
+    how: Session overview to attachment pages; 21 unique attachment links in the sample. Includes minutes, assembly
+      booklets and financial documents where published.
+- bfs_id: 1502
+  name: Buochs
+  canton: NW
+  status: configured
+  website: https://www.buochs.ch
+  vendor: i-web
+  reachable: true
+  checked: 2026-09-11
+  checked_by: listing and PDF review
+  notes: Public municipal document archive; pages of joint political and parish meetings are kept, parish-only meetings
+    excluded.
+  publications:
+  - body: assembly
+    kind: documents
+    status: configured
+    listing_url: https://www.buochs.ch/sitzung
+    how: Session overview to attachment pages; 2 unique attachment links in the sample. Includes minutes, assembly
+      booklets and financial documents where published.
+- bfs_id: 1503
+  name: Dallenwil
+  canton: NW
+  status: configured
+  website: https://www.dallenwil.ch
+  vendor: i-web
+  reachable: true
+  checked: 2026-09-11
+  checked_by: listing and PDF review
+  notes: Public municipal document archive; pages of joint political and parish meetings are kept, parish-only meetings
+    excluded.
+  publications:
+  - body: assembly
+    kind: documents
+    status: configured
+    listing_url: https://www.dallenwil.ch/sitzung
+    how: Session overview to attachment pages; 5 unique attachment links in the sample. Includes minutes, assembly
+      booklets and financial documents where published.
+- bfs_id: 1504
+  name: Emmetten
+  canton: NW
+  status: configured
+  website: http://www.emmetten.ch
+  vendor: i-web
+  reachable: true
+  checked: 2026-09-11
+  checked_by: listing and PDF review
+  notes: Public municipal document archive; pages of joint political and parish meetings are kept, parish-only meetings
+    excluded.
+  publications:
+  - body: assembly
+    kind: documents
+    status: configured
+    listing_url: https://www.emmetten.ch/sitzung
+    how: Session overview to attachment pages; 2 unique attachment links in the sample. Includes minutes, assembly
+      booklets and financial documents where published.
+- bfs_id: 1505
+  name: Ennetbürgen
+  canton: NW
+  status: configured
+  website: http://www.ennetbuergen.ch
+  vendor: i-web
+  reachable: true
+  checked: 2026-09-11
+  checked_by: listing and PDF review
+  notes: Public municipal document archive; pages of joint political and parish meetings are kept, parish-only meetings
+    excluded.
+  publications:
+  - body: assembly
+    kind: documents
+    status: configured
+    listing_url: https://www.ennetbuergen.ch/sitzung
+    how: Session overview to attachment pages; 36 unique attachment links in the sample. Includes minutes, assembly
+      booklets and financial documents where published.
+- bfs_id: 1506
+  name: Ennetmoos
+  canton: NW
+  status: configured
+  website: https://www.ennetmoos.ch
+  vendor: i-web
+  reachable: true
+  checked: 2026-09-11
+  checked_by: listing and PDF review
+  notes: Public municipal document archive; pages of joint political and parish meetings are kept, parish-only meetings
+    excluded.
+  publications:
+  - body: assembly
+    kind: documents
+    status: configured
+    listing_url: https://www.ennetmoos.ch/sitzung
+    how: Session overview to attachment pages; 4 unique attachment links in the sample. Includes minutes, assembly
+      booklets and financial documents where published.
+- bfs_id: 1507
+  name: Hergiswil
+  canton: NW
+  status: configured
+  website: http://www.hergiswil.ch
+  vendor: i-web
+  reachable: true
+  checked: 2026-09-11
+  checked_by: listing and PDF review
+  notes: Public municipal document archive; pages of joint political and parish meetings are kept, parish-only meetings
+    excluded.
+  publications:
+  - body: assembly
+    kind: documents
+    status: configured
+    listing_url: https://www.hergiswil.ch/sitzung
+    how: Session overview to attachment pages; 9 unique attachment links in the sample. Includes minutes, assembly
+      booklets and financial documents where published.
+- bfs_id: 1508
+  name: Oberdorf
+  canton: NW
+  status: configured
+  website: http://www.oberdorf-nw.ch
+  vendor: i-web
+  reachable: true
+  checked: 2026-09-11
+  checked_by: listing and PDF review
+  notes: Public municipal document archive; pages of joint political and parish meetings are kept, parish-only meetings
+    excluded.
+  publications:
+  - body: assembly
+    kind: documents
+    status: configured
+    listing_url: https://www.oberdorf-nw.ch/sitzung
+    how: Session overview to attachment pages; 14 unique attachment links in the sample. Includes minutes, assembly
+      booklets and financial documents where published.
+- bfs_id: 1509
+  name: Stans
+  canton: NW
+  status: configured
+  website: http://www.stans.ch
+  vendor: i-web
+  reachable: true
+  checked: 2026-09-11
+  checked_by: listing and PDF review
+  notes: Public municipal document archive; pages of joint political and parish meetings are kept, parish-only meetings
+    excluded.
+  publications:
+  - body: assembly
+    kind: documents
+    status: configured
+    listing_url: https://www.stans.ch/sitzung
+    how: Session overview to attachment pages; 16 unique attachment links in the sample. Includes minutes, assembly
+      booklets and financial documents where published.
+- bfs_id: 1510
+  name: Stansstad
+  canton: NW
+  status: configured
+  website: https://www.stansstad.ch
+  vendor: govis
+  reachable: true
+  checked: 2026-10-19
+  checked_by: crawler dry run (unverified)
+  notes: Mixed public PDF listings are archived without inferred decision tags. robots.txt disallows only /route/,
+    which the configuration does not use; the listing pages are server-rendered. The broad archive collects the
+    commune's public PDFs, untagged (linked-sources.yaml).
+  publications:
+  - body: assembly
+    kind: documents
+    status: configured
+    listing_url: https://www.stansstad.ch/verwaltung/publikationen-downloads.html/35/opendcategory/53
+    how: 'html_links (GOViS, fp dropped). Publikationen/Downloads, categories Budget and Jahresrechnung: budgets
+      2018-2026 and accounts 2016-2025 (undated). The Gemeindeversammlung page links no documents. Dry run 20 documents
+      (0 dated, undated).'
+- bfs_id: 1511
+  name: Wolfenschiessen
+  canton: NW
+  status: configured
+  website: http://www.wolfenschiessen.ch
+  vendor: i-web
+  reachable: true
+  checked: 2026-09-11
+  checked_by: listing and PDF review
+  notes: Public municipal document archive; pages of joint political and parish meetings are kept, parish-only meetings
+    excluded.
+  publications:
+  - body: assembly
+    kind: documents
+    status: configured
+    listing_url: https://www.wolfenschiessen.ch/sitzung
+    how: Session overview to attachment pages; 17 unique attachment links in the sample. Includes minutes, assembly
+      booklets and financial documents where published.

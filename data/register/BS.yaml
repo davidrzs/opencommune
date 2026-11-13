@@ -1,0 +1,56 @@
+# Register of commune publications, canton BS. What each commune publishes and whether it is collected; see docs/REGISTER.md.
+- bfs_id: 2701
+  name: Basel
+  canton: BS
+  status: candidate
+  website: https://www.bs.ch/
+  vendor: drupal
+  reachable: true
+  checked: 2026-09-10
+  checked_by: scripts/probe_vendors.py (unverified)
+  notes: 'Automated probe: a minutes page with dated document links that do not end in .pdf.'
+  publications:
+  - body: executive
+    kind: minutes
+    status: candidate
+    listing_url: https://www.bs.ch/apps/regierungsratsbeschluesse
+    how: 'automated probe: page ''Regierungsratsbeschlüsse Jeden Mittwoch '' has 17 dated document links whose URLs
+      do not end in .pdf; needs a selector'
+- bfs_id: 2702
+  name: Bettingen
+  canton: BS
+  status: configured
+  website: https://www.bs.ch/bettingen
+  vendor: canton-portal
+  reachable: true
+  checked: 2026-09-08
+  checked_by: listing review
+  notes: Canton Basel-Stadt portal (bs.ch), PDFs on media.bs.ch; robots Crawl-delay 10 honoured; anchor text uses
+    u plus combining diaeresis so NFC normalisation is needed; Beschlussprotokoll files exist too (not taken); some
+    older full protocols are split into page ranges.
+  publications:
+  - body: assembly
+    kind: minutes
+    status: configured
+    listing_url: https://www.bs.ch/bettingen/politik/gemeindeversammlung
+    from: '2024-04-23'
+    to: '2026-04-28'
+    how: html_links, 1 hop, text_regex 'Ausf.{1,3}hrliches Protokoll'
+- bfs_id: 2703
+  name: Riehen
+  canton: BS
+  status: configured
+  website: https://www.riehen.ch
+  vendor: custom
+  reachable: true
+  checked: 2026-10-18
+  checked_by: crawler dry run (unverified)
+  notes: 'robots.txt asks for a crawl delay of 10 seconds, honoured. The broad archive collects the commune''s public
+    PDFs (finance and council archives), untagged (linked-sources.yaml). Crawl-delay: 10 seconds.'
+  publications:
+  - body: parliament
+    kind: minutes
+    status: configured
+    listing_url: https://www.riehen.ch/gemeinde-politik-und-verwaltung/politik/einwohnerrat/sitzungen.php
+    how: 'one page lists all sessions since 2005 (cdws/sitzung.php?gid=), each with the Beschlussprotokoll at cdws/dok.php;
+      Crawl-delay 10 honoured; dry run: 89 decision records 2016-2026'

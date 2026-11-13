@@ -1,0 +1,471 @@
+# Register of commune publications, canton NE. What each commune publishes and whether it is collected; see docs/REGISTER.md.
+- bfs_id: 6404
+  name: Boudry
+  canton: NE
+  status: configured
+  website: https://www.boudry.ch
+  vendor: typo3
+  reachable: true
+  checked: 2026-09-08
+  checked_by: listing review
+  notes: Conseil general; SICO template; 2020 and 2021 missing; most PVs are linked twice (own session and approval
+    item of the next), partly under different URLs
+  publications:
+  - body: parliament
+    kind: minutes
+    status: configured
+    listing_url: https://www.boudry.ch/politique/conseil-general/rapports-et-proces-verbaux
+    from: '2017-12-18'
+    to: '2026-05-04'
+    how: html_links, static year pages annee-2017 ... annee-2026 as listing_urls, date_regex PV_yyyymmdd (ymd)
+- bfs_id: 6408
+  name: Cortaillod
+  canton: NE
+  status: configured
+  website: https://cortaillod.ch
+  vendor: custom
+  reachable: false
+  checked: &id001 2026-09-10
+  checked_by: crawler dry run (unverified)
+  notes: The broad archive collects the commune's public PDFs (archive sections and their detail pages), untagged
+    (linked-sources.yaml).
+  publications:
+  - body: parliament
+    kind: minutes
+    status: configured
+    listing_url: https://www.cortaillod.ch/politique/conseil-general/rapports-et-proces-verbaux
+    how: 'Rapports et procès-verbaux: one page per Conseil général session 2020-2026 (Séance du ...); the files
+      sit in a folder named for the session (/2025/11.12.2025/) and are dated by it, the PV of the previous session
+      by its own date, Conseil communal reports by the writing date in the file name (Rapp_..._20260911_jmp); plus
+      the comptes et budgets page (2021-2025 on www.cortaillod.ch; the 2018-2022 links on sico.ne.ch do not resolve).
+      Excluded: plans; report titles that quote the date of the regulation they amend (du 16 mars 2016, du 23 septembre
+      2010), which would date them wrongly; the PV titled séance du 17 décembre 2021 whose file is PV_CG_20201217
+      (contradictory). Dry run 198 documents'
+- bfs_id: 6413
+  name: Rochefort
+  canton: NE
+  status: configured
+  website: https://www.rochefort.ch
+  vendor: typo3
+  reachable: true
+  checked: 2026-10-19
+  checked_by: crawler dry run (unverified)
+  notes: 'Conseil general; 24 PV files on the page, blocked by the URL-before-row date rule; the same SICO TYPO3
+    build serves other NE communes (La Sagne works because its anchors carry the date). The blocker is gone: the
+    PV file names carry the date of the session they record, which a date_regex reads; titles carrying their own
+    date are read first. The broad archive collects the commune''s public PDFs, untagged (linked-sources.yaml).'
+  publications:
+  - body: parliament
+    kind: minutes
+    status: configured
+    listing_url: https://www.rochefort.ch/politique/conseil-general/rapports-et-proces-verbaux
+    from: '2017-12-08'
+    to: '2026-03-19'
+    how: 'html_links, one step over the current page, the 2022 page and the archive year pages 2018-2021 and 2023
+      (SICO TYPO3 accordion): fileadmin links whose URL names a procès-verbal and whose text starts with Procès-verbal
+      or Annexe. Each PV is filed in the folder of the later session that adopted it, so the folder date is never
+      used: the title''s date comes first, then date_regex on the file name (Conseil_general___12_decembre_2025,
+      legislatif_du_12_mai_2022, PV_CG___7_mars_2019). The file C_-_Proces-verbal_13_decembre_2029 takes 13.12.2019
+      from its title. Annexes to a PV (Annexe_au_proces-verbal) are left out. Dry run: 30 minutes 2017-12-08 to
+      2026-03-19, every date checked against title and file name.'
+- bfs_id: 6416
+  name: Milvignes
+  canton: NE
+  status: configured
+  website: http://www.milvignes.ch
+  vendor: typo3
+  reachable: true
+  checked: 2026-09-08
+  checked_by: listing review
+  notes: Conseil general; same SICO template as Val-de-Ruz; hop 1 15 year links, hop 2 5 dated on the 2026 page.
+  publications:
+  - body: parliament
+    kind: minutes
+    status: configured
+    listing_url: https://www.milvignes.ch/politique/proces-verbaux
+    from: '2012-12-17'
+    to: '2026-06-18'
+    how: html_links, 2 hops ('Toutes' cHash link -> tx_documents list)
+- bfs_id: 6417
+  name: La Grande Béroche
+  canton: NE
+  status: configured
+  website: https://www.lagrandeberoche.ch/
+  vendor: typo3
+  reachable: true
+  checked: 2026-09-08
+  checked_by: listing review
+  notes: Conseil général; SICO template; the PV of a session is published on the next session's page (file 2__PV-CG_du_20.04.2026.pdf);
+    roughly 55 PVs back to 2017.
+  publications:
+  - body: parliament
+    kind: minutes
+    status: configured
+    listing_url: https://www.lagrandeberoche.ch/politique/conseil-general/rapports-et-proces-verbaux
+    from: '2025-11-10'
+    to: '2026-06-29'
+    how: html_links, 2 hops (57 session pages 2017-2026 in the sub-navigation -> 'Proces-verbal' agenda item), max_follow
+      80
+- bfs_id: 6421
+  name: La Chaux-de-Fonds
+  canton: NE
+  status: candidate
+  website: https://www.chaux-de-fonds.ch
+  vendor: arcantel
+  reachable: true
+  checked: &id002 2026-09-06
+  checked_by: listing review
+  publications:
+  - body: parliament
+    kind: minutes
+    status: candidate
+    listing_url: https://www.chaux-de-fonds.ch/autorites/conseil-general/seances
+    how: Direct municipal Arcantel page, list and navigation APIs; untagged PDFs via linked archive.
+  notes: 'Arcantel site: the council archive (current sessions and the older year pages) is read through the site''s
+    public page and list APIs; the broad archive collects these PDFs, untagged (linked-sources.yaml).'
+- bfs_id: 6422
+  name: Les Planchettes
+  canton: NE
+  status: configured
+  website: https://www.les-planchettes.ch
+  vendor: custom
+  reachable: true
+  checked: 2026-10-19
+  checked_by: crawler dry run (unverified)
+  notes: The broad archive collects the commune's public PDFs, untagged (linked-sources.yaml).
+  publications:
+  - body: parliament
+    kind: agenda
+    status: configured
+    listing_url: https://www.les-planchettes.ch/158/vie-locale/tous-menages
+    how: 'Tous-ménages page: conseil-general-YYYY-MM-DD.pdf (convocations of the Conseil général, dated from the
+      file name); no PV page found; dry run 19 documents 2018-2026'
+- bfs_id: 6423
+  name: La Sagne
+  canton: NE
+  status: configured
+  website: https://www.lasagne.ch
+  vendor: typo3
+  reachable: true
+  checked: 2026-09-10
+  checked_by: listing review
+  publications:
+  - body: parliament
+    kind: minutes
+    status: configured
+    listing_url: https://www.lasagne.ch/politique/conseil-general/rapports-et-proces-verbaux
+    to: '2026-06-22'
+    how: html_links, 1 hop
+- bfs_id: 6432
+  name: La Brévine
+  canton: NE
+  status: configured
+  website: https://www.labrevine.ch
+  vendor: typo3
+  reachable: true
+  checked: 2026-10-19
+  checked_by: crawler dry run (unverified)
+  notes: The broad archive collects the commune's public PDFs, untagged (linked-sources.yaml).
+  publications:
+  - body: parliament
+    kind: minutes
+    status: configured
+    listing_url: https://www.labrevine.ch/politique/conseil-general/rapports-et-proces-verbaux
+    how: 'Séances du conseil général page: ordres du jour, avis and PV 2022-2026. The link texts are only ''- PV''
+      or ''- ordre du jour'' and the session date is a bold paragraph the parser does not attach, so dates come
+      from the file names (OJ_CG_03.06.2025, PV_30092024_cg, pv_20220323), which match the session headings; files
+      named without a readable date (CG_PV_111224, PV_CG_111225, CONSEIL_GENERAL_PV_DU_03_001, Avis.pdf) stay undated.
+      Dry run 49 documents.'
+- bfs_id: 6433
+  name: Brot-Plamboz
+  canton: NE
+  status: configured
+  website: https://www.brot-plamboz.ch
+  vendor: typo3
+  reachable: true
+  checked: 2026-10-19
+  checked_by: crawler dry run (unverified)
+  notes: 'The broad archive collects the commune''s public PDFs, untagged (linked-sources.yaml). Earlier address:
+    http://www.brot-plamboz.ch.'
+  publications:
+  - body: parliament
+    kind: minutes
+    status: configured
+    listing_url: https://www.brot-plamboz.ch/politique/conseil-general/rapports-et-proces-verbaux
+    how: 'Conseil général Rapports et procès-verbaux page: PV 2020-2025 dated from the title, and the Conseil communal''s
+      reports to the Conseil général, undated (the file names carry no date). Dry run 40 documents.'
+- bfs_id: 6434
+  name: Le Cerneux-Péquignot
+  canton: NE
+  status: configured
+  website: https://www.cerneux-pequignot.ch
+  vendor: typo3
+  reachable: true
+  checked: 2026-10-19
+  checked_by: crawler dry run (unverified)
+  notes: Conseil general convocations and PV since 2017 plus budgets and accounts.
+  publications:
+  - body: parliament
+    kind: minutes
+    status: configured
+    listing_url: https://www.cerneux-pequignot.ch/politique/conseil-general/rapports-et-proces-verbaux
+    from: '2017-06-26'
+    to: '2026-06-15'
+    how: 'html_links on the Rapports et proces-verbaux page, /fileadmin/ PDFs: Conseil general convocations and
+      PV 2017-06-26 to 2026-06-15, dated from the file names; also html_links on the Comptes et budgets page: budgets
+      and accounts, undated (the file names carry only the year)'
+- bfs_id: 6435
+  name: La Chaux-du-Milieu
+  canton: NE
+  status: configured
+  website: https://www.chaux-du-milieu.ch
+  vendor: typo3
+  reachable: true
+  checked: 2026-10-19
+  checked_by: crawler dry run (unverified)
+  notes: The broad archive collects the commune's public PDFs, untagged (linked-sources.yaml).
+  publications:
+  - body: parliament
+    kind: minutes
+    status: configured
+    listing_url: https://www.chaux-du-milieu.ch/politique/conseil-general/proces-verbaux
+    how: 'Conseil général Procès-verbaux page: PV of the Conseil général 2016-2026; the links read only ''Procès-verbal'',
+      so the date comes from the session date in the file name (Proces-verbal_CG_DD.MM.YYYY), which matches the
+      ''du DD.MM.YYYY'' text beside each link. The two presentations of 13.12.2023 are left out. Dry run 62 documents.'
+- bfs_id: 6436
+  name: Le Locle
+  canton: NE
+  status: blocked_robots
+  website: https://www.lelocle.ch
+  reachable: true
+  checked: 2026-10-18
+  checked_by: crawler dry run (unverified)
+  notes: 'Automated probe: no dated minutes PDFs on the 3 pages tested (https://www.lelocle.ch/administration/autorites/conseil-general/,
+    https://www.lelocle.ch/administration/autorites/conseil-communal/, https://www.lelocle.ch/administration/nouveaux-bureaux-du-conseil-communal-et-du-conseil-general/).'
+  publications:
+  - body: parliament
+    kind: minutes
+    status: blocked_robots
+    listing_url: https://www.lelocle.ch/administration/autorites/conseil-general/
+    obstacle: 'robots.txt: ''User-agent: *'' with ''Disallow: /'' (only named search engines are allowed)'
+    how: collectable if the commune allows OpenCommuneBot or publishes a crawlable listing
+- bfs_id: 6437
+  name: Les Ponts-de-Martel
+  canton: NE
+  status: configured
+  website: https://www.lesponts-de-martel.ch
+  vendor: typo3
+  reachable: true
+  checked: 2026-10-19
+  checked_by: crawler dry run (unverified)
+  notes: Mixed public PDF listings are archived without inferred decision tags. The broad archive collects the commune's
+    public PDFs, untagged (linked-sources.yaml).
+  publications:
+  - body: parliament
+    kind: minutes
+    status: configured
+    listing_url: https://www.lesponts-de-martel.ch/politique/conseil-general/rapports-et-proces-verbaux
+    how: 'Rapports et procès-verbaux with one page per year (2011-2026): every PDF of each Conseil général session
+      in its folder Seances/YYYY/YYYY_MM_DD (convocation, minutes, reports, budgets and accounts). Minutes are filed
+      with the later session that adopted them; they are dated by the session they record (their title and date_regex
+      PV_YYYY_MM_DD), everything else by the session folder. Dry run 239 documents.'
+- bfs_id: 6451
+  name: Cornaux
+  canton: NE
+  status: configured
+  website: https://www.cornaux.ch
+  vendor: custom
+  reachable: true
+  checked: 2026-10-19
+  checked_by: crawler dry run (unverified)
+  notes: The broad archive collects the commune's public PDFs (archive sections and their detail pages), untagged
+    (linked-sources.yaml).
+  publications:
+  - body: parliament
+    kind: minutes
+    status: configured
+    listing_url: https://www.cornaux.ch/politique/conseil-general/rapports-et-proces-verbaux
+    how: 'Rapports et procès-verbaux with one page per year (2015-2026): every PDF of each Conseil général session
+      (minutes, agendas, reports, arrêtés, budgets and accounts). Minutes are filed with the later session that
+      adopted them; a date_regex on the file name (PV_[CG_][constitution_]DD.MM.YYYY) dates each minutes file by
+      the session it records. Other documents take their session folder date (Documents/YYYY/CG/DD.MM.YYYY/, until
+      2023) or a date in their own file name (agendas); the reports of 2024-2026 sit in a flat folder and stay undated
+      (52). Old duplicate links under /fileadmin/sites/ are left out. Dry run 358 documents.'
+- bfs_id: 6452
+  name: Cressier
+  canton: NE
+  status: configured
+  website: https://www.cressier-ne.ch
+  vendor: typo3
+  reachable: true
+  checked: 2026-10-19
+  checked_by: crawler dry run (unverified)
+  publications:
+  - body: parliament
+    kind: minutes
+    status: configured
+    listing_url: https://www.cressier-ne.ch/politique/conseil-general/rapports-et-proces-verbaux
+    how: 'Rapports et procès-verbaux with one page per year (2020-2026; the oldest minutes record 14.12.2019): convocations,
+      reports, arrêtés and budget/accounts of each Conseil général session, dated from the session folder. Minutes
+      are filed with the later session that adopted them, so a second source takes them with the date of the session
+      they record (from their row: Adoption du procès-verbal de la séance du ..., or PV_DDMMYYYY in the file name).
+      Excluded: the minutes file covering two sessions (12.12.2020 and 14.01.2021) and Conseil d''État arrêtés (not
+      the commune''s, dated only by the session folder). Dry run 167 documents.'
+- bfs_id: 6455
+  name: Le Landeron
+  canton: NE
+  status: configured
+  website: https://www.landeron.ch/
+  vendor: typo3
+  reachable: true
+  checked: 2026-09-08
+  checked_by: listing review
+  notes: Conseil general; SICO template (same as Val-de-Ruz and Milvignes)
+  publications:
+  - body: parliament
+    kind: minutes
+    status: configured
+    listing_url: https://www.landeron.ch/politique/conseil-general/rapports-et-proces-verbaux/proces-verbaux
+    from: '2016-06-30'
+    to: '2026-03-19'
+    how: html_links, 2 hops ('Toutes' link -> tx_documents list)
+- bfs_id: 6456
+  name: Lignières
+  canton: NE
+  status: configured
+  website: https://www.lignieres.ch
+  vendor: typo3
+  reachable: true
+  checked: 2026-10-19
+  checked_by: crawler dry run (unverified)
+  notes: Mixed public PDF listings are archived without inferred decision tags. The broad archive collects the commune's
+    public PDFs, untagged (linked-sources.yaml).
+  publications:
+  - body: parliament
+    kind: minutes
+    status: configured
+    listing_url: https://www.lignieres.ch/politique/conseil-general/rapports-et-proces-verbaux
+    how: 'Rapports et procès-verbaux, one page per year 2020-2026: every PDF of each Conseil général session in
+      its folder Seance_du_DD_mois_YYYY. Minutes are filed with the later session that adopted them; ordres du jour
+      and minutes are dated by the date in their file name (date_regex on the date before .pdf, so minutes carry
+      the session they record), everything else by the session folder. Excluded: the 2020 minutes file named ..._du_3001.2020
+      (it would take the later folder date), the GSR-EDL regulation whose title quotes its adoption by another body,
+      and one annex whose file name ends in a future period date. Dry run 260 documents.'
+- bfs_id: 6458
+  name: Neuchâtel
+  canton: NE
+  status: configured
+  website: https://www.neuchatelville.ch
+  vendor: typo3
+  reachable: true
+  checked: 2026-10-18
+  checked_by: crawler dry run (unverified)
+  publications:
+  - body: parliament
+    kind: minutes
+    status: configured
+    listing_url: https://www.neuchatelville.ch/votre-commune/conseil-general/proces-verbaux?tx_documents_listdocuments%5Baction%5D=list&tx_documents_listdocuments%5Bcontroller%5D=Document&tx_documents_listdocuments%5ByearFilter%5D=all&cHash=790d69704be81564173efa33ebdb5d30
+    how: 'html_links, 1 hop over four TYPO3 document lists with yearFilter=all (cHash copied from the page''s ''Toutes''
+      link; breaks if the site key changes): PV and arrêtés of the merged commune since 2020-11, PV and décisions
+      of the pre-merger city (anciennes-communes) back to 2003; dry run: 391 documents 2003-2026'
+- bfs_id: 6487
+  name: Val-de-Ruz
+  canton: NE
+  status: configured
+  website: https://www.val-de-ruz.ch
+  vendor: typo3
+  reachable: true
+  checked: 2026-09-08
+  checked_by: listing review
+  notes: Conseil general; tx_documents list defaults to the current year, the 'Toutes' link on the page reaches
+    all years; newest PV labelled 'Document' and dated from the folder of the approving session (one session later);
+    SICO/Neuchatel TYPO3 template
+  publications:
+  - body: parliament
+    kind: minutes
+    status: configured
+    listing_url: https://www.val-de-ruz.ch/politique/conseil-general/rapports-et-proces-verbaux
+    from: '2012-06-27'
+    to: '2026-06-29'
+    how: html_links, 2 hops ('Toutes' year-filter link with cHash -> tx_documents list)
+- bfs_id: 6504
+  name: La Côte-aux-Fées
+  canton: NE
+  status: configured
+  website: https://www.lacote-aux-fees.ch
+  vendor: typo3
+  reachable: true
+  checked: 2026-10-19
+  checked_by: crawler dry run (unverified)
+  notes: 'Mixed public PDF listings are archived without inferred decision tags. The broad archive collects the
+    commune''s public PDFs, untagged (linked-sources.yaml). Earlier address: http://www.lacote-aux-fees.ch.'
+  publications:
+  - body: parliament
+    kind: minutes
+    status: configured
+    listing_url: https://www.lacote-aux-fees.ch/politique/conseil-general/proces-verbaux
+    how: 'Conseil général Procès-verbaux, one page per year 2012-2026 (two hops; the tab labelled 2012 opens /2021
+      and the 2021 tab /2021-1, both followed): PV of the Conseil général dated from the link text, which matches
+      the file name. Dry run 47 documents.'
+- bfs_id: 6511
+  name: Les Verrières
+  canton: NE
+  status: candidate
+  website: https://www.lesverrieres.ch
+  vendor: custom
+  reachable: true
+  checked: 2026-10-19
+  checked_by: crawler dry run (unverified)
+  notes: 'Automated probe: no dated minutes PDFs on the 2 pages tested (https://www.lesverrieres.ch/conseil-general.html,
+    https://www.lesverrieres.ch/conseil-general.html#ConseilCommunal). The broad archive collects the public PDFs
+    linked in the page markup that are known so far, untagged (linked-sources.yaml); new ones are not discovered
+    automatically. The Conseil général page links no documents.'
+  publications: []
+- bfs_id: 6512
+  name: Val-de-Travers
+  canton: NE
+  status: configured
+  website: https://www.val-de-travers.ch
+  vendor: drupal
+  reachable: true
+  checked: 2026-09-08
+  checked_by: listing review
+  notes: Conseil general; PV anchors directly on the listing page, text without date, file name '260511 - PVCG.pdf';
+    a few older free-form file names stay undated (most dated); parent-hop date inheritance would remove the per-site
+    regex
+  publications:
+  - body: parliament
+    kind: minutes
+    status: configured
+    listing_url: https://www.val-de-travers.ch/seances
+    from: '2020'
+    to: '2026-05-11'
+    how: html_links, 1 hop, date_regex yymmdd (ymd) on file name
+- bfs_id: 6513
+  name: Laténa
+  canton: NE
+  status: configured
+  website: https://commune-latena.ch/
+  vendor: drupal
+  reachable: true
+  checked: &id003 2026-09-10
+  checked_by: listing review
+  notes: 'Archive of the predecessor commune Saint-Blaise (''Proces-verbal de la seance du 5 decembre 2024 Fichier
+    PDF - 711.08 Ko'', in-page year anchors 2016-2023); 43 found, 43 dated. The merged commune''s own page (/page/conseil-general)
+    holds one file; the current sessions'' PVs sit on latena.geco-portal.ch, whose robots.txt disallows everything.
+    Partial: only the predecessor archive (2016-2024) is covered.'
+  publications:
+  - body: parliament
+    kind: minutes
+    status: configured
+    listing_url: https://commune-latena.ch/page/proces-verbaux-saint-blaise
+    from: '2016-11-24'
+    to: '2024-12-05'
+    how: html_links, 1 hop, span.bigfile a; archive of the predecessor commune Saint-Blaise
+  - body: parliament
+    kind: minutes
+    status: blocked_robots
+    listing_url: https://commune-latena.ch/conseil-general/seances
+    from: '2024'
+    obstacle: 'the merged commune''s own sessions (14 since June 2024) link their PV on latena.geco-portal.ch (/public-document/<id>),
+      whose robots.txt is ''Disallow: /'' for every agent'

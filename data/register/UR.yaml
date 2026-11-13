@@ -1,0 +1,333 @@
+# Register of commune publications, canton UR. What each commune publishes and whether it is collected; see docs/REGISTER.md.
+- bfs_id: 1201
+  name: Altdorf
+  canton: UR
+  status: not_published
+  website: https://www.altdorf.ch
+  vendor: craft
+  reachable: true
+  checked: 2026-09-08
+  checked_by: listing review
+  notes: Craft CMS (SEOmatic). The broad archive collects the commune's public PDFs (finance, regulations and assembly,
+    including older records), untagged (linked-sources.yaml). Only the archive pages known so far are read; new
+    ones are not discovered automatically.
+  publications:
+  - body: assembly
+    kind: minutes
+    status: not_published
+    listing_url: https://altdorf.ch/organisation/politik/gemeindeversammlung/letzte-versammlungen
+    obstacle: pages for the next and last assemblies carry no protocol PDFs; the word Protokoll does not occur on
+      the politics pages
+    how: on request from the commune
+- bfs_id: 1202
+  name: Andermatt
+  canton: UR
+  status: configured
+  website: https://www.gemeinde-andermatt.ch
+  vendor: govis
+  reachable: true
+  checked: &id001 2026-09-10
+  checked_by: crawler dry run (unverified)
+  notes: 'robots.txt disallows only /route/, and the listing page is server-rendered. The broad archive collects
+    the commune''s public PDFs, untagged (linked-sources.yaml). Earlier address: https://www.gemeinde-andermatt.ch/.'
+  publications:
+  - body: assembly
+    kind: decisions
+    status: configured
+    listing_url: https://www.gemeinde-andermatt.ch/politik/gemeindeversammlung.html/30
+    how: 'html_links on /public/upload/assets/ links (GOViS, fp parameter dropped). Gemeindeversammlung page: Beschlussprotokolle
+      2017-2026 dated from the file name, agendas, budgets and accounts (undated); ODG_Prot_24Okt20129 (2019, which
+      the parser reads as 2012) is left out. Dry run 43 documents (23 dated, 2017-2026).'
+- bfs_id: 1203
+  name: Attinghausen
+  canton: UR
+  status: configured
+  website: http://www.attinghausen.ch
+  vendor: custom
+  reachable: true
+  checked: 2026-10-19
+  checked_by: crawler dry run (unverified)
+  notes: The broad archive collects the commune's public PDFs, untagged (linked-sources.yaml).
+  publications:
+  - body: assembly
+    kind: minutes
+    status: configured
+    listing_url: https://www.attinghausen.ch/index.php/politik/gemeindeversammlung
+    how: 'Gemeindeversammlung page: Traktandenliste, Botschaft and Beschlussprotokoll 2016-2026 dated from the file
+      name (YYYY-MM-DD, the assembly date), Rechnungen and Budgets mostly undated or by their own date (2025-04-11
+      accounts). Regulations and the election item are left out. Dry run 88 documents.'
+- bfs_id: 1205
+  name: Bürglen
+  canton: UR
+  status: configured
+  website: https://www.buerglen.ch
+  vendor: i-web
+  reachable: true
+  checked: 2026-10-19
+  checked_by: crawler dry run (unverified)
+  publications:
+  - body: assembly
+    kind: minutes
+    status: configured
+    listing_url: https://www.buerglen.ch/sitzung
+    how: 'html_links, i-web session table /sitzung, then the session documents; Offene Dorfgemeinde events excluded;
+      naturalisation documents excluded; dry run on the 3 newest pages: 12 documents (2025, 2026)'
+- bfs_id: 1206
+  name: Erstfeld
+  canton: UR
+  status: blocked_robots
+  website: https://www.erstfeld.ch
+  vendor: custom
+  reachable: true
+  checked: 2026-10-18
+  checked_by: crawler dry run (unverified)
+  notes: 'Automated probe: no dated minutes PDFs on the page tested (https://erstfeld.ch/politik/gemeindeversammlungen).'
+  publications:
+  - body: assembly
+    kind: documents
+    status: blocked_robots
+    listing_url: https://erstfeld.ch/politik/gemeindeversammlungen
+    obstacle: all assembly documents (Traktandenliste, Anträge, Abrechnungen) are under /uploads/, which robots.txt
+      disallows
+    how: collectable if the commune allows /uploads/ for OpenCommuneBot
+- bfs_id: 1207
+  name: Flüelen
+  canton: UR
+  status: configured
+  website: https://flueelen.ch/
+  vendor: custom
+  reachable: true
+  checked: 2026-10-18
+  checked_by: crawler dry run (unverified)
+  notes: 'Earlier address: https://www.fluelen.ch. The broad archive collects the commune''s public PDFs, untagged
+    (linked-sources.yaml).'
+  publications:
+  - body: assembly
+    kind: decisions
+    status: configured
+    listing_url: https://flueelen.ch/politik/gemeindeversammlung
+    how: 'html_links, assembly page and Budget/Rechnung page: ''Bericht und Beschlüsse vom ...'', Rechnung, Budget,
+      Anträge under /images/ (robots.txt empty); dry run: 39 documents 2018-2026'
+- bfs_id: 1208
+  name: Göschenen
+  canton: UR
+  status: candidate
+  website: https://www.goeschenen.ch
+  vendor: custom
+  reachable: true
+  checked: 2026-10-19
+  checked_by: crawler dry run (unverified)
+  notes: 'Automated probe: no dated minutes PDFs on the page tested (https://www.goeschenen.ch/politik/gemeindeversammlung).
+    The broad archive collects the commune''s public PDFs, untagged (linked-sources.yaml). Mixed public PDF listings
+    are archived without inferred decision tags. The Gemeindeversammlung page links one 2021 Traktandenliste only.'
+  publications: []
+- bfs_id: 1209
+  name: Gurtnellen
+  canton: UR
+  status: configured
+  website: https://www.gurtnellen.ch
+  vendor: custom
+  reachable: true
+  checked: 2026-10-19
+  checked_by: crawler dry run (unverified)
+  notes: The broad archive collects the commune's public PDFs, untagged (linked-sources.yaml).
+  publications:
+  - body: assembly
+    kind: documents
+    status: configured
+    listing_url: https://gurtnellen.ch/jahresrechnung-und-budget
+    how: 'html_links, 1 hop over Jahresrechnung und Budget: Rechnung 2014-2025, Budget/Voranschlag 2014-2026 (EGV
+      dates where the file name has them); dry run: 25 documents'
+- bfs_id: 1210
+  name: Hospental
+  canton: UR
+  status: not_published
+  website: https://www.hospental.ch
+  vendor: govis
+  reachable: true
+  checked: 2026-10-19
+  checked_by: crawler dry run (unverified)
+  notes: 'Automated probe: the home page links no page about minutes or a council. Mixed public PDF listings are
+    archived without inferred decision tags. The site has no politics section; the home page, Behörden and Gemeinderat
+    pages link no documents (assemblies appear only as events and news items).'
+  publications: []
+- bfs_id: 1211
+  name: Isenthal
+  canton: UR
+  status: configured
+  website: https://www.isenthal.ch
+  vendor: wordpress
+  reachable: true
+  checked: 2026-09-10
+  checked_by: listing review
+  notes: '''Protokoll 29. April 2026'' plus ''Einladung und Botschaft'' per session; file names carry no date (Protokoll-GV-2026-1.pdf),
+    the anchor text does; 21 found, 20 dated.'
+  publications:
+  - body: assembly
+    kind: minutes
+    status: configured
+    listing_url: https://isenthal.ch/politik/gemeinde-versammlung/
+    from: '2017'
+    to: '2026'
+    how: html_links, 1 hop
+- bfs_id: 1212
+  name: Realp
+  canton: UR
+  status: configured
+  website: https://www.realp.ch
+  vendor: custom
+  reachable: true
+  checked: 2026-10-19
+  checked_by: crawler dry run (unverified)
+  notes: The broad archive collects the commune's public PDFs, untagged (linked-sources.yaml).
+  publications:
+  - body: assembly
+    kind: minutes
+    status: configured
+    listing_url: https://realp.ch/politik/gemeindeversammlung
+    how: 'Gemeindeversammlung and Budget/Rechnung pages: Traktandenliste and Beschlussprotokoll of the GV of 17.11.2025
+      dated from the link text, Budget and Rechnung 2024-2026 undated; only the latest meeting is online. Dry run
+      6 documents'
+- bfs_id: 1213
+  name: Schattdorf
+  canton: UR
+  status: needs_feature
+  website: https://www.schattdorf.ch
+  vendor: custom
+  reachable: true
+  checked: 2026-09-10
+  checked_by: listing review
+  notes: 'Files under /media/municipality/documents/Gemeindeversammlung/; context: row does not reach the date;
+    needs the preceding-text date rule. The broad archive collects the commune''s public PDFs, untagged (linked-sources.yaml).
+    Mixed public PDF listings are archived without inferred decision tags.'
+  publications:
+  - body: assembly
+    kind: minutes
+    status: needs_feature
+    listing_url: https://schattdorf.ch/bewirken/offene-dorfgemeinde
+    from: '2024-04-22'
+    to: '2026-04-20'
+    obstacle: 'context: row tried: 5 Protokoll found (plus 5 Beschlussprotokoll, 5 Botschaft), 0 dated; the anchors
+      sit in div.downloads__entry (no tr, li or p anywhere in the section); the date is the h3 in div.downloads__header
+      of the same div.downloads; file names are Protokoll_<year>-<n>.pdf'
+    how: 'date from the nearest preceding text (context: preceding); selector: div.downloads a[href$=''.pdf''] with
+      url_regex /Protokoll_\d{4}-\d+\.pdf$'
+- bfs_id: 1214
+  name: Seedorf
+  canton: UR
+  status: configured
+  website: http://www.seedorf-uri.ch
+  vendor: custom
+  reachable: true
+  checked: 2026-10-19
+  checked_by: crawler dry run (unverified)
+  notes: The broad archive collects the commune's public PDFs, untagged (linked-sources.yaml).
+  publications:
+  - body: assembly
+    kind: minutes
+    status: configured
+    listing_url: https://www.seedorf-uri.ch/politik/gemeindeversammlung
+    how: 'Gemeindeversammlung pages (?start=11 and 22 for older ones): Traktandenliste, Botschaft, Rechnung or Budget
+      and Beschluss-Protokoll per assembly 2017-2026, dated by the assembly heading (Gemeindeversammlung vom ...);
+      the folders in the file paths carry upload dates. Regulations put to the assembly are left out by the title
+      filter. Dry run 93 documents.'
+- bfs_id: 1215
+  name: Seelisberg
+  canton: UR
+  status: configured
+  website: https://www.seelisberg.ch
+  vendor: custom
+  reachable: true
+  checked: 2026-10-19
+  checked_by: crawler dry run (unverified)
+  notes: 'The broad archive collects the commune''s public PDFs, untagged (linked-sources.yaml). html_links, 1 hop:
+    GV page (Beschlussprotokolle 2021-2025) and budget-rechnung page (budgets and accounts 2020-2026); dry run 24.'
+  publications:
+  - body: assembly
+    kind: decisions
+    status: configured
+    listing_url: https://www.seelisberg.ch/politik/gemeindeversammlung
+    how: 'html_links, 1 hop: GV page (Beschlussprotokolle 2021-2025) and budget-rechnung page (budgets and accounts
+      2020-2026); dry run 24'
+- bfs_id: 1216
+  name: Silenen
+  canton: UR
+  status: configured
+  website: https://www.silenen.ch
+  vendor: custom
+  reachable: true
+  checked: 2026-10-18
+  checked_by: crawler dry run (unverified)
+  notes: The broad archive collects the commune's public PDFs, untagged (linked-sources.yaml).
+  publications:
+  - body: assembly
+    kind: documents
+    status: configured
+    listing_url: https://silenen.ch/politik/gemeindeversammlung
+    how: 'html_links, assembly page (Traktandenliste/Botschaft, Vorbericht, Nachbericht) and Budget & Rechnung page
+      (budgets 2021-2026, accounts 2020-2025) under /uploads/; robots.txt answers a 404 page, so nothing is disallowed;
+      dry run: 18 documents'
+- bfs_id: 1217
+  name: Sisikon
+  canton: UR
+  status: configured
+  website: https://www.sisikon.ch
+  vendor: i-web
+  reachable: true
+  checked: 2026-10-19
+  checked_by: crawler dry run (unverified)
+  publications:
+  - body: assembly
+    kind: minutes
+    status: configured
+    listing_url: https://www.sisikon.ch/rechnungen-und-budget
+    how: 'html_links, 1 hop on /rechnungen-und-budget: budgets and accounts of the Einwohnergemeinde; the budgets
+      titled with their assembly date (''Budget 2025 EWG 09.12.2024'') are dated by it, the others stay undated;
+      /gemeindeversammlung links no documents; dry run on the 3 newest pages: 6 documents (2024-2025)'
+- bfs_id: 1218
+  name: Spiringen
+  canton: UR
+  status: configured
+  website: http://www.spiringen.ch
+  vendor: custom
+  reachable: true
+  checked: 2026-10-19
+  checked_by: crawler dry run (unverified)
+  notes: The broad archive collects the commune's public PDFs, untagged (linked-sources.yaml).
+  publications:
+  - body: assembly
+    kind: minutes
+    status: configured
+    listing_url: https://spiringen.ch/politik/gemeindeversammlung
+    how: 'html_links, 1 hop: GV page -> /uploads/politik/ Botschaft, Protokoll EGV, Budget, Jahresrechnung; dry
+      run: 17 documents 2023-2026'
+- bfs_id: 1219
+  name: Unterschächen
+  canton: UR
+  status: configured
+  website: https://www.unterschaechen.ch
+  vendor: custom
+  reachable: true
+  checked: 2026-10-19
+  checked_by: crawler dry run (unverified)
+  notes: The broad archive collects the commune's public PDFs, untagged (linked-sources.yaml).
+  publications:
+  - body: assembly
+    kind: documents
+    status: configured
+    listing_url: https://www.unterschaechen.ch/politik/gemeindeversammlung
+    how: 'html_links over the assembly page (current Traktanden) and the finance page (Gemeinderechnung 2019-2025,
+      Budget, Finanzplanung); the 2021 accounts file ''22.04.01-Rechnung_Bericht_2021'' is excluded because its
+      name would be read as 2001-04-22; dry run: 14 documents'
+- bfs_id: 1220
+  name: Wassen
+  canton: UR
+  status: not_found
+  website: https://www.wassen.ch
+  vendor: typo3
+  reachable: true
+  checked: 2026-10-19
+  checked_by: crawler dry run (unverified)
+  notes: 'Automated probe: the home page links no page about minutes or a council. Mixed public PDF listings are
+    archived without inferred decision tags. No assembly minutes or accounts found on the site; not configured.'
+  publications: []

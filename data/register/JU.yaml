@@ -1,0 +1,882 @@
+# Register of commune publications, canton JU. What each commune publishes and whether it is collected; see docs/REGISTER.md.
+- bfs_id: 6702
+  name: Boécourt
+  canton: JU
+  status: configured
+  website: https://www.boecourt.ch/
+  vendor: custom
+  reachable: true
+  checked: &id001 2026-09-10
+  checked_by: crawler dry run (unverified)
+  notes: The broad archive collects the commune's public PDFs, untagged (linked-sources.yaml). The PV page lists
+    the latest three PV of the assemblée communale.
+  publications:
+  - body: assembly
+    kind: minutes
+    status: configured
+    listing_url: https://www.boecourt.ch/fr/Autorites-politiques/Assemblee-communale/Decisions/PV-Assemblee-communale/PV-Assemblee-communale.html
+    how: html_links, 1 hop, /Htdocs/Files/ PDFs titled PV de l'Assemblée communale du dd.mm.yyyy; dry run 3 documents
+      2025-2026
+- bfs_id: 6703
+  name: Bourrignon
+  canton: JU
+  status: configured
+  website: http://www.bourrignon.ch
+  vendor: custom
+  reachable: true
+  checked: 2026-10-19
+  checked_by: crawler dry run (unverified)
+  notes: 'The broad archive collects the commune''s public PDFs, untagged (linked-sources.yaml). Mixed public PDF
+    listings are archived without inferred decision tags. Configured html_links on the Proces-verbaux page: 30 PVs
+    2013 to 2025 hosted on www.develier.ch (robots allows); dates from titles; "PV Assemblée communale du 16 décembre
+    2016" excluded because its file is 2016_12_14 (title and file disagree).'
+  publications:
+  - body: assembly
+    kind: minutes
+    status: configured
+    listing_url: https://www.bourrignon.ch/br/Autorites-politiques/Assemblee-communale/Proces-verbaux/Proces-verbaux.html
+    how: html_links, develier.ch /Htdocs/Files/v/ links; 2016_12_14 excluded pending a human check of its date
+- bfs_id: 6704
+  name: Châtillon
+  canton: JU
+  status: configured
+  website: http://www.chatillon.ch
+  vendor: wordpress
+  reachable: true
+  checked: 2026-09-11
+  checked_by: listing and PDF review
+  notes: Mixed document types, some undated, are archived without inferred decision tags.
+  publications:
+  - body: assembly
+    kind: documents
+    status: configured
+    listing_url: https://chatillon.ch/wp-json/wp/v2/media?search=pv
+    how: wp_media; public municipal PDF archive including related documents; one actual PDF checked
+- bfs_id: 6706
+  name: Courchapoix
+  canton: JU
+  status: configured
+  website: https://www.courchapoix.ch
+  vendor: wordpress
+  reachable: true
+  checked: 2026-09-11
+  checked_by: listing and PDF review
+  notes: Mixed document types, some undated, are archived without inferred decision tags.
+  publications:
+  - body: assembly
+    kind: documents
+    status: configured
+    listing_url: https://courchapoix.ch/wp-json/wp/v2/media?search=pv
+    how: wp_media; public municipal PDF archive including related documents; one actual PDF checked
+- bfs_id: 6708
+  name: Courrendlin
+  canton: JU
+  status: configured
+  website: https://www.courrendlin.ch
+  vendor: custom
+  reachable: true
+  checked: 2026-10-18
+  checked_by: crawler dry run (unverified)
+  notes: The broad archive collects the commune's public PDFs, untagged (linked-sources.yaml).
+  publications:
+  - body: assembly
+    kind: minutes
+    status: configured
+    listing_url: https://www.courrendlin.ch/fr/Autorites-politiques/Assemblee-communale/Proces-verbaux-et-presentations/Proces-verbaux.html
+    how: 'html_links, 1 hop: PV page, anchors ''YYYY.MM.DD - PV Assemblée communale ...'' (presentations excluded),
+      date year first; dry run: 11 PV 2022-2026'
+- bfs_id: 6709
+  name: Courroux
+  canton: JU
+  status: configured
+  website: https://www.courroux.ch
+  vendor: custom
+  reachable: true
+  checked: 2026-10-19
+  checked_by: crawler dry run (unverified)
+  notes: The broad archive collects the commune's public PDFs, untagged (linked-sources.yaml).
+  publications:
+  - body: assembly
+    kind: minutes
+    status: configured
+    listing_url: https://www.courroux.ch/fr/Autorites-politiques/Assemblees-communales/Assemblees-communales.html
+    how: 'Assemblées communales page plus the Budgets et comptes page: ordre du jour, message à la population and
+      signed PV per assemblée communale, dated from the link text (AC DD.MM.YY), and the budget and accounts reports
+      and fascicules (dated by the assembly named in the title or undated). Presentations, the Bourgeoisie budgets
+      and accounts, tax lists and information evenings excluded. Dry run 84 documents, 2019-2026'
+- bfs_id: 6710
+  name: Courtételle
+  canton: JU
+  status: configured
+  website: https://www.courtetelle.ch
+  vendor: custom
+  reachable: true
+  checked: 2026-10-18
+  checked_by: crawler dry run (unverified)
+  notes: The broad archive collects the commune's public PDFs, untagged (linked-sources.yaml).
+  publications:
+  - body: assembly
+    kind: minutes
+    status: configured
+    listing_url: https://www.courtetelle.ch/fr/Autorites-politiques/Assemblees-communales/Proces-verbaux/Archives.html
+    how: 'html_links, 1 hop over the procès-verbaux and convocations archives (Htdocs/Files PDFs, date dd.mm.yyyy
+      in the link text); dry run: 56 documents 2016-2026'
+- bfs_id: 6711
+  name: Delémont
+  canton: JU
+  status: configured
+  website: https://www.delemont.ch
+  vendor: custom
+  reachable: true
+  checked: 2026-09-06
+  checked_by: listing review
+  publications:
+  - body: parliament
+    kind: minutes
+    status: configured
+    listing_url: https://www.delemont.ch/fr/Autorites-politiques/Conseil-de-Ville-Legislatif/Seances-du-Conseil-de-Ville/Seances-du-Conseil-de-Ville.html
+  notes: The broad archive collects the commune's public PDFs (finance, regulations and council, including older
+    meetings), untagged (linked-sources.yaml).
+- bfs_id: 6712
+  name: Develier
+  canton: JU
+  status: configured
+  website: http://www.develier.ch
+  vendor: custom
+  reachable: true
+  checked: 2026-10-19
+  checked_by: crawler dry run (unverified)
+  notes: The broad archive collects the commune's public PDFs, untagged (linked-sources.yaml).
+  publications:
+  - body: assembly
+    kind: minutes
+    status: configured
+    listing_url: https://www.develier.ch/fr/Autorites-politiques/Assemblees-communales/Proces-verbaux/Proces-verbaux.html
+    how: 'Procès-verbaux page: PV of the assemblée communale 2013-2025 dated from the title; the comptes et budgets
+      page adds budgets 2024-2026 and accounts 2023-2025, undated or by their own version date (V29.05.2024, 11.05.2026).
+      Dry run 53 documents.'
+- bfs_id: 6713
+  name: Ederswiler
+  canton: JU
+  status: not_published
+  website: https://ederswiler.ch/
+  vendor: i-web
+  reachable: true
+  checked: 2026-10-19
+  checked_by: crawler dry run (unverified)
+  notes: 'Automated probe: no session list and no minutes page in the site map. /sitzung is 404 (ederswiler.ch redirects
+    to www.); the navigation has only the Gemeinderat and the regulations; no assembly or council documents online.'
+  publications:
+  - body: assembly
+    kind: minutes
+    status: not_published
+    listing_url: https://www.ederswiler.ch/gemeinderat
+    obstacle: /sitzung is 404 (ederswiler.ch redirects to www.); the navigation has only the Gemeinderat and the
+      regulations; no assembly or council documents online
+- bfs_id: 6715
+  name: Mervelier
+  canton: JU
+  status: configured
+  website: https://www.mervelier.ch
+  vendor: custom
+  reachable: true
+  checked: 2026-10-19
+  checked_by: crawler dry run (unverified)
+  notes: 'The broad archive collects the commune''s public PDFs, untagged (linked-sources.yaml). html_links over
+    the year tabs (?start=0..5) of the PV assemblée article: PV PDFs under /images/_PV_assemblee/, dated dd.mm.yyyy
+    from the file name; presentations excluded; dry run 12 PV 2022-2026.'
+  publications:
+  - body: assembly
+    kind: minutes
+    status: configured
+    listing_url: https://mervelier.ch/index.php/services-communaux/pv-assemblee?start={0..5}
+    how: 'html_links over the year tabs (?start=0..5) of the PV assemblée article: PV PDFs under /images/_PV_assemblee/,
+      dated dd.mm.yyyy from the file name; presentations excluded; dry run 12 PV 2022-2026'
+- bfs_id: 6716
+  name: Mettembert
+  canton: JU
+  status: not_examined
+- bfs_id: 6718
+  name: Movelier
+  canton: JU
+  status: configured
+  website: https://www.movelier.ch
+  vendor: custom
+  reachable: true
+  checked: 2026-10-19
+  checked_by: crawler dry run (unverified)
+  notes: The broad archive collects the commune's public PDFs, untagged (linked-sources.yaml).
+  publications:
+  - body: assembly
+    kind: minutes
+    status: configured
+    listing_url: https://www.movelier.ch/informations.html
+    how: 'informations page: relative documents/ links titled PV assemblée; dry run 14 PV 2020-2026'
+- bfs_id: 6719
+  name: Pleigne
+  canton: JU
+  status: configured
+  website: https://www.pleigne.ch
+  vendor: custom
+  reachable: true
+  checked: 2026-10-22
+  checked_by: crawler dry run (unverified)
+  notes: The broad archive collects the commune's public PDFs, untagged (linked-sources.yaml). The Proces-verbaux
+    page lists the anonymised PVs of the assemblée communale as PDFs (/Htdocs/Files/v/); dry run 35 documents 2015-2026,
+    all dated.
+  publications:
+  - body: assembly
+    kind: minutes
+    status: configured
+    listing_url: https://www.pleigne.ch/fr/ADMINISTRATION-AUTORITES-POLITIQUES/Assemblee-communale/Proces-verbaux/Proces-verbaux-des-assemblees-communales.html
+    how: html_links, /Htdocs/Files/v/ PDF links on the Proces-verbaux page
+- bfs_id: 6721
+  name: Rossemaison
+  canton: JU
+  status: configured
+  website: http://www.rossemaison.ch
+  vendor: custom
+  reachable: true
+  checked: 2026-10-19
+  checked_by: crawler dry run (unverified)
+  notes: 'The broad archive collects the commune''s public PDFs, untagged (linked-sources.yaml). Assemblée communale
+    page, /images/ PDFs (robots allows /images/): PV of the assemblée communale 2022-2025; dry run 8, all dated.'
+  publications:
+  - body: assembly
+    kind: minutes
+    status: configured
+    listing_url: https://www.rossemaison.ch/autorites-politiques/assemblee-communale
+    how: 'assemblée communale page, /images/ PDFs (robots allows /images/): PV of the assemblée communale 2022-2025;
+      dry run 8, all dated'
+- bfs_id: 6722
+  name: Saulcy
+  canton: JU
+  status: not_found
+  website: http://www.saulcy.ch
+  vendor: wordpress
+  reachable: true
+  checked: 2026-10-19
+  checked_by: crawler dry run (unverified)
+  notes: 'Automated probe: the home page links no page about minutes or a council. Autorités communales page lists
+    members only; WordPress media API returns no PDFs for verbal, assembl, comptes, budget; Bourgeoisie page left
+    out.'
+  publications:
+  - body: assembly
+    kind: minutes
+    status: not_found
+    listing_url: https://saulcy.ch/pages/informations/administration/autorites-communales/
+    obstacle: no documents; media API empty
+- bfs_id: 6724
+  name: Soyhières
+  canton: JU
+  status: configured
+  website: https://www.soyhieres.ch
+  vendor: custom
+  reachable: true
+  checked: 2026-10-19
+  checked_by: crawler dry run (unverified)
+  notes: The broad archive collects the commune's public PDFs, untagged (linked-sources.yaml).
+  publications:
+  - body: assembly
+    kind: minutes
+    status: configured
+    listing_url: https://www.soyhieres.ch/fr/Autorites-politiques/Assemblees-communales/Assemblees-communales.html
+    how: 'Assemblées communales and Budgets et comptes pages: /Htdocs/Files/ PDFs (provisional and definitive PV
+      per assembly, budgets, accounts); presentations excluded; dry run 96 documents, 50 dated 2021-2026'
+- bfs_id: 6729
+  name: Haute-Sorne
+  canton: JU
+  status: configured
+  website: https://www.haute-sorne.ch/
+  vendor: custom
+  reachable: true
+  checked: 2026-10-18
+  checked_by: crawler dry run (unverified)
+  notes: The broad archive collects the commune's public PDFs, untagged (linked-sources.yaml).
+  publications:
+  - body: parliament
+    kind: minutes
+    status: configured
+    listing_url: https://www.haute-sorne.ch/fr/Autorites-politiques/Conseil-general/Documents-du-Conseil-general/Proces-verbaux/Proces-verbaux-du-Conseil-general.html
+    how: 'html_links, 1 hop over the Conseil général procès-verbaux and ordres du jour pages (/Htdocs/Files/ links,
+      date dd.mm.yyyy in the text); dry run: 123 documents 2013-2022; both pages stop in 2022 (PV n°61, ODJ n°63),
+      newer sessions not found on the site'
+- bfs_id: 6730
+  name: Val Terbi
+  canton: JU
+  status: configured
+  website: https://www.val-terbi.ch
+  vendor: custom
+  reachable: true
+  checked: 2026-09-10
+  checked_by: listing review
+  publications:
+  - body: parliament
+    kind: minutes
+    status: configured
+    listing_url: https://www.val-terbi.ch/fr/Autorites-politiques/Conseil-general/Proces-verbaux/Proces-verbaux.html
+    to: '2018-06-26'
+    how: html_links, 1 hop
+- bfs_id: 6741
+  name: Le Bémont
+  canton: JU
+  status: configured
+  website: https://lebemont.ch
+  vendor: wordpress
+  reachable: true
+  checked: 2026-10-19
+  checked_by: crawler dry run (unverified)
+  notes: WordPress media library holds only two assembly bulletins; no PV online.
+  publications:
+  - body: assembly
+    kind: documents
+    status: configured
+    listing_url: https://lebemont.ch/wp-json/wp/v2/media?search=assembl
+    how: 'wp_media searches assembl, comptes, budget: two tous-menages bulletins on the assemblee communale (03.2026,
+      05.2026, accounts 2025), undated'
+- bfs_id: 6742
+  name: Les Bois
+  canton: JU
+  status: configured
+  website: https://www.lesbois.ch
+  vendor: custom
+  reachable: true
+  checked: 2026-10-19
+  checked_by: crawler dry run (unverified)
+  notes: The broad archive collects the commune's public PDFs, untagged (linked-sources.yaml).
+  publications:
+  - body: parliament
+    kind: minutes
+    status: configured
+    listing_url: https://www.lesbois.ch/fr/Autorites-politiques/Conseil-general/Proces-verbaux/Proces-verbaux.html
+    how: 'Conseil général pages for procès-verbaux, ordres du jour, rapports et documents and arrêtés: PV and ordres
+      du jour dated from the title (session date), numbered reports from the session date in the file name (Rapport_NN_YYYY-MM-DD),
+      other reports, regulations and the arrêtés mostly undated. Excluded: annexed resignation letters, and Rapport_83_2026-06-26,
+      whose date breaks the numbered sequence (82 is 2022-12-12, 86 is 2024-02-26). Dry run 330 documents.'
+- bfs_id: 6743
+  name: Les Breuleux
+  canton: JU
+  status: candidate
+  website: https://www.breuleux.ch
+  vendor: custom
+  reachable: true
+  checked: 2026-10-19
+  checked_by: crawler dry run (unverified)
+  notes: 'Automated probe: no dated minutes PDFs on the page tested (https://www.breuleux.ch/Services-publics/Conseil-communal).
+    The broad archive collects the commune''s public PDFs, untagged (linked-sources.yaml).'
+  publications:
+  - body: assembly
+    kind: minutes
+    status: candidate
+    listing_url: https://www.breuleux.ch/Services-publics/Administration/Administration/Assemblee-communale
+    obstacle: the assembly page links only the organisation rules; no minutes or convocations
+- bfs_id: 6745
+  name: Les Enfers
+  canton: JU
+  status: configured
+  website: https://lesenfers.ch
+  vendor: wordpress
+  reachable: true
+  checked: 2026-10-19
+  checked_by: crawler dry run (unverified)
+  publications:
+  - body: assembly
+    kind: minutes
+    status: configured
+    listing_url: https://lesenfers.ch/wp-json/wp/v2/media?search=assembl
+    how: 'wp_media searches assembl, pv, budget and comptes: PV and assemblée documents dated from the title (YYYY-MM-DD),
+      the numbered avis (2024-09, 2026-03: avis numbers, not months) and 2018 files undated; the cantonal BUDGET-JU
+      leaflet and the PV titled 2019.12.10 (uploaded 2019-02, so the date is wrong) excluded; a .doc file is skipped.
+      Dry run 11 documents, 2018-2026'
+- bfs_id: 6748
+  name: Les Genevez
+  canton: JU
+  status: configured
+  website: https://www.lesgenevez.ch
+  vendor: custom
+  reachable: true
+  checked: 2026-10-19
+  checked_by: crawler dry run (unverified)
+  notes: The broad archive collects the commune's public PDFs, untagged (linked-sources.yaml).
+  publications:
+  - body: assembly
+    kind: minutes
+    status: configured
+    listing_url: https://www.lesgenevez.ch/Guichet-virtuel/PV-des-assemblees-communales
+    how: 'PV des assemblées communales page: PV of the assemblée communale 2016-2026 and one message to the population,
+      dated from the title; the data-protection notice about the PV (a scan) is left out. Dry run 31 documents.'
+- bfs_id: 6750
+  name: Lajoux
+  canton: JU
+  status: configured
+  website: http://www.lajoux.ch
+  vendor: custom
+  reachable: true
+  checked: 2026-10-19
+  checked_by: crawler dry run (unverified)
+  notes: The broad archive collects the commune's public PDFs, untagged (linked-sources.yaml).
+  publications:
+  - body: assembly
+    kind: minutes
+    status: configured
+    listing_url: https://www.lajoux.ch/Administration/PV-assemblee-communale
+    how: 'html_links, 1 hop: ''Assemblée communale … du <date>'' PV (anonymised by the commune); dry run: 10 PV
+      2022-2026; the bourgeoisie PVs (separate page) are not taken'
+- bfs_id: 6751
+  name: Montfaucon
+  canton: JU
+  status: configured
+  website: https://www.montfaucon.ch
+  vendor: custom
+  reachable: true
+  checked: 2026-10-19
+  checked_by: crawler dry run (unverified)
+  notes: 'The broad archive collects the commune''s public PDFs, untagged (linked-sources.yaml). Earlier address:
+    http://www.montfaucon.ch.'
+  publications:
+  - body: assembly
+    kind: minutes
+    status: configured
+    listing_url: https://www.montfaucon.ch/assemblees-communales
+    how: 'Assemblées communales page: PV of the assemblée communale 2011-2026 (anonymised in recent years) dated
+      from the title. Excluded: the link titled 26.06.2026, which opens the file 20250629 (contradictory), and the
+      empty icon links that all point to Ass_comm_2011_12_19.pdf; the assemblies of the ayants droit are not taken.
+      Dry run 40 documents.'
+- bfs_id: 6753
+  name: Muriaux
+  canton: JU
+  status: configured
+  website: https://www.muriaux.ch
+  vendor: wordpress
+  reachable: true
+  checked: 2026-10-19
+  checked_by: crawler dry run (unverified)
+  notes: The WordPress media API is not available. The broad archive collects the commune's public PDFs linked from
+    the regulations, finance and council pages, untagged (linked-sources.yaml). Dry run 7 documents, dates checked
+    against titles.
+  publications:
+  - body: assembly
+    kind: minutes
+    status: configured
+    listing_url: https://muriaux.ch/officiel/assemblee/
+    how: 'html_links, 1 hop: assemblée page, wp-content PDFs (comptes, budget, tous-ménages bulletins)'
+- bfs_id: 6754
+  name: Le Noirmont
+  canton: JU
+  status: candidate
+  website: https://www.noirmont.ch
+  vendor: custom
+  reachable: true
+  checked: 2026-10-18
+  checked_by: crawler dry run (unverified)
+  notes: 'Automated probe: the home page links no page about minutes or a council. The broad archive collects the
+    commune''s public PDFs, untagged (linked-sources.yaml).'
+  publications:
+  - body: assembly
+    kind: minutes
+    status: candidate
+    listing_url: https://www.noirmont.ch/
+    obstacle: no council or assembly page linked from the home page; only notices and flyers under /files/
+- bfs_id: 6757
+  name: Saignelégier
+  canton: JU
+  status: configured
+  website: https://www.saignelegier.ch
+  vendor: custom
+  reachable: true
+  checked: 2026-10-18
+  checked_by: crawler dry run (unverified)
+  notes: The broad archive collects the commune's public PDFs, untagged (linked-sources.yaml).
+  publications:
+  - body: assembly
+    kind: minutes
+    status: configured
+    listing_url: https://www.saignelegier.ch/Autorites/Assemblees-communales
+    how: 'html_links, 1 hop: ''Assemblée communale du <date>'' FileDownload links on the assemblies page; dry run:
+      11 documents 2022-2026'
+- bfs_id: 6758
+  name: Saint-Brais
+  canton: JU
+  status: configured
+  website: https://saint-brais.ch
+  vendor: joomla
+  reachable: true
+  checked: 2026-10-19
+  checked_by: crawler dry run (unverified)
+  notes: The broad archive collects the commune's public PDFs, untagged (linked-sources.yaml). Configured html_links
+    on /pv (Dropfiles download links without a .pdf suffix); dry run 26 PVs of the commune assembly and of the 1st
+    and 2nd sections 2021-12-03 to 2025-12-08, dates from the titles; "PV assemblée communale budget 2023 site"
+    left undated.
+  publications:
+  - body: assembly
+    kind: minutes
+    status: configured
+    listing_url: https://saint-brais.ch/pv
+    how: html_links, Dropfiles download links
+- bfs_id: 6759
+  name: Soubey
+  canton: JU
+  status: configured
+  website: https://www.soubey.ch/
+  vendor: wordpress
+  reachable: true
+  checked: 2026-10-19
+  checked_by: crawler dry run (unverified)
+  publications:
+  - body: assembly
+    kind: minutes
+    status: configured
+    listing_url: https://www.soubey.ch/wp-json/wp/v2/media?search=assembl
+    how: 'wp_media searches assembl, budget and comptes: PV of the assemblée ordinaire and extraordinaire dated
+      from the title, budget and accounts reports undated, numbered avis (2024-04 etc., avis numbers) undated; the
+      PV titled 18.10.2025 (uploaded 2024-11 as a scan of 24 Nov 2024, so the date is wrong), the PVR zoning programme
+      and the vote protocols excluded. Crawl-delay 10. Dry run 28 documents, 2021-2026'
+- bfs_id: 6771
+  name: Alle
+  canton: JU
+  status: configured
+  website: https://www.alle.ch
+  vendor: wordpress
+  reachable: true
+  checked: 2026-10-19
+  checked_by: crawler dry run (unverified)
+  publications:
+  - body: assembly
+    kind: minutes
+    status: configured
+    listing_url: https://www.alle.ch/proces-verbaux-des-assemblees-communales/
+    how: 'Procès-verbaux page: PV (version édulcorée) of the assemblée communale 2012-2026 dated from the link text
+      (PV - YYYY.MM.DD); plus budget and accounts from the finance page. Excluded as contradictory: the PV titled
+      2023.12.05 whose file is 20230612, and the PV titled 2017.12.19 whose file says 17.12.2017. Crawl-delay 10.
+      Dry run 45 documents.'
+- bfs_id: 6774
+  name: Boncourt
+  canton: JU
+  status: needs_feature
+  website: http://www.boncourt.ch
+  vendor: custom
+  reachable: true
+  checked: 2026-10-19
+  checked_by: crawler dry run (unverified)
+  notes: 'Automated probe: a page named after the minutes links no PDF (subpages or JavaScript). Google Sites page;
+    the procès-verbaux come from a Google Apps Script frame over Google Drive (script.google.com), which no adapter
+    reads.'
+  publications:
+  - body: assembly
+    kind: minutes
+    status: candidate
+    listing_url: https://www.boncourt.ch/documents-officiels/proc%C3%A8s-verbaux
+    how: 'automated probe: page ''Procès-verbaux'' names the minutes but links no PDF (subpages or JavaScript);
+      not examined further'
+- bfs_id: 6778
+  name: Bure
+  canton: JU
+  status: configured
+  website: http://www.bure.ch
+  vendor: custom
+  reachable: true
+  checked: 2026-10-19
+  checked_by: crawler dry run (unverified)
+  notes: The broad archive collects the commune's public PDFs, untagged (linked-sources.yaml).
+  publications:
+  - body: assembly
+    kind: minutes
+    status: configured
+    listing_url: https://www.bure.ch/fr/Administration/Assemblee-communale/Assemblee-communale.html
+    how: 'assemblée communale page: PV of every assembly 2021-2026, budget, bilan, quotité d''impôt; presentations
+      and general notices excluded; dry run 16 documents'
+- bfs_id: 6781
+  name: Coeuve
+  canton: JU
+  status: candidate
+  website: https://coeuve.ch
+  vendor: wordpress
+  reachable: true
+  checked: 2026-10-19
+  checked_by: crawler dry run (unverified)
+  notes: 'Automated probe: no dated minutes PDFs on the 3 pages tested (https://coeuve.ch/ma-commune/conseil-communal/,
+    https://coeuve.ch/eau-potable/, https://coeuve.ch/pacom/). WordPress media search for pv, proces-verbal, budget,
+    comptes returns no documents.'
+  publications: []
+- bfs_id: 6782
+  name: Cornol
+  canton: JU
+  status: configured
+  website: https://www.cornol.ch
+  vendor: i-web
+  reachable: true
+  checked: 2026-10-19
+  checked_by: crawler dry run (unverified)
+  publications:
+  - body: assembly
+    kind: minutes
+    status: configured
+    listing_url: https://www.cornol.ch/seances-assemblee-communale
+    how: 'html_links, 2 hops: i-web session table /seances-assemblee-communale (cancelled and information sessions
+      excluded), then the session documents (ordre du jour, PV, préavis, extraits, délibérations; Téléchargement
+      duplicates, naturalisation and resignation documents excluded); assemblée communale sessions on /seances-assemblee-communale
+      (/sitzung is 404); information evenings excluded; dry run on the 3 newest pages: 18 documents (2025, 2026)'
+- bfs_id: 6783
+  name: Courchavon
+  canton: JU
+  status: configured
+  website: https://www.courchavon-mormont.ch
+  vendor: wordpress
+  reachable: true
+  checked: 2026-09-11
+  checked_by: listing and PDF review
+  notes: Mixed document types, some undated, are archived without inferred decision tags.
+  publications:
+  - body: assembly
+    kind: documents
+    status: configured
+    listing_url: https://www.courchavon-mormont.ch/wp-json/wp/v2/media?search=pv
+    how: wp_media; public municipal PDF archive including related documents; one actual PDF checked
+- bfs_id: 6784
+  name: Courgenay
+  canton: JU
+  status: configured
+  website: https://www.courgenay.ch
+  vendor: i-web
+  reachable: true
+  checked: 2026-10-19
+  checked_by: crawler dry run (unverified)
+  publications:
+  - body: assembly
+    kind: minutes
+    status: configured
+    listing_url: https://www.courgenay.ch/pv
+    how: 'html_links, 2 hops: i-web publications table /pv, filtered by title, then the PDFs; /seances is 404; the
+      /pv publications table lists the PV de l''assemblée communale since 2012, dated from the yyyy/mm/dd session
+      date in the title; dry run on the 3 newest pages: 3 documents (2025, 2026)'
+- bfs_id: 6785
+  name: Courtedoux
+  canton: JU
+  status: configured
+  website: http://www.courtedoux.ch
+  vendor: wordpress
+  reachable: true
+  checked: 2026-10-19
+  checked_by: crawler dry run (unverified)
+  notes: 'wp_media searches pv, proces-verbal, budget, comptes (Crawl-delay 10): PV de l''assemblée 2024-2026, budgets
+    2020-2024; dry run 12.'
+  publications:
+  - body: assembly
+    kind: minutes
+    status: configured
+    listing_url: https://courtedoux.ch/wp-json/wp/v2/media?search=pv
+    how: 'wp_media searches pv, proces-verbal, budget, comptes (Crawl-delay 10): PV de l''assemblée 2024-2026, budgets
+      2020-2024; dry run 12'
+- bfs_id: 6789
+  name: Fahy
+  canton: JU
+  status: not_published
+  website: https://fahy.ch
+  vendor: wordpress
+  reachable: true
+  checked: 2026-10-19
+  checked_by: crawler dry run (unverified)
+  notes: 'Automated probe: no dated minutes PDFs on the page tested (https://fahy.ch/le-conseil-communal/). WordPress
+    media library (22 PDFs, complete) has no minutes or finance documents.'
+  publications:
+  - body: assembly
+    kind: minutes
+    status: not_published
+    listing_url: https://fahy.ch/wp-json/wp/v2/media
+    obstacle: the full media library (22 PDFs) holds regulations and notices, no minutes, budgets or accounts
+- bfs_id: 6790
+  name: Fontenais
+  canton: JU
+  status: configured
+  website: https://www.fontenais.ch
+  vendor: custom
+  reachable: true
+  checked: 2026-10-19
+  checked_by: crawler dry run (unverified)
+  notes: The broad archive collects the commune's public PDFs, untagged (linked-sources.yaml).
+  publications:
+  - body: assembly
+    kind: minutes
+    status: configured
+    listing_url: https://www.fontenais.ch/Commune/Assemblee-commnunale
+    how: 'html_links, 1 hop: ''Assemblée communale'' page, /files/16/Assemblee-communale/ PDFs: PV, ordres du jour,
+      bilan and comptes, budget; 2023-2026'
+- bfs_id: 6792
+  name: Grandfontaine
+  canton: JU
+  status: configured
+  website: http://www.grandfontaine.ch
+  vendor: wordpress
+  reachable: true
+  checked: 2026-10-19
+  checked_by: crawler dry run (unverified)
+  publications:
+  - body: assembly
+    kind: minutes
+    status: configured
+    listing_url: https://www.grandfontaine.ch/wp-json/wp/v2/media?search=pv
+    how: 'WordPress media search "pv": assembly PV PDFs titled with the session date; the PVR land-reserve programme
+      excluded; dry run 11 documents 2022-2026'
+- bfs_id: 6800
+  name: Porrentruy
+  canton: JU
+  status: configured
+  website: https://porrentruy.ch
+  vendor: i-web
+  reachable: true
+  checked: 2026-10-18
+  checked_by: crawler dry run (unverified)
+  publications:
+  - body: parliament
+    kind: minutes
+    status: configured
+    listing_url: https://www.porrentruy.ch/seances
+    how: 'html_links, 2 hops: i-web session list /seances, cancelled sessions excluded, then minutes, decisions,
+      invitations/Botschaft and finance documents per session; Conseil de ville; session pages carry one PDF per
+      agenda item (communications, procès-verbaux, motions, answers, decisions); dry run on the 3 newest sessions:
+      20 documents (2026)'
+- bfs_id: 6806
+  name: Vendlincourt
+  canton: JU
+  status: configured
+  website: http://www.vendlincourt.ch
+  vendor: wordpress
+  reachable: true
+  checked: 2026-10-19
+  checked_by: crawler dry run (unverified)
+  notes: The broad archive collects the commune's public PDFs, untagged (linked-sources.yaml).
+  publications:
+  - body: assembly
+    kind: minutes
+    status: configured
+    listing_url: http://www.vendlincourt.ch/proces-verbaux-assemblees-communales-2
+    how: 'Procès-verbaux Assemblées communales page: PV of the assemblée communale 2019-2026 dated from the title.
+      The site answers only over http (the https handshake fails); robots.txt redirects to the hosting provider''s
+      (Crawl-delay 10). Dry run 18 documents.'
+- bfs_id: 6807
+  name: Basse-Allaine
+  canton: JU
+  status: configured
+  website: http://www.basse-allaine.ch
+  vendor: custom
+  reachable: true
+  checked: 2026-10-19
+  checked_by: crawler dry run (unverified)
+  notes: 'The broad archive collects the commune''s public PDFs, untagged (linked-sources.yaml). Joomla assemblées
+    page plus year pages assemblees-communales-2022..2025: PV and assembly documents under /images/pdf/Assemblee/
+    (robots allows /images/), presentations excluded; dry run. 53 documents 2023-2026.'
+  publications:
+  - body: assembly
+    kind: minutes
+    status: configured
+    listing_url: https://www.basse-allaine.ch/autorites-administration/assemblees-communales
+    how: 'Joomla assemblées page plus year pages assemblees-communales-2022..2025: PV and assembly documents under
+      /images/pdf/Assemblee/ (robots allows /images/), presentations excluded; dry run: 53 documents 2023-2026'
+- bfs_id: 6808
+  name: Clos du Doubs
+  canton: JU
+  status: configured
+  website: https://closdudoubs.ch
+  vendor: wordpress
+  reachable: true
+  checked: 2026-10-19
+  checked_by: crawler dry run (unverified)
+  notes: The broad archive collects the commune's public PDFs from the WordPress media library, untagged (linked-sources.yaml).
+  publications:
+  - body: assembly
+    kind: minutes
+    status: configured
+    listing_url: https://closdudoubs.ch/wp-json/wp/v2/media
+    how: 'WordPress media list (PDF filter, no search term: the site''s search returns nothing): assembly PV and
+      ordres du jour 2009-2026 dated from the title (Assemblée du DD mois YYYY, PV), budget and accounts reports
+      undated; strict title filter, because the media library also holds member lists, rental adverts and photos.
+      Some PVs are uploaded two or three times under the same title. Crawl-delay 10. Dry run 61 documents.'
+- bfs_id: 6809
+  name: Haute-Ajoie
+  canton: JU
+  status: configured
+  website: http://www.hauteajoie.ch
+  vendor: wordpress
+  reachable: true
+  checked: 2026-09-11
+  checked_by: listing and PDF review
+  notes: Mixed document types, some undated, are archived without inferred decision tags.
+  publications:
+  - body: assembly
+    kind: documents
+    status: configured
+    listing_url: https://hauteajoie.ch/wp-json/wp/v2/media?search=pv
+    how: wp_media; public municipal PDF archive including related documents; one actual PDF checked
+- bfs_id: 6810
+  name: La Baroche
+  canton: JU
+  status: configured
+  website: https://www.labaroche.ch
+  vendor: custom
+  reachable: true
+  checked: 2026-10-19
+  checked_by: crawler dry run (unverified)
+  notes: The registered domain redirects to labaroche.ch. The broad archive collects the commune's public PDFs (finance,
+    regulations and council, including older meetings), untagged (linked-sources.yaml).
+  publications:
+  - body: assembly
+    kind: minutes
+    status: configured
+    listing_url: https://www.labaroche.ch/fr/Autorites-politiques/Assemblees-communales.html
+    how: html_links on the Assemblées communales page (/Htdocs/Files/ PDFs); 7 documents 2024-2026
+- bfs_id: 6811
+  name: Damphreux-Lugnez
+  canton: JU
+  status: configured
+  website: https://www.damphreux-lugnez.ch/
+  vendor: custom
+  reachable: true
+  checked: 2026-10-19
+  checked_by: crawler dry run (unverified)
+  notes: The broad archive collects the commune's public PDFs, untagged (linked-sources.yaml).
+  publications:
+  - body: assembly
+    kind: minutes
+    status: configured
+    listing_url: https://www.damphreux-lugnez.ch/administration/assemblees-communales
+    how: 'Assemblées communales page: PV links titled Procès-verbal under a heading Assemblée du DD.MM.YYYY; dated
+      from the heading (context heading, prefer_context_date), since the file URLs start with the upload date (/media/attachments/2026/09/16/);
+      the 2023 account presentations take the date of the assembly of 3.7.2024 they are listed under. Dry run 10
+      documents, 2023-2026'
+- bfs_id: 6812
+  name: Basse-Vendline
+  canton: JU
+  status: configured
+  website: https://www.basse-vendline.ch/
+  vendor: custom
+  reachable: true
+  checked: 2026-10-19
+  checked_by: crawler dry run (unverified)
+  notes: The broad archive collects the commune's public PDFs, untagged (linked-sources.yaml). Basse-Vendline was
+    formed in 2024 from Bonfol and Beurnevésin; the 2023 accounts are listed separately for Bonfol (CR-2023-Bonfol)
+    and Beurnevésin; the older budgets and accounts are not labelled by former commune.
+  publications:
+  - body: assembly
+    kind: minutes
+    status: configured
+    listing_url: https://www.basse-vendline.ch/fr/Autorites-politiques/Assemblee-communale/Proces-verbaux-des-assemblees-communales/Proces-verbaux.html
+    how: 'PV page, Ordres du jour page and Budgets et comptes page: PV and convocations of the assemblée communale
+      2024-2026 dated from the link text; budgets 2016-2026 and accounts 2016-2025 undated except the budget 2026
+      (28.11.2025 in the file name). Dry run 42 documents'
+- bfs_id: 6831
+  name: Moutier
+  canton: JU
+  status: configured
+  website: https://moutier.ch/
+  vendor: wordpress
+  reachable: true
+  checked: 2026-09-10
+  checked_by: listing review
+  publications:
+  - body: parliament
+    kind: minutes
+    status: configured
+    listing_url: https://moutier.ch/autorites/conseil-de-ville/proces-verbal/
+    from: '2019-01-28'
+    to: '2026-02-23'
+    how: html_links, 1 hop

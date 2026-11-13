@@ -1,0 +1,8 @@
+# Publicity regime per canton and body (assembly, parliament, executive): the default for communes
+# that set no publicity_regime of their own. Covers five cantons. The entries have not been checked
+# against the cantonal municipal and information laws (Gemeindegesetze, Informationsgesetze).
+AG: {assembly: public, parliament: public, executive: partial}
+BE: {assembly: public, parliament: public, executive: partial}
+ZH: {assembly: public, parliament: public, executive: partial}
+VD: {assembly: public, parliament: public, executive: partial}
+TI: {assembly: public, parliament: public, executive: partial}

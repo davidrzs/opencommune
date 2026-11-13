@@ -1,0 +1,331 @@
+# Register of commune publications, canton AR. What each commune publishes and whether it is collected; see docs/REGISTER.md.
+- bfs_id: 3001
+  name: Herisau
+  canton: AR
+  status: configured
+  website: https://www.herisau.ch
+  vendor: i-web
+  reachable: true
+  checked: 2026-10-19
+  checked_by: crawler dry run (unverified)
+  notes: Own configuration for the parliament.
+  publications:
+  - body: parliament
+    kind: minutes
+    status: configured
+    listing_url: https://www.herisau.ch/sitzungen
+    how: 'html_links, 2 hops: i-web session table /sitzungen (cancelled, reserve and provisional sessions excluded;
+      the table lists only this body), then the session documents filtered by title: full minutes (''Gesamtprotokoll
+      ... _yyyymmdd''), posted on the session page after the session; at most 40 sessions per recurring fetch (older
+      sessions are not collected yet); naturalisation, resignation, election-office and presentation documents excluded;
+      dry run on the 3 newest pages: 2 documents (2026)'
+- bfs_id: 3002
+  name: Hundwil
+  canton: AR
+  status: configured
+  website: https://www.hundwil.ch
+  vendor: typo3
+  reachable: true
+  checked: &id001 2026-09-10
+  checked_by: crawler dry run (unverified)
+  notes: No assembly (AR urn votes); finance documents only, 5 in the dry run; Gemeinderat news are HTML.
+  publications:
+  - body: executive
+    kind: documents
+    status: configured
+    listing_url: https://www.hundwil.ch/gemeinde/downloadcenter/
+    how: 'html_links, 1 hop: Downloadcenter, finance PDFs only (Jahresrechnung, Voranschlag, Aufgaben- und Finanzplan)'
+- bfs_id: 3003
+  name: Schönengrund
+  canton: AR
+  status: configured
+  website: https://www.schoenengrund.ch
+  vendor: i-web
+  reachable: true
+  checked: 2026-10-19
+  checked_by: crawler dry run (unverified)
+  publications:
+  - body: executive
+    kind: decisions
+    status: configured
+    listing_url: https://www.schoenengrund.ch/publikationen
+    how: 'html_links, 2 hops: i-web publications on /publikationen (table_row_dates false: the table''s date cell
+      is the publication date, so only a date in the title counts), then the publication''s PDFs; Jahresrechnung,
+      Voranschlag and Aufgaben- und Finanzplan per year, titled by year only and so undated; Appenzell Ausserrhoden
+      holds no assemblies, so the body is the executive; dry run on the 3 newest pages: 3 documents'
+- bfs_id: 3004
+  name: Schwellbrunn
+  canton: AR
+  status: candidate
+  website: https://www.schwellbrunn.ch
+  vendor: i-web
+  reachable: true
+  checked: 2026-10-19
+  checked_by: crawler dry run (unverified)
+  notes: No communal assembly (Appenzell Ausserrhoden). /sitzung is 404 and the site map names no minutes page.
+    The one finance publication, 'Jahresrechnung/Voranschlag', has no date in the table, so its reports would carry
+    no correct date.
+  publications:
+  - body: assembly
+    kind: minutes
+    status: candidate
+    listing_url: https://www.schwellbrunn.ch/publikationen
+    obstacle: Appenzell Ausserrhoden, no assemblies; /sitzung is 404; the one finance publication 'Jahresrechnung/Voranschlag'
+      has no date in the table, so its reports would carry no correct date
+- bfs_id: 3005
+  name: Stein
+  canton: AR
+  status: configured
+  website: https://www.stein-ar.ch
+  vendor: i-web
+  reachable: true
+  checked: 2026-10-19
+  checked_by: crawler dry run (unverified)
+  publications:
+  - body: executive
+    kind: documents
+    status: configured
+    listing_url: https://www.stein-ar.ch/publikationen
+    how: 'html_links, 2 hops: i-web publications table /publikationen, filtered by title, then the PDFs; Appenzell
+      Ausserrhoden has no assemblies; /sitzung is 404; /publikationen Voranschlag, Aufgaben- und Finanzplan and
+      Jahresrechnung, dated by their publication date in the table, not the date of the council decision; dry run
+      on the 3 newest pages: 6 documents (2025, 2026)'
+- bfs_id: 3006
+  name: Urnäsch
+  canton: AR
+  status: blocked_robots
+  website: https://www.urnaesch.ch
+  vendor: wordpress
+  reachable: true
+  checked: 2026-09-11
+  checked_by: endpoint and PDF check
+  notes: The WordPress media endpoint is readable, but the test download of the 2 December 2025 budget-assembly
+    protocol is disallowed by robots.txt. No bypass attempted; other files were not exhaustively tested.
+  publications:
+  - body: assembly
+    kind: minutes
+    status: blocked_robots
+    listing_url: https://urnaesch.ch/wp-json/wp/v2/media?search=protokoll&mime_type=application/pdf&per_page=20
+    to: '2025-12-02'
+    how: 'automated probe: WordPress media endpoint answers; 16 files match, newest 2025-12-02, e.g. ''2025-12-02
+      PROTOKOLL Budgetversammlung VA 2026 sig''; body inferred from the URL'
+    obstacle: robots.txt disallows the sampled protocol PDF under /wp-content/uploads/2022/10/. Endpoint
+      access alone does not establish PDF access.
+- bfs_id: 3007
+  name: Waldstatt
+  canton: AR
+  status: configured
+  website: https://www.waldstatt.ch/
+  vendor: govis
+  reachable: true
+  checked: 2026-10-18
+  checked_by: crawler dry run (unverified)
+  publications:
+  - body: executive
+    kind: results
+    status: configured
+    listing_url: https://www.waldstatt.ch/unser-dorf/portrait/finanzen.html/62
+    how: 'html_links, GOViS finance page (Jahresrechnung, Voranschlag) and votes page (Abstimmungsergebnisse, council
+      notices); AR communes vote at the urn, no assembly; dry run: 41 documents 2017-2026'
+- bfs_id: 3021
+  name: Bühler
+  canton: AR
+  status: blocked_js
+  website: https://www.buehlerar.ch
+  vendor: govis
+  reachable: true
+  checked: *id001
+  checked_by: scripts/probe_vendors.py (unverified)
+  notes: GOViS site that loads its page content from /route/, which robots.txt disallows. The site map lists no
+    assembly or minutes page.
+- bfs_id: 3022
+  name: Gais
+  canton: AR
+  status: candidate
+  website: https://www.gais.ch
+  vendor: custom
+  reachable: true
+  checked: 2026-10-18
+  checked_by: crawler dry run (unverified)
+  notes: Council and votes pages (/wirtschaft-politik/gemeinderat, /abstimmungen) link no minutes or results; documents
+    may be in news items; not found.
+  publications: []
+- bfs_id: 3023
+  name: Speicher
+  canton: AR
+  status: configured
+  website: http://www.speicher.ch
+  vendor: i-web
+  reachable: true
+  checked: 2026-10-18
+  checked_by: crawler dry run (unverified)
+  publications:
+  - body: executive
+    kind: documents
+    status: configured
+    listing_url: https://www.speicher.ch/publikationen
+    how: 'html_links, 2 hops: i-web /publikationen table, publications named Geschäftsbericht, Finanzbericht, Voranschlag,
+      Budget, Jahresrechnung, Finanzplan or AFP, then their PDFs (finance documents only; no assembly minutes found
+      on the site); dry run on the 3 newest pages: 4 documents (2025, 2026)'
+- bfs_id: 3024
+  name: Teufen
+  canton: AR
+  status: candidate
+  website: https://www.teufen.ch/
+  vendor: i-web
+  reachable: true
+  checked: 2026-10-18
+  checked_by: crawler dry run (unverified)
+  notes: 'Automated probe: no session list and no minutes page in the site map.'
+  publications:
+  - body: assembly
+    kind: minutes
+    status: candidate
+    listing_url: https://www.teufen.ch/uebersichtpolitikbehoerden
+    obstacle: /sitzung is 404; the politics overview links no assembly or protocol module (Appenzell Ausserrhoden
+      communes vote at the urn)
+- bfs_id: 3025
+  name: Trogen
+  canton: AR
+  status: blocked_js
+  website: https://www.trogen.ch
+  vendor: govis
+  reachable: true
+  checked: *id001
+  checked_by: scripts/probe_vendors.py (unverified)
+  notes: GOViS site that loads its page content from /route/, which robots.txt disallows. The site map lists no
+    assembly or minutes page.
+- bfs_id: 3031
+  name: Grub
+  canton: AR
+  status: blocked_js
+  website: https://www.grub.ch
+  vendor: govis
+  reachable: true
+  checked: *id001
+  checked_by: scripts/probe_vendors.py (unverified)
+  notes: GOViS site that loads its page content from /route/, which robots.txt disallows. The site map lists no
+    assembly or minutes page.
+- bfs_id: 3032
+  name: Heiden
+  canton: AR
+  status: candidate
+  website: https://www.heiden.ch
+  vendor: i-web
+  reachable: true
+  checked: 2026-10-18
+  checked_by: crawler dry run (unverified)
+  notes: 'Automated probe: no session list and no minutes page in the site map.'
+  publications:
+  - body: assembly
+    kind: minutes
+    status: candidate
+    listing_url: https://www.heiden.ch/publikationen
+    obstacle: finance publications (Jahresrechnung, Voranschlag, AFP 2009-2026) are listed, but the link sits only
+      in the table's Download-button column (_downloadBtn), which html_links does not read from i-web embedded tables;
+      needs a small feature
+- bfs_id: 3033
+  name: Lutzenberg
+  canton: AR
+  status: candidate
+  website: https://www.lutzenberg.ch
+  vendor: i-web
+  reachable: true
+  checked: 2026-10-19
+  checked_by: crawler dry run (unverified)
+  notes: 'Automated probe: the session list (/sitzung) shows 8 sessions since 2019 (Orientierungsveranstaltung,
+    Orientierungsversammlung, Orientierungsversammlung vom 18. August 2020, Öffentliche Versamml); the newest three
+    carry no minutes or decision list, and the site map names no minutes page. Appenzell Ausserrhoden, no assemblies;
+    /sitzung lists only information meetings (Orientierungsversammlung); /budget shows the budget and accounts figures
+    as a table, no documents.'
+  publications:
+  - body: assembly
+    kind: minutes
+    status: candidate
+    listing_url: https://www.lutzenberg.ch/budget
+    obstacle: Appenzell Ausserrhoden, no assemblies; /sitzung lists only information meetings (Orientierungsversammlung);
+      /budget shows the budget and accounts figures as a table, no documents
+- bfs_id: 3034
+  name: Rehetobel
+  canton: AR
+  status: configured
+  website: https://www.rehetobel.ch
+  vendor: i-web
+  reachable: true
+  checked: 2026-10-19
+  checked_by: crawler dry run (unverified)
+  publications:
+  - body: executive
+    kind: minutes
+    status: configured
+    listing_url: https://www.rehetobel.ch/publikationen
+    how: 'html_links, 2 hops: i-web publications table /publikationen, filtered by title, then the PDFs; Appenzell
+      Ausserrhoden has no assemblies; /publikationen Voranschlag and Jahresrechnung, dated by their publication
+      date in the table; dry run on the 3 newest pages: 7 documents (2025, 2026)'
+- bfs_id: 3035
+  name: Reute
+  canton: AR
+  status: not_published
+  website: https://www.reute.ch/
+  vendor: i-web
+  reachable: true
+  checked: 2026-10-19
+  checked_by: crawler dry run (unverified)
+  notes: 'Automated probe: no session list and no minutes page in the site map. Appenzell Ausserrhoden: no assemblies
+    (/sitzung is 404); /politikinformationen has 5 items 2025-2026 (Abstimmungsergebnisse, Finanzplan, Referendumsvorlage
+    Jahresrechnung) whose titles carry no date (the table''s date cell is the publication date); /abstimmungen lists
+    99 ballot days whose pages carry no documents; /budgetneu carries no documents.'
+  publications:
+  - body: assembly
+    kind: minutes
+    status: not_published
+    listing_url: https://www.reute.ch/politikinformationen
+    obstacle: 'Appenzell Ausserrhoden: no assemblies (/sitzung is 404); /politikinformationen has 5 items 2025-2026
+      (Abstimmungsergebnisse, Finanzplan, Referendumsvorlage Jahresrechnung) whose titles carry no date (the table''s
+      date cell is the publication date); /abstimmungen lists 99 ballot days whose pages carry no documents; /budgetneu
+      carries no documents'
+- bfs_id: 3036
+  name: Wald
+  canton: AR
+  status: configured
+  website: https://www.wald.ar.ch
+  vendor: wordpress
+  reachable: true
+  checked: 2026-10-19
+  checked_by: crawler dry run (unverified)
+  publications:
+  - body: executive
+    kind: documents
+    status: configured
+    listing_url: https://www.wald.ar.ch/wp-json/wp/v2/media?search=protokoll
+    how: 'wp_media searches protokoll, budget, rechnung: Jahresrechnung 2022-2025, communal vote protocols; Appenzell
+      Ausserrhoden has no assemblies; dry run: 6 documents'
+- bfs_id: 3037
+  name: Walzenhausen
+  canton: AR
+  status: candidate
+  website: https://www.walzenhausen.ch
+  vendor: i-web
+  reachable: true
+  checked: 2026-10-19
+  checked_by: crawler dry run (unverified)
+  notes: 'Automated probe: no session list and no minutes page in the site map. Appenzell Ausserrhoden, no assemblies;
+    /sitzung has no table and the publications have no finance items.'
+  publications:
+  - body: assembly
+    kind: minutes
+    status: candidate
+    listing_url: https://www.walzenhausen.ch/publikationen
+    obstacle: Appenzell Ausserrhoden, no assemblies; /sitzung has no table and the publications have no finance
+      items
+- bfs_id: 3038
+  name: Wolfhalden
+  canton: AR
+  status: blocked_js
+  website: https://www.wolfhalden.ch
+  vendor: govis
+  reachable: true
+  checked: *id001
+  checked_by: scripts/probe_vendors.py (unverified)
+  notes: GOViS site that loads its page content from /route/, which robots.txt disallows. The site map lists no
+    assembly or minutes page.

@@ -1,0 +1,2151 @@
+# Register of commune publications, canton VS. What each commune publishes and whether it is collected; see docs/REGISTER.md.
+- bfs_id: 6002
+  name: Brig-Glis
+  canton: VS
+  status: configured
+  website: https://www.brig-glis.ch
+  vendor: wordpress
+  reachable: true
+  checked: 2026-09-08
+  checked_by: listing review
+  notes: Urversammlung protocols; Stadtrat decisions ('Ratsentscheide') are published as HTML posts, one per session,
+    not as PDF; WP REST media API lists 20 Urversammlung protocol PDFs
+  publications:
+  - body: assembly
+    kind: minutes
+    status: configured
+    listing_url: https://www.brig-glis.ch/politik-verwaltung/behoerden/urversammlungen/
+    from: '2020-08-20'
+    to: '2025-11-26'
+    how: html_links, 1 hop
+- bfs_id: 6004
+  name: Eggerberg
+  canton: VS
+  status: not_found
+  website: https://www.eggerberg.ch
+  vendor: custom
+  reachable: true
+  checked: &id001 2026-09-10
+  checked_by: crawler dry run (unverified)
+  notes: 'Automated probe: the home page links no page about minutes or a council. No council documents found; /docs/
+    is disallowed by robots.txt.'
+  publications:
+  - body: assembly
+    kind: minutes
+    status: not_found
+    obstacle: no minutes or finance documents found; /docs/ is disallowed by robots.txt
+- bfs_id: 6007
+  name: Naters
+  canton: VS
+  status: configured
+  website: https://www.naters.ch
+  vendor: wordpress
+  reachable: true
+  checked: 2026-09-08
+  checked_by: listing review
+  notes: '''Ratssitzung vom <date>'' decision bulletins of the Gemeinderat, all on one page; Urversammlung info
+    brochures exist but no assembly protocols'
+  publications:
+  - body: executive
+    kind: decisions
+    status: configured
+    listing_url: https://www.naters.ch/administratives-amtliches/infosdownload/
+    from: '2015-02-23'
+    to: '2026-06-15'
+    how: html_links, 1 hop
+- bfs_id: 6008
+  name: Ried-Brig
+  canton: VS
+  status: blocked_js
+  website: https://www.ried-brig.ch/
+  vendor: megaphone
+  reachable: true
+  checked: &id003 2026-09-10
+  checked_by: adapter dry run and one PDF
+  notes: The website is a JavaScript application (Megaphone); its API answers only requests from the commune's own
+    pages. Not collected.
+  publications:
+  - body: assembly
+    kind: minutes
+    status: blocked_js
+    listing_url: https://www.ried-brig.ch/
+    obstacle: Urversammlung page (/urversammlung), rendered by JavaScript from the Megaphone API, which answers only
+      requests from the commune's own pages.
+- bfs_id: 6009
+  name: Simplon
+  canton: VS
+  status: configured
+  website: https://gemeinde-simplon.ch
+  vendor: wordpress
+  reachable: true
+  checked: 2026-10-19
+  checked_by: crawler dry run (unverified)
+  notes: Mitteilungsblaetter and Urversammlung brochures (Einwohnergemeinde); Burgergemeinde files excluded; no
+    separate minutes online.
+  publications:
+  - body: assembly
+    kind: documents
+    status: configured
+    listing_url: https://gemeinde-simplon.ch/mitteilungsblaetter/
+    from: '2005-06-01'
+    to: '2026-06-16'
+    how: 'html_links on the Mitteilungsblaetter page: Mitteilungsblaetter 2005-2026 (month precision from the titles)
+      and Urversammlung information brochures dated from the yyyy.mm.dd brochure date in the file name; also html_links
+      on the Finanzen page: Jahresrechnungen 2014-2021 and Finanzplaene, undated; the 2022-2024 accounts are the
+      Urversammlung brochures, dated by the brochure'
+- bfs_id: 6010
+  name: Termen
+  canton: VS
+  status: configured
+  website: https://www.termen.ch
+  vendor: wordpress
+  reachable: true
+  checked: 2026-10-19
+  checked_by: crawler dry run (unverified)
+  notes: 'WordPress finance page: Budgets and Jahresrechnungen (the latter inside the Tärmerblatt newsletter) 2019-2026.'
+  publications:
+  - body: assembly
+    kind: documents
+    status: configured
+    listing_url: https://termen.ch/finanzen/
+    how: html_links, 1 hop, wp-content PDFs titled Jahresrechnung or Budget; dry run 12 documents 2019-2026
+- bfs_id: 6011
+  name: Zwischbergen
+  canton: VS
+  status: configured
+  website: https://gondo.ch
+  vendor: wordpress
+  reachable: true
+  checked: 2026-10-19
+  checked_by: crawler dry run (unverified)
+  publications:
+  - body: assembly
+    kind: documents
+    status: configured
+    listing_url: https://gondo.ch/gemeindefinanzen/
+    how: 'Gemeindefinanzen page: Voranschlag (multi-year, 2021-2024 and 2022-2025) and Verwaltungsbericht 2021-2025,
+      undated (years only). The WordPress media search has no Urversammlung protocols; the Anschlagkasten carries
+      election and vote protocols only. Dry run 7 documents'
+- bfs_id: 6021
+  name: Ardon
+  canton: VS
+  status: configured
+  website: https://www.ardon.ch
+  vendor: custom
+  reachable: true
+  checked: 2026-10-18
+  checked_by: crawler dry run (unverified)
+  notes: The broad archive collects the commune's public PDFs, untagged (linked-sources.yaml).
+  publications:
+  - body: assembly
+    kind: documents
+    status: configured
+    listing_url: https://www.ardon.ch/fr/administration/autorites-assemblee-primaire-bourgeoisiale-457/
+    how: 'html_links, 2 hops: authorities page, then the current ''Assemblées bourgeoisiale et primaire'' page with
+      convocations and comptes; no archive; dry run: 4 documents 2026'
+- bfs_id: 6022
+  name: Chamoson
+  canton: VS
+  status: configured
+  website: https://www.chamoson.net
+  vendor: custom
+  reachable: true
+  checked: 2026-10-18
+  checked_by: crawler dry run (unverified)
+  notes: The broad archive collects the commune's public PDFs, untagged (linked-sources.yaml).
+  publications:
+  - body: assembly
+    kind: documents
+    status: configured
+    listing_url: https://www.chamoson.net/fr/administration/vie-politique/assemblees-primaires/budgets-1501/
+    how: 'html_links, 1 hop: budgets 2018-2026 and comptes 2017-2025 (budgets-1501, comptes-1503); second source
+      with body executive: half-yearly adjudications and nominations 2018-2026 on decisions-1509; no minutes published;
+      dry run: 35 documents'
+  - body: executive
+    kind: decisions
+    status: configured
+    listing_url: https://www.chamoson.net/fr/administration/vie-politique/decisions-1509/
+    how: 'html_links, 1 hop: half-yearly lists of adjudications (contract awards) and nominations 2018-2026'
+- bfs_id: 6023
+  name: Conthey
+  canton: VS
+  status: configured
+  website: https://www.conthey.ch
+  vendor: custom
+  reachable: true
+  checked: 2026-09-08
+  checked_by: listing review
+  publications:
+  - body: parliament
+    kind: minutes
+    status: configured
+    listing_url: https://www.conthey.ch/fr/vie-officielle/autorites/conseil-general-2671/
+    from: '2024-12-10'
+    to: '2025-12-16'
+    obstacle: 'partial: Conseil general; same in-house system as Martigny; file names start with the posting date
+      (2025.03.25-CG-PV-seance-constitutive-du-21.01.2025.pdf), so the parsed date is the posting date, not the
+      session date; only the current legislature is on the page'
+    how: html_links, 1 hop, a[href*='/files/']
+- bfs_id: 6024
+  name: Nendaz
+  canton: VS
+  status: configured
+  website: http://www.nendaz.org
+  vendor: custom
+  reachable: true
+  checked: 2026-10-18
+  checked_by: crawler dry run (unverified)
+  notes: 'Earlier address: http://www.nendaz.org. The broad archive collects the commune''s public PDFs, untagged
+    (linked-sources.yaml).'
+  publications:
+  - body: assembly
+    kind: documents
+    status: configured
+    listing_url: https://www.nendaz.org/fr/officiel/finances/budgets-455/
+    how: 'html_links, 1 hop over the budgets and comptes pages (/files/ PDFs, some on nendaz.org without www); dry
+      run: 34 documents, budgets 2011-2026 and accounts 2011-2025'
+  - body: assembly
+    kind: minutes
+    status: not_published
+    listing_url: https://www.nendaz.org/fr/officiel/autorites-politiques/autorites-communales/assemblee-primaire-451/
+    obstacle: the assemblée primaire page links no procès-verbaux or decisions
+- bfs_id: 6025
+  name: Vétroz
+  canton: VS
+  status: configured
+  website: https://vetroz.ch
+  vendor: wordpress
+  reachable: true
+  checked: &id002 2026-09-06
+  checked_by: crawler dry run (unverified)
+  notes: Earlier address replaced by https://vetroz.ch.
+  publications:
+  - body: parliament
+    kind: minutes
+    status: configured
+    listing_url: https://vetroz.ch/wpfd_file-sitemap.xml
+    how: 'html_links, 2 hops: the WP File Download sitemap lists one page per file; Conseil général plenary minutes
+      2019-2025 (pv-YYYY-MM-DD, dated, matching the session folder in the download URL) and the budget and accounts
+      files with the municipal messages (undated). Dry run 81 documents.'
+- bfs_id: 6032
+  name: Bourg-Saint-Pierre
+  canton: VS
+  status: configured
+  website: https://www.bourg-saint-pierre.ch
+  vendor: wordpress
+  reachable: true
+  checked: 2026-10-19
+  checked_by: crawler dry run (unverified)
+  publications:
+  - body: assembly
+    kind: agenda
+    status: configured
+    listing_url: https://www.bourg-saint-pierre.ch/wp-json/wp/v2/media?search=protocole
+    how: 'WordPress media search (protocole, proces-verbal, pv, assemblee, budget, comptes): convocations of the
+      Assemblée primaire 2021-2025, some with month precision; no PV found; dry run 10 documents'
+- bfs_id: 6033
+  name: Liddes
+  canton: VS
+  status: candidate
+  website: https://www.liddes.ch
+  vendor: custom
+  reachable: true
+  checked: 2026-10-19
+  checked_by: crawler dry run (unverified)
+  notes: 'Automated probe: the home page links no page about minutes or a council. The broad archive collects the
+    commune''s public PDFs, untagged (linked-sources.yaml).'
+  publications:
+  - body: assembly
+    kind: documents
+    status: candidate
+    listing_url: https://www.liddes.ch/publications.php
+    how: 'html_links, 1 hop over the publications list: convocations and documents of the assemblée primaire, PV,
+      comptes and budget; federal-vote convocations excluded; dates are the publication dates in the list (e.g.
+      the PV of 16.12.2025 is dated 2026-05-28, its publication), not meeting dates'
+    obstacle: the list gives publication dates, not meeting dates (PV of 16.12.2025 dated 2026-05-28); not configured
+      to avoid wrong dates
+- bfs_id: 6034
+  name: Orsières
+  canton: VS
+  status: configured
+  website: https://orsieres.ch
+  vendor: wordpress
+  reachable: true
+  checked: 2026-09-08
+  checked_by: listing review
+  notes: 'Primary source: 33 fortnightly ''Extraits du Conseil'' decision bulletins of the executive (anchor ''Telechargez
+    le document'', date in the file name). Second source: the Assemblée primaire PV, of which only the newest one
+    (2025-12-10) is online.'
+  publications:
+  - body: executive
+    kind: extracts
+    status: configured
+    listing_url: https://orsieres.ch/publications/extraits-du-conseil/
+    from: '2025-01-15'
+    to: '2026-06-03'
+    how: html_links, 2 sources, 1 hop each
+  - body: assembly
+    kind: minutes
+    status: configured
+    listing_url: https://orsieres.ch/publications/assemblee-primaire/
+- bfs_id: 6035
+  name: Sembrancher
+  canton: VS
+  status: blocked_robots
+  website: https://www.sembrancher.ch
+  vendor: custom
+  reachable: true
+  checked: 2026-10-19
+  checked_by: crawler dry run (unverified)
+  notes: 'Automated probe: a page with dated PDF links. robots.txt disallows the document paths; nothing is collected
+    for the broad archive. Council communications 2025-2026 are listed, but every PDF is under /couch/, which robots.txt
+    disallows (Disallow: /couch*).'
+  publications:
+  - body: parliament
+    kind: minutes
+    status: candidate
+    listing_url: https://www.sembrancher.ch/page/publications/seances-du-conseil-municipal/
+    to: '2026-07-15'
+    how: 'automated probe: 11 dated PDF links on the page, newest 2026-07-15, e.g. ''Communication des discussions
+      et décisions des 1er et 15 jui''; body inferred from the URL'
+- bfs_id: 6037
+  name: Val de Bagnes
+  canton: VS
+  status: configured
+  website: https://www.valdebagnes.ch
+  vendor: i-web
+  reachable: true
+  checked: 2026-10-19
+  checked_by: crawler dry run (unverified)
+  notes: Own configuration for the parliament.
+  publications:
+  - body: parliament
+    kind: minutes
+    status: configured
+    listing_url: https://www.valdebagnes.ch/seances
+    how: 'html_links, 2 hops: i-web session table /seances (cancelled, reserve and provisional sessions excluded;
+      the table lists only this body), then the session documents filtered by title: only the decision notices titled
+      ''yy.mm.dd_Avis du Plenum du dd.mm.yyyy'' (the full date in the title wins); the agendas are left out because
+      their only date is the yy.mm.dd file prefix, which the parser would read day-first (26.09.09 as 2009); at
+      most 40 sessions per recurring fetch (older sessions are not collected yet); naturalisation, resignation,
+      election-office and presentation documents excluded; dry run on the 3 newest pages: 3 documents (2026)'
+- bfs_id: 6052
+  name: Bellwald
+  canton: VS
+  status: blocked_robots
+  website: https://gemeinde.bellwald.ch
+  vendor: typo3
+  reachable: true
+  checked: 2026-10-19
+  checked_by: crawler dry run (unverified)
+  notes: 'Automated probe: the home page links no page about minutes or a council. Documents are under /fileadmin/,
+    which robots.txt disallows; not configured.'
+  publications:
+  - body: assembly
+    kind: minutes
+    status: blocked_robots
+    obstacle: robots.txt disallows /fileadmin/
+- bfs_id: 6054
+  name: Binn
+  canton: VS
+  status: not_published
+  website: https://www.binn.ch
+  vendor: indual
+  reachable: true
+  checked: 2026-10-19
+  checked_by: crawler dry run (unverified)
+  notes: Indual site. Mitteilungsblätter 1999-2026 (get_file links) and Gemeindeinfos (building applications naming
+    the applicants); no minutes, decisions or budgets online. Not configured.
+  publications:
+  - body: assembly
+    kind: minutes
+    status: not_published
+    listing_url: https://www.binn.ch/gemeinde/verwaltung/mitteilungsblaetter
+    obstacle: no minutes, decisions or budgets online, only the Mitteilungsblatt
+- bfs_id: 6056
+  name: Ernen
+  canton: VS
+  status: candidate
+  website: https://www.ernen.ch
+  vendor: custom
+  reachable: true
+  checked: 2026-10-19
+  checked_by: crawler dry run (unverified)
+  notes: 'Automated probe: the home page links no page about minutes or a council. The broad archive collects the
+    commune''s public PDFs (finance, regulations, assembly and public notices), untagged (linked-sources.yaml).
+    The Gemeinde, Politik and Gemeinderat pages link no assembly or finance documents.'
+  publications: []
+- bfs_id: 6057
+  name: Fiesch
+  canton: VS
+  status: candidate
+  website: https://www.gemeinde-fiesch.ch/
+  vendor: custom
+  reachable: true
+  checked: 2026-10-19
+  checked_by: crawler dry run (unverified)
+  notes: 'Automated probe: the home page links no page about minutes or a council. The broad archive collects the
+    commune''s public PDFs (finance, regulations, assembly and public notices), untagged (linked-sources.yaml).
+    The Politik & Verwaltung and Anschlagbrett pages link no Urversammlung or finance documents; robots.txt disallows
+    /docs/.'
+  publications: []
+- bfs_id: 6058
+  name: Fieschertal
+  canton: VS
+  status: not_found
+  website: http://www.fieschertal.ch
+  vendor: custom
+  reachable: true
+  checked: 2026-10-19
+  checked_by: crawler dry run (unverified)
+  notes: 'Automated probe: the home page links no page about minutes or a council. The broad archive collects the
+    commune''s public PDFs (finance, regulations, assembly and public notices), untagged (linked-sources.yaml).
+    Municipal pages link no minutes or finance PDFs.'
+  publications:
+  - body: assembly
+    kind: minutes
+    status: not_found
+    listing_url: https://www.fieschertal.ch
+    obstacle: Gemeindebuero and Gemeinderat pages (indual CMS) link no PDFs
+- bfs_id: 6061
+  name: Lax
+  canton: VS
+  status: configured
+  website: https://lax.ch
+  vendor: wordpress
+  reachable: true
+  checked: 2026-10-19
+  checked_by: crawler dry run (unverified)
+  notes: Finance files through the WordPress media library; protokoll and urversammlung searches return nothing.
+  publications:
+  - body: assembly
+    kind: documents
+    status: configured
+    listing_url: https://lax.ch/wp-json/wp/v2/media?search=rechnung
+    how: 'wp_media searches rechnung, budget: Jahresrechnungen and reports 2023-2025, budgets and reports 2023-2026,
+      undated'
+- bfs_id: 6076
+  name: Obergoms
+  canton: VS
+  status: candidate
+  website: https://gemeinde.obergoms.ch
+  vendor: custom
+  reachable: true
+  checked: 2026-10-19
+  checked_by: crawler dry run (unverified)
+  notes: 'Automated probe: the home page links no page about minutes or a council. The broad archive collects the
+    commune''s public PDFs, untagged (linked-sources.yaml). The documents page holds regulations only; robots.txt
+    disallows /assets/<hash>/ folders.'
+  publications: []
+- bfs_id: 6077
+  name: Goms
+  canton: VS
+  status: candidate
+  website: https://www.gemeinde-goms.ch
+  vendor: custom
+  reachable: true
+  checked: 2026-10-19
+  checked_by: crawler dry run (unverified)
+  notes: 'Automated probe: no dated minutes PDFs on the page tested (https://www.gemeinde-goms.ch/gemeinde/sale-sitzungszimmer).
+    The broad archive collects the commune''s public PDFs, untagged (linked-sources.yaml). The finance page holds
+    only tax regulations and fee notes; no assembly or council documents found on the home page.'
+  publications: []
+- bfs_id: 6082
+  name: Ayent
+  canton: VS
+  status: configured
+  website: https://ayent.ch
+  vendor: wordpress
+  reachable: true
+  checked: 2026-10-19
+  checked_by: crawler dry run (unverified)
+  notes: WordPress (WP File Download). The broad archive collects the commune's public PDFs (finance, regulations,
+    assembly and public notices), untagged (linked-sources.yaml).
+  publications:
+  - body: parliament
+    kind: minutes
+    status: configured
+    listing_url: https://ayent.ch/wpfd_file-sitemap.xml
+    how: 'html_links, 2 hops over the WP File Download sitemap: Conseil général minutes 2006-2025 (Procès-verbal
+      du DD.MM.YYYY, dated) and budgets, accounts and financial plans 2006-2025 (undated). Bourgeoisie files excluded.
+      Primary source dry run 155 documents (both sources together).'
+  - body: executive
+    kind: decisions
+    status: configured
+    listing_url: https://ayent.ch/wpfd_file-sitemap.xml
+    how: 'Second source on the same sitemap: the Conseil communal''s published decisions 2022-2025, one file per
+      two-week period (''Décisions du 22.08.2024 au 03.09.2024''), dated by the period''s first day.'
+- bfs_id: 6083
+  name: Evolène
+  canton: VS
+  status: configured
+  website: https://www.commune-evolene.ch
+  vendor: custom
+  reachable: true
+  checked: 2026-10-19
+  checked_by: crawler dry run (unverified)
+  notes: The broad archive collects the commune's public PDFs, untagged (linked-sources.yaml).
+  publications:
+  - body: assembly
+    kind: documents
+    status: configured
+    listing_url: https://www.commune-evolene.ch/fr/comptes-budgets-communaux-98.html
+    how: 'html_links, 1 hop: ''Comptes et budgets communaux'' page, /data/documents/ PDFs: comptes and budgets 2020-2024;
+      no assembly minutes found (finance only)'
+- bfs_id: 6084
+  name: Hérémence
+  canton: VS
+  status: configured
+  website: https://www.heremence.ch
+  vendor: custom
+  reachable: true
+  checked: 2026-10-19
+  checked_by: crawler dry run (unverified)
+  notes: The broad archive collects the commune's public PDFs, untagged (linked-sources.yaml).
+  publications:
+  - body: executive
+    kind: decisions
+    status: configured
+    listing_url: https://www.heremence.ch/commune/decisions-conseil-communal-1009.html
+    how: 'html_links, 1 hop: décisions du conseil communal page (extraits per séance, /data/documents/decisionsConseil/<year>/);
+      the page shows the current year only; dry run: 15 extraits 2025'
+- bfs_id: 6087
+  name: Saint-Martin
+  canton: VS
+  status: configured
+  website: http://www.saint-martin.ch
+  vendor: custom
+  reachable: true
+  checked: 2026-10-19
+  checked_by: crawler dry run (unverified)
+  notes: The broad archive collects the commune's public PDFs, untagged (linked-sources.yaml).
+  publications:
+  - body: assembly
+    kind: minutes
+    status: configured
+    listing_url: https://www.saint-martin.ch/fr/vie-politique/assemblee-primaire-255/
+    how: 'Assemblée primaire page: PV of the Municipalité''s assemblée primaire 2019-2026 dated from the title;
+      the Bourgeoisie''s assemblies are left out. Dry run 42 documents.'
+  - body: assembly
+    kind: documents
+    status: configured
+    listing_url: https://www.saint-martin.ch/fr/administration/budgets-comptes-et-plans-financiers-247/
+    how: 'Second source: the Budgets, comptes et plans financiers page, the municipal budgets 2018-2026, accounts
+      2018-2025 and financial plans, undated (year only); the bourgeoisie''s are left out.'
+- bfs_id: 6089
+  name: Vex
+  canton: VS
+  status: configured
+  website: http://www.vex.ch
+  vendor: wordpress
+  reachable: true
+  checked: 2026-10-18
+  checked_by: crawler dry run (unverified)
+  publications:
+  - body: assembly
+    kind: minutes
+    status: configured
+    listing_url: https://vex.ch/wp-json/wp/v2/media?search=pv
+    how: 'wp_media search pv: PV of the assemblée primaire (and bourgeoisiale); dry run on the 3 newest pages: 18
+      documents, 2015-2023'
+- bfs_id: 6090
+  name: Mont-Noble
+  canton: VS
+  status: configured
+  website: https://www.mont-noble.ch
+  vendor: typo3
+  reachable: true
+  checked: 2026-10-19
+  checked_by: crawler dry run (unverified)
+  notes: Assemblée primaire page with PV and accounts; configured from a dry run.
+  publications:
+  - body: assembly
+    kind: minutes
+    status: configured
+    listing_url: https://www.mont-noble.ch/qui-sommes-nous/assemblee-primaire
+    how: 'html_links on the assemblée primaire page, /fileadmin PDFs (robots.txt allows /fileadmin): convocation,
+      PV, bilan and comptes; bourgeoisie documents excluded; dry run 8 documents'
+- bfs_id: 6101
+  name: Agarn
+  canton: VS
+  status: candidate
+  website: http://www.agarn.ch
+  vendor: custom
+  reachable: true
+  checked: 2026-10-19
+  checked_by: crawler dry run (unverified)
+  notes: 'Automated probe: the home page links no page about minutes or a council. The Urversammlung news pages
+    carry no documents; the politics page links only forms.'
+  publications: []
+- bfs_id: 6102
+  name: Albinen
+  canton: VS
+  status: configured
+  website: https://www.albinen.ch
+  vendor: wordpress
+  reachable: true
+  checked: &id005 2026-09-10
+  checked_by: listing review
+  notes: Gemeinderat decision bulletins (Publikation Gemeinderatsbeschluesse) 2022-2026; Divi text modules, one
+    p > strong > a per session; date only in the URL (2026_08_26-Publikation-Gemeinderatsbeschluesse-26.08.2026.pdf);
+    33 found, 32 dated.
+  publications:
+  - body: executive
+    kind: decisions
+    status: configured
+    listing_url: https://albinen.ch/politik-verwaltung/gemeinderat-beschluesse/
+    from: '2022'
+    to: '2026'
+    how: html_links, 1 hop
+- bfs_id: 6104
+  name: Ergisch
+  canton: VS
+  status: not_found
+  website: https://www.ergisch.ch
+  vendor: wordpress
+  reachable: true
+  checked: 2026-10-19
+  checked_by: crawler dry run (unverified)
+  notes: 'Automated probe: the home page links no page about minutes or a council. Gemeinderat page lists members;
+    WordPress media search (protokoll, urversammlung, budget, rechnung) finds only tourist-tax forms.'
+  publications:
+  - body: assembly
+    kind: minutes
+    status: not_found
+    listing_url: https://www.ergisch.ch/gemeinderat/
+    obstacle: no Urversammlung documents found
+- bfs_id: 6109
+  name: Inden
+  canton: VS
+  status: configured
+  website: https://www.inden.ch
+  vendor: i-web
+  reachable: true
+  checked: 2026-10-19
+  checked_by: crawler dry run (unverified)
+  publications:
+  - body: executive
+    kind: decisions
+    status: configured
+    listing_url: https://www.inden.ch/gemeinderatsbeschluesse
+    how: 'html_links, 2 hops: i-web publications on /gemeinderatsbeschluesse (table_row_dates false: the table''s
+      date cell is the publication date, so only a date in the title counts), then the publication''s PDFs: the
+      Gemeinderat''s ''Aus dem Gemeinderat 25/01'' summaries (one PDF each, about two per month since 2025); titles
+      carry no date and the table date is a publication date, so they stay undated; the Gemeindeversammlung and
+      Budget pages link no documents; dry run on the 3 newest pages: 3 documents'
+- bfs_id: 6110
+  name: Leuk
+  canton: VS
+  status: blocked_js
+  website: https://leuk.ch
+  vendor: megaphone
+  reachable: true
+  checked: *id003
+  checked_by: adapter dry run and one PDF
+  notes: The website is a JavaScript application (Megaphone); its API answers only requests from the commune's own
+    pages. Not collected.
+  publications:
+  - body: assembly
+    kind: minutes
+    status: blocked_js
+    listing_url: https://leuk.ch
+    obstacle: Publikationen page (/publikationen), rendered by JavaScript from the Megaphone API, which answers only
+      requests from the commune's own pages.
+- bfs_id: 6111
+  name: Leukerbad
+  canton: VS
+  status: configured
+  website: https://www.leukerbad.org
+  vendor: i-web
+  reachable: true
+  checked: 2026-10-19
+  checked_by: crawler dry run (unverified)
+  publications:
+  - body: assembly
+    kind: minutes
+    status: configured
+    listing_url: https://www.leukerbad.org/sitzung
+    how: 'html_links, 2 hops: i-web session table /sitzung (cancelled sessions excluded; other bodies only when
+      the title starts with Kirch-, Ortsbürger-, Schul- or Kreisgemeinde, so joint sessions stay), then Protokoll,
+      Beschlüsse, Einladung/Botschaft/Weisung, Traktanden documents, Jahresrechnung, Budget, Finanzplan and Kreditabrechnung;
+      naturalisation and resignation documents excluded; Valais Urversammlung; pure Burgerversammlung sessions (anchored)
+      and Burgergemeinde/Burgerversammlung documents excluded, because the Burgergemeinde decides naturalisations;
+      the sessions checked carry only the invitation; dry run on the 3 newest pages: 1 document (2026)'
+- bfs_id: 6112
+  name: Oberems
+  canton: VS
+  status: not_published
+  website: https://www.oberems.ch
+  vendor: custom
+  reachable: false
+  checked: 2026-10-19
+  checked_by: crawler dry run (unverified)
+  notes: The former path /gemeinde/index.htm answers HTTP 404; the site root and the administration pages carry
+    the municipal PDF libraries. Gemeinderat, Gemeindekanzlei and the news page link timetables, flyers and notices;
+    no Urversammlung documents, minutes or budgets. Not configured.
+  publications:
+  - body: assembly
+    kind: minutes
+    status: not_published
+    listing_url: https://www.oberems.ch/verwaltung/gemeinderat
+    obstacle: no minutes, decisions or budgets online
+- bfs_id: 6113
+  name: Salgesch
+  canton: VS
+  status: candidate
+  website: https://www.salgesch.ch
+  vendor: wordpress
+  reachable: false
+  checked: 2026-10-19
+  checked_by: crawler dry run (unverified)
+  notes: The home page timed out during the automated probe and answers again; not probed since.
+  publications:
+  - body: assembly
+    kind: minutes
+    status: candidate
+    listing_url: https://salgesch.ch/
+    obstacle: salgesch.ch is the tourism and wine site; its media library holds association documents (VWS), not
+      the commune's; the commune's own website is unknown
+- bfs_id: 6116
+  name: Varen
+  canton: VS
+  status: candidate
+  website: http://www.varen.ch
+  vendor: i-web
+  reachable: true
+  checked: 2026-10-19
+  checked_by: crawler dry run (unverified)
+  notes: 'Automated probe: the session list (/sitzung) shows 28 sessions since 2013 (Ausserordentl. Urversammlung,
+    Urversammlung, Urversammlung (findet erst im Februar 2025 statt), Versammlung); the newest three carry no minutes
+    or decision list, and the site map names no minutes page. /sitzung is 404; /gemeindeversammlung lists 28 Urversammlungen
+    since 2013, but the 2019 and 2025 pages carry no documents; /budget carries no documents.'
+  publications:
+  - body: assembly
+    kind: minutes
+    status: candidate
+    listing_url: https://www.varen.ch/gemeindeversammlung
+    obstacle: /sitzung is 404; /gemeindeversammlung lists 28 Urversammlungen since 2013, but the 2019 and 2025 pages
+      carry no documents; /budget carries no documents
+- bfs_id: 6117
+  name: Guttet-Feschel
+  canton: VS
+  status: configured
+  website: https://www.guttet-feschel.ch
+  vendor: i-web
+  reachable: true
+  checked: 2026-10-19
+  checked_by: crawler dry run (unverified)
+  publications:
+  - body: assembly
+    kind: minutes
+    status: configured
+    listing_url: https://www.guttet-feschel.ch/sitzung
+    how: 'html_links, 2 hops: i-web session table /sitzung (cancelled sessions excluded; other bodies only when
+      the title starts with them, so joint sessions stay; at most 40 sessions per run), then the session documents
+      filtered by title, dated by their own title date or else by the session; naturalisation, resignation and Bürgergemeinde
+      documents, newsletters, presentations, contracts and annual reports excluded; Valais: joint Ur- und Burgerversammlung
+      sessions kept; the Burgergemeinde''s (BG_) files excluded; dry run on the 3 newest pages: 10 documents (2025-2026)'
+- bfs_id: 6118
+  name: Gampel-Bratsch
+  canton: VS
+  status: configured
+  website: http://www.gampel-bratsch.ch
+  vendor: i-web
+  reachable: true
+  checked: 2026-10-19
+  checked_by: crawler dry run (unverified)
+  publications:
+  - body: assembly
+    kind: minutes
+    status: configured
+    listing_url: https://www.gampel-bratsch.ch/urversammlung
+    how: 'html_links, 2 hops: i-web session table /urversammlung (cancelled sessions excluded; other bodies only
+      when the title starts with Kirch-, Ortsbürger-, Schul- or Kreisgemeinde, so joint sessions stay), then Protokoll,
+      Beschlüsse, Einladung/Botschaft/Weisung, Traktanden documents, Jahresrechnung, Budget, Finanzplan and Kreditabrechnung;
+      naturalisation and resignation documents excluded; Valais Urversammlung (assemblée primaire); dry run on the
+      3 newest pages: 6 documents (2025, 2026)'
+- bfs_id: 6119
+  name: Turtmann-Unterems
+  canton: VS
+  status: blocked_network
+  website: https://www.turtmann-unterems.ch
+  vendor: custom
+  reachable: false
+  checked: 2026-10-19
+  checked_by: crawler dry run (unverified)
+  notes: 'Automated probe: the home page links no page about minutes or a council. robots.txt answered HTTP 500,
+    so the host was treated as blocked; nothing else requested.'
+  publications: []
+- bfs_id: 6131
+  name: Bovernier
+  canton: VS
+  status: configured
+  website: https://www.bovernier.ch
+  vendor: custom
+  reachable: true
+  checked: 2026-10-19
+  checked_by: crawler dry run (unverified)
+  notes: The broad archive collects the commune's public PDFs, untagged (linked-sources.yaml). 18 budgets and comptes
+    2022-2026; no PV of the assemblée primaire found.
+  publications:
+  - body: assembly
+    kind: documents
+    status: configured
+    listing_url: https://www.bovernier.ch/fr/administration/budgets-et-comptes-40/
+    how: 'html_links, 1 hop: budgets et comptes page, /files/ PDFs of the commune and the bourgeoisie (Télécharger
+      duplicates excluded)'
+- bfs_id: 6133
+  name: Fully
+  canton: VS
+  status: blocked_js
+  website: https://www.fully.ch
+  vendor: megaphone
+  reachable: true
+  checked: 2026-10-23
+  checked_by: robots.txt recheck and fetch
+  notes: The website is a JavaScript application (Megaphone); its API answers only requests from the commune's own
+    pages. Not collected. The Conseil communal publishes its dated decisions every two weeks (/decisions-du-conseil-communal);
+    the Conseil général page (/conseil-general) holds no minutes.
+  publications:
+  - body: executive
+    kind: decisions
+    status: blocked_js
+    listing_url: https://www.fully.ch
+    obstacle: Decisions page (/decisions-du-conseil-communal) with the Conseil communal's dated decision PDFs, every
+      two weeks; rendered by JavaScript from the Megaphone API, which answers only requests from the commune's own
+      pages.
+  - body: parliament
+    kind: minutes
+    status: not_published
+    listing_url: https://www.fully.ch
+    how: The Conseil général page (/conseil-general) holds a description and an image only; it points to the agendas,
+      no minutes or decisions.
+- bfs_id: 6134
+  name: Isérables
+  canton: VS
+  status: configured
+  website: https://iserables.ch
+  vendor: wordpress
+  reachable: true
+  checked: 2026-10-19
+  checked_by: crawler dry run (unverified)
+  publications:
+  - body: assembly
+    kind: minutes
+    status: configured
+    listing_url: https://iserables.ch/wp-json/wp/v2/media?search=verbal
+    how: 'wp_media searches verbal, pv, budget, comptes: PV of the assemblée primaire 2023-2026, budgets 2022-2025,
+      comptes 2010-2024; bourgeoisie assemblies (AB) and association minutes excluded; dry run: 31 documents'
+- bfs_id: 6135
+  name: Leytron
+  canton: VS
+  status: configured
+  website: http://www.leytron.ch
+  vendor: custom
+  reachable: true
+  checked: 2026-10-18
+  checked_by: crawler dry run (unverified)
+  notes: The broad archive collects the commune's public PDFs (finance, regulations, assembly and public notices),
+    untagged (linked-sources.yaml).
+  publications:
+  - body: assembly
+    kind: documents
+    status: configured
+    listing_url: https://www.leytron.ch/index.php/divers/telechargements/category/20-comptes
+    how: 'html_links, 2 hops: jDownloads categories Comptes (20) and Budgets (8), then their year sub-categories
+      2013-2025, then /send/ download links; no minutes found; dry run: 113 documents, undated (year in the folder)'
+- bfs_id: 6136
+  name: Martigny
+  canton: VS
+  status: configured
+  website: https://www.martigny.ch
+  vendor: custom
+  reachable: true
+  checked: 2026-09-08
+  checked_by: listing review
+  notes: Conseil general; in-house site (URL shape /fr/<section>/<name>-<id>/, files under /files/), same shape
+    as Conthey; one page, all years; nothing newer than May 2025 on the page
+  publications:
+  - body: parliament
+    kind: minutes
+    status: configured
+    listing_url: https://www.martigny.ch/fr/votre-municipalite/autorites/conseil-general-30/
+    from: '2021-01-19'
+    to: '2025-05-27'
+    how: html_links, 1 hop, a[href*='/files/'] with a PV regex
+- bfs_id: 6137
+  name: Martigny-Combe
+  canton: VS
+  status: configured
+  website: https://www.martigny-combe.ch
+  vendor: custom
+  reachable: true
+  checked: 2026-10-18
+  checked_by: crawler dry run (unverified)
+  notes: The broad archive collects the commune's public PDFs, untagged (linked-sources.yaml).
+  publications:
+  - body: assembly
+    kind: documents
+    status: configured
+    listing_url: https://www.martigny-combe.ch/fr/Administration/Comptes-et-budgets/
+    how: 'html_links, 1 hop: comptes et budgets page, municipal and bourgeoisie budgets and accounts 2017-2026;
+      no assembly minutes published; dry run: 93 documents'
+- bfs_id: 6139
+  name: Riddes
+  canton: VS
+  status: blocked_js
+  website: https://www.riddes.ch
+  vendor: megaphone
+  reachable: true
+  checked: &id004 2026-09-11
+  checked_by: website check
+  notes: The website is a JavaScript application (Megaphone); its API answers only requests from the commune's own
+    pages. Not collected. When last checked, the site search found 'verbal' only on the budget page; the council
+    pages carried other documents, no minutes.
+- bfs_id: 6140
+  name: Saillon
+  canton: VS
+  status: configured
+  website: https://www.saillon.ch
+  vendor: i-web
+  reachable: true
+  checked: 2026-10-19
+  checked_by: crawler dry run (unverified)
+  publications:
+  - body: assembly
+    kind: minutes
+    status: configured
+    listing_url: https://www.saillon.ch/assemblees
+    how: 'html_links, 2 hops: i-web session table /assemblees (cancelled and information sessions excluded), then
+      the session documents (ordre du jour, PV, préavis, extraits, délibérations; Téléchargement duplicates, naturalisation
+      and resignation documents excluded); Assemblée primaire only; Assemblée bourgeoisiale sessions and bourgeoisie
+      documents excluded; dry run on the 3 newest pages: 11 documents (2025, 2026)'
+- bfs_id: 6141
+  name: Saxon
+  canton: VS
+  status: configured
+  website: https://www.saxon.ch
+  vendor: wordpress
+  reachable: true
+  checked: 2026-09-08
+  checked_by: listing review
+  publications:
+  - body: assembly
+    kind: minutes
+    status: configured
+    listing_url: https://www.saxon.ch/protocoles-des-assemblees/
+    from: '2010-06-24'
+    to: '2026-06-16'
+    obstacle: 'partial: Assemblee primaire protocols; 20 of 34 undated because text and file name carry month and
+      year only; one wrong date from the upload path (/uploads/2023/01/20221215_ read as 2022-01-23); bimonthly
+      ''Decisions du conseil'' bulletins of the executive on /decisions-du-conseil/ (undated anchor text) not configured'
+    how: html_links, 1 hop; partial-date (month and year) support would date the rest
+- bfs_id: 6142
+  name: Trient
+  canton: VS
+  status: configured
+  website: https://www.trient.ch
+  vendor: drupal
+  reachable: true
+  checked: 2026-10-19
+  checked_by: crawler dry run (unverified)
+  publications:
+  - body: assembly
+    kind: documents
+    status: configured
+    listing_url: https://trient.ch/administration/comptes-et-budgets
+    how: 'Comptes et budgets page: Municipalité budgets and commune accounts under fichiers/documents, undated (years
+      only); Bourgeoisie files excluded; the Conseil communal page links no documents. Crawl-delay 10. Dry run 15
+      documents, 2019-2026'
+- bfs_id: 6151
+  name: Champéry
+  canton: VS
+  status: blocked_robots
+  website: https://www.admin-champery.ch
+  reachable: true
+  checked: 2026-10-27
+  checked_by: crawler dry run (unverified)
+  notes: The certificate chain of www.admin-champery.ch is incomplete; the crawler completes the missing intermediate.
+    Same Valais CMS as Salvan, Finhaut and Vernayaz. The législatif page lists procès-verbaux of the assemblée primaire
+    and bourgeoisiale (December 2024 to June 2026) beside assembly presentations; the comptes et budget page lists
+    budgets and accounts (2024 to 2026); the bourgeoisie has its own convocations, budget and accounts pages. Every
+    file is under /UserFiles/, which robots.txt disallows for all user agents. Not configured.
+  publications:
+  - body: assembly
+    kind: minutes
+    status: blocked_robots
+    listing_url: https://www.admin-champery.ch/fr/administration/vie-politique/legislatif
+    from: '2024-12-16'
+    to: '2026-06-15'
+    obstacle: robots.txt disallows /UserFiles/, where all PDFs are stored
+  - body: assembly
+    kind: documents
+    status: blocked_robots
+    listing_url: https://www.admin-champery.ch/fr/administration/finances/comptes-et-budget
+    from: '2024'
+    to: '2026'
+    obstacle: robots.txt disallows /UserFiles/, where the budgets and accounts are stored
+- bfs_id: 6152
+  name: Collombey-Muraz
+  canton: VS
+  status: not_published
+  website: http://www.collombey-muraz.ch
+  vendor: custom
+  reachable: true
+  checked: 2026-09-08
+  checked_by: listing review
+  notes: Conseil general. The broad archive collects the commune's public PDFs, untagged (linked-sources.yaml).
+  publications:
+  - body: parliament
+    kind: minutes
+    status: not_published
+    listing_url: https://www.collombey-muraz.ch/commune/proces-verbal-seances-411.html
+    obstacle: the PV page says 'L'ensemble des PV seront rajoutes prochainement' and holds no PDF
+    how: on request from the commune
+- bfs_id: 6153
+  name: Monthey
+  canton: VS
+  status: configured
+  website: https://www.monthey.ch
+  vendor: qsportal
+  reachable: true
+  checked: 2026-09-08
+  checked_by: listing review
+  notes: Conseil general; not WordPress but qsPortal custom CMS (the wp-content marker came from an external link);
+    pagination is a form field that also works as a GET parameter.
+  publications:
+  - body: parliament
+    kind: minutes
+    status: configured
+    listing_url: https://www.monthey.ch/N1406/pv-des-seances-du-conseil-general.html?Page_dphchildslinks={1..5}
+    from: '2009-02-12'
+    to: '2026-03-23'
+    how: html_links, 1 hop, page range {1..5}
+- bfs_id: 6154
+  name: Port-Valais
+  canton: VS
+  status: not_published
+  website: https://www.port-valais.ch/
+  vendor: custom
+  reachable: true
+  checked: 2026-09-08
+  checked_by: listing review
+  publications:
+  - body: assembly
+    kind: minutes
+    status: not_published
+    listing_url: https://www.port-valais.ch/fr/assemblee-primaire-1463.html
+    obstacle: Assemblee primaire page has only news and enquete PDFs
+    how: on request from the commune
+  notes: The broad archive collects the commune's public PDFs, untagged (linked-sources.yaml).
+- bfs_id: 6155
+  name: Saint-Gingolph
+  canton: VS
+  status: configured
+  website: https://st-gingolph.ch
+  vendor: wordpress
+  reachable: true
+  checked: 2026-10-19
+  checked_by: crawler dry run (unverified)
+  publications:
+  - body: assembly
+    kind: documents
+    status: configured
+    listing_url: https://st-gingolph.ch/administration/finance/comptes-et-budgets/
+    how: 'Comptes et budgets page: accounts 2014-2025 and budgets 2015-2026, undated (year only). The decisions
+      page links its one extract with a broken href (http://https://...), so council decisions are not collected.
+      Crawl-delay 3. Dry run 25 documents.'
+- bfs_id: 6156
+  name: Troistorrents
+  canton: VS
+  status: not_published
+  website: http://www.troistorrents.ch
+  vendor: custom
+  reachable: true
+  checked: 2026-09-08
+  checked_by: listing review
+  publications:
+  - body: assembly
+    kind: minutes
+    status: not_published
+    listing_url: https://www.troistorrents.ch/commune/assemblees-primaires-2859.html
+    obstacle: Assemblees primaires page and 'Decisions communales' (extract of executive decisions) carry no documents
+    how: on request from the commune
+  notes: The broad archive collects the commune's public PDFs, untagged (linked-sources.yaml).
+- bfs_id: 6157
+  name: Val-d'Illiez
+  canton: VS
+  status: configured
+  website: https://www.illiez.ch
+  vendor: custom
+  reachable: true
+  checked: 2026-10-18
+  checked_by: crawler dry run (unverified)
+  notes: The broad archive collects the commune's public PDFs, untagged (linked-sources.yaml).
+  publications:
+  - body: assembly
+    kind: minutes
+    status: configured
+    listing_url: https://www.illiez.ch/fr/ordre-jour-611.html
+    how: 'html_links, page ''Assemblées primaires et bourgeoisiales'': convocations, procès-verbaux, comptes under
+      /data/documents/Assemblee-primaire/ (current assemblies only); dry run: 7 documents 2025-2026'
+- bfs_id: 6158
+  name: Vionnaz
+  canton: VS
+  status: blocked_js
+  website: https://www.vionnaz.ch
+  vendor: megaphone
+  reachable: true
+  checked: *id003
+  checked_by: adapter dry run and one PDF
+  notes: The website is a JavaScript application (Megaphone); its API answers only requests from the commune's own
+    pages. Not collected.
+  publications:
+  - body: assembly
+    kind: minutes
+    status: blocked_js
+    listing_url: https://www.vionnaz.ch
+    obstacle: Assemblée primaire page (/assemblee-primaire), rendered by JavaScript from the Megaphone API, which answers
+      only requests from the commune's own pages.
+- bfs_id: 6159
+  name: Vouvry
+  canton: VS
+  status: blocked_js
+  website: https://www.vouvry.ch
+  vendor: megaphone
+  reachable: true
+  checked: 2026-09-08
+  checked_by: listing review
+  publications:
+  - body: assembly
+    kind: minutes
+    status: blocked_js
+    listing_url: https://vouvry.ch/
+    obstacle: the home page HTML has no links; everything is rendered by JavaScript (Angular)
+    how: the HTML shows no document endpoint
+  notes: The website is a JavaScript application (Megaphone); its API answers only requests from the commune's own
+    pages. Not collected.
+- bfs_id: 6172
+  name: Bister
+  canton: VS
+  status: not_examined
+  website: https://www.gemeinde-bister.ch
+  vendor: custom
+  notes: The commune's website identifies the commune (BFS 6172) and its administration; not examined yet.
+- bfs_id: 6173
+  name: Bitsch
+  canton: VS
+  status: candidate
+  website: https://www.bitsch.ch
+  vendor: custom
+  reachable: true
+  checked: 2026-10-19
+  checked_by: crawler dry run (unverified)
+  notes: 'Automated probe: the home page links no page about minutes or a council. The broad archive collects the
+    commune''s public PDFs (finance, regulations, assembly and public notices), untagged (linked-sources.yaml).
+    The Urversammlung page only describes the assembly; no documents linked.'
+  publications: []
+- bfs_id: 6177
+  name: Grengiols
+  canton: VS
+  status: not_examined
+  website: https://www.grengiols.ch
+  vendor: custom
+  reachable: true
+  checked: 2026-10-19
+  checked_by: probe (unverified)
+  notes: 'Automated probe: the home page links no page about minutes or a council. The broad archive collects the
+    commune''s public PDFs (finance, regulations, assembly and public notices), untagged (linked-sources.yaml).
+    Not configured. The new site (www redirects to grengiols.ch) links no PDF on the Gemeinde and Politik pages;
+    only a Reglemente subpage, not probed further.'
+  publications: []
+- bfs_id: 6181
+  name: Riederalp
+  canton: VS
+  status: blocked_js
+  website: https://www.gemeinde-riederalp.ch
+  vendor: megaphone
+  reachable: true
+  checked: *id004
+  checked_by: website check
+  notes: The website is a JavaScript application (Megaphone); its API answers only requests from the commune's own
+    pages. Not collected. When last checked, the Gemeindeversammlung page carried no minutes.
+- bfs_id: 6191
+  name: Ausserberg
+  canton: VS
+  status: configured
+  website: http://www.ausserberg.ch
+  vendor: custom
+  reachable: true
+  checked: 2026-10-19
+  checked_by: crawler dry run (unverified)
+  notes: 'The broad archive collects the commune''s public PDFs (finance, regulations, assembly and public notices),
+    untagged (linked-sources.yaml). Finance page, ?action=get_file links: current Auflage Rechnung and Einladung;
+    dry run 4, undated.'
+  publications:
+  - body: assembly
+    kind: documents
+    status: configured
+    listing_url: https://www.ausserberg.ch/gemeinschaft/verwaltung/finanzen-politik/finanzen
+    how: 'finance page, ?action=get_file links: current Auflage Rechnung and Einladung; dry run 4, undated'
+- bfs_id: 6192
+  name: Blatten
+  canton: VS
+  status: blocked_robots
+  website: https://www.blatten-vs.ch
+  vendor: custom
+  reachable: true
+  checked: 2026-10-19
+  checked_by: crawler dry run (unverified)
+  notes: 'Automated probe: the home page links no page about minutes or a council. Gemeinderat page links documents
+    only through ?action=get_file, which robots.txt disallows (*?action=*); no minutes seen.'
+  publications:
+  - body: executive
+    kind: documents
+    status: blocked_robots
+    listing_url: https://www.blatten-vs.ch/verwaltung/gemeinderat
+    obstacle: document links use ?action=get_file, disallowed by robots.txt
+- bfs_id: 6193
+  name: Bürchen
+  canton: VS
+  status: configured
+  website: https://gemeinde.buerchen.ch
+  vendor: wordpress
+  reachable: true
+  checked: 2026-10-19
+  checked_by: crawler dry run (unverified)
+  notes: 'wp_media searches protokoll, urversammlung, budget, rechnung: Urversammlung invitations and brochures,
+    budgets of the Einwohnergemeinde; Burgergemeinde (BGDE, BG_) excluded; dry run 25.'
+  publications:
+  - body: assembly
+    kind: documents
+    status: configured
+    listing_url: https://gemeinde.buerchen.ch/wp-json/wp/v2/media?search=protokoll
+    how: 'wp_media searches protokoll, urversammlung, budget, rechnung: Urversammlung invitations and brochures,
+      budgets of the Einwohnergemeinde; Burgergemeinde (BGDE, BG_) excluded; dry run 25'
+- bfs_id: 6194
+  name: Eischoll
+  canton: VS
+  status: configured
+  website: https://www.eischoll.ch
+  vendor: wordpress
+  reachable: true
+  checked: 2026-10-19
+  checked_by: crawler dry run (unverified)
+  publications:
+  - body: assembly
+    kind: minutes
+    status: configured
+    listing_url: https://www.eischoll.ch/wp-json/wp/v2/media?search=protokoll
+    how: 'wp_media searches protokoll, budget, rechnung: Urversammlung minutes (two dated, rest year-only), budgets
+      and accounts; association Generalversammlung minutes and Burgergemeinde documents excluded'
+- bfs_id: 6195
+  name: Ferden
+  canton: VS
+  status: not_found
+  website: https://www.ferden.ch
+  vendor: custom
+  reachable: true
+  checked: 2026-10-19
+  checked_by: crawler dry run (unverified)
+  notes: 'Automated probe: the home page links no page about minutes or a council. The broad archive collects the
+    commune''s public PDFs (finance, regulations, assembly and public notices), untagged (linked-sources.yaml).
+    Homepage, Mitteilungen and Ämter/Reglemente pages checked: no Urversammlung minutes, budget or accounts listed;
+    notices only mention past assemblies.'
+  publications:
+  - body: assembly
+    kind: minutes
+    status: not_found
+    listing_url: https://www.ferden.ch/aktuelles/mitteilungen
+    obstacle: no assembly documents found on the site
+- bfs_id: 6197
+  name: Kippel
+  canton: VS
+  status: not_found
+  website: https://www.kippel.ch
+  vendor: custom
+  reachable: true
+  checked: 2026-10-19
+  checked_by: crawler dry run (unverified)
+  notes: 'Automated probe: the home page links no page about minutes or a council. The broad archive collects the
+    commune''s public PDFs (finance, regulations, assembly and public notices), untagged (linked-sources.yaml).
+    Gemeinde and Gemeinderat pages link no minutes or finance PDFs.'
+  publications:
+  - body: assembly
+    kind: minutes
+    status: not_found
+    listing_url: https://www.kippel.ch
+    obstacle: Gemeinde and Gemeinderat pages (indual CMS) link no PDFs
+- bfs_id: 6198
+  name: Niedergesteln
+  canton: VS
+  status: blocked_js
+  website: https://www.niedergesteln.ch
+  vendor: megaphone
+  reachable: true
+  checked: *id003
+  checked_by: adapter dry run and one PDF
+  notes: The website is a JavaScript application (Megaphone); its API answers only requests from the commune's own
+    pages. Not collected.
+  publications:
+  - body: assembly
+    kind: minutes
+    status: blocked_js
+    listing_url: https://www.niedergesteln.ch
+    obstacle: Urversammlung page (/urversammlung), rendered by JavaScript from the Megaphone API, which answers only
+      requests from the commune's own pages.
+- bfs_id: 6199
+  name: Raron
+  canton: VS
+  status: configured
+  website: https://www.raron.ch
+  vendor: wordpress
+  reachable: true
+  checked: 2026-10-19
+  checked_by: crawler dry run (unverified)
+  publications:
+  - body: assembly
+    kind: minutes
+    status: configured
+    listing_url: https://raron.ch/urversammlung/
+    how: 'Urversammlung page: minutes 2015-2026 whose link text is the assembly date. The finance page (Jahresrechnung
+      and Voranschlag 2015-2026) links only years as link text and is left out. Dry run 25 documents.'
+- bfs_id: 6201
+  name: Unterbäch
+  canton: VS
+  status: configured
+  website: https://gemeinde.unterbaech.ch
+  vendor: wordpress
+  reachable: true
+  checked: 2026-10-19
+  checked_by: crawler dry run (unverified)
+  notes: 'Earlier address: https://www.unterbaech.ch.'
+  publications:
+  - body: assembly
+    kind: documents
+    status: configured
+    listing_url: https://gemeinde.unterbaech.ch/urversammlung/
+    how: 'Urversammlung page on the municipal site gemeinde.unterbaech.ch (www.unterbaech.ch is the tourism site):
+      only the current accounts and budget booklets (Rechnung 2025, Budget 2026), replaced each year and undated;
+      no minutes are published. Dry run 2 documents.'
+- bfs_id: 6202
+  name: Wiler
+  canton: VS
+  status: candidate
+  website: https://www.wilervs.ch
+  vendor: custom
+  reachable: true
+  checked: 2026-10-19
+  checked_by: crawler dry run (unverified)
+  notes: 'Automated probe: the home page links no page about minutes or a council. No assembly or finance documents
+    linked (finance planning page empty, documents page holds regulations).'
+  publications:
+  - body: assembly
+    kind: minutes
+    status: candidate
+    listing_url: https://www.wilervs.ch
+    obstacle: no assembly or finance documents linked (finance planning page empty, documents page holds regulations)
+- bfs_id: 6203
+  name: Mörel-Filet
+  canton: VS
+  status: candidate
+  website: http://www.moerel-filet.ch
+  vendor: custom
+  reachable: true
+  checked: 2026-10-19
+  checked_by: crawler dry run (unverified)
+  notes: 'Automated probe: the home page links no page about minutes or a council. The broad archive collects the
+    commune''s public PDFs (finance, regulations, assembly and public notices), untagged (linked-sources.yaml).
+    No listing of assembly or finance documents on the politics and Urversammlung pages; robots.txt disallows /docs/.'
+  publications: []
+- bfs_id: 6204
+  name: Steg-Hohtenn
+  canton: VS
+  status: configured
+  website: https://www.steg-hohtenn.ch
+  vendor: i-web
+  reachable: true
+  checked: 2026-10-19
+  checked_by: crawler dry run (unverified)
+  publications:
+  - body: assembly
+    kind: minutes
+    status: configured
+    listing_url: https://www.steg-hohtenn.ch/sitzung
+    how: 'html_links, 2 hops: i-web session table /sitzung (cancelled sessions excluded; other bodies only when
+      the title starts with Kirch-, Ortsbürger-, Schul- or Kreisgemeinde, so joint sessions stay), then Protokoll,
+      Beschlüsse, Einladung/Botschaft/Weisung, Traktanden documents, Jahresrechnung, Budget, Finanzplan and Kreditabrechnung;
+      naturalisation and resignation documents excluded; Valais Urversammlung; pure Burgerversammlung sessions (anchored)
+      and Burgergemeinde/Burgerversammlung documents excluded, because the Burgergemeinde decides naturalisations;
+      dry run on the 3 newest pages: 3 documents (2025, 2026)'
+- bfs_id: 6205
+  name: Bettmeralp
+  canton: VS
+  status: blocked_js
+  website: https://gemeinde.bettmeralp.ch/
+  vendor: megaphone
+  reachable: true
+  checked: *id004
+  checked_by: website check
+  notes: The website is a JavaScript application (Megaphone); its API answers only requests from the commune's own
+    pages. Not collected. When last checked, the Gemeinderat und Burgerrat page carried no minutes.
+- bfs_id: 6211
+  name: Collonges
+  canton: VS
+  status: configured
+  website: https://www.collonges.ch
+  vendor: custom
+  reachable: true
+  checked: 2026-10-19
+  checked_by: crawler dry run (unverified)
+  notes: The broad archive collects the commune's public PDFs, untagged (linked-sources.yaml). Assemblée primaire
+    page 2021-2026 (convocation, PV, crédits d'engagement), budgets 2022-2026 and comptes 2021-2025; council PV
+    extracts and décisions on the affichoir public as executive source; /images/ is allowed by robots.txt; dry run
+    45 documents.
+  publications:
+  - body: assembly
+    kind: minutes
+    status: configured
+    listing_url: https://www.collonges.ch/index.php/nos-infos/assemblee-primaire-main
+    how: 'html_links, 1 hop: assemblee-primaire-main and budget-comptes-main, /images/pdf/ PDFs; dry run: 43 documents
+      2021-2026'
+  - body: executive
+    kind: decisions
+    status: configured
+    listing_url: https://www.collonges.ch/index.php/nos-infos/affichoir-public
+    how: 'html_links, 1 hop: affichoir-public (?start=0, 8), PV extracts and Décisions of the Conseil communal'
+- bfs_id: 6212
+  name: Dorénaz
+  canton: VS
+  status: blocked_js
+  website: http://www.dorenaz.ch
+  vendor: megaphone
+  reachable: true
+  checked: *id004
+  checked_by: website check
+  notes: The website is a JavaScript application (Megaphone); its API answers only requests from the commune's own
+    pages. Not collected. When last checked, no assembly or council page carried minutes.
+- bfs_id: 6213
+  name: Evionnaz
+  canton: VS
+  status: configured
+  website: https://www.evionnaz.ch
+  vendor: custom
+  reachable: true
+  checked: 2026-10-19
+  checked_by: crawler dry run (unverified)
+  notes: The broad archive collects the commune's public PDFs, untagged (linked-sources.yaml). Procès-verbaux page,
+    /data/documents/ PDFs; only one PV (assemblée primaire 2023-12-04) is published; the comptes-budgets page holds
+    none.
+  publications:
+  - body: assembly
+    kind: minutes
+    status: configured
+    listing_url: https://www.evionnaz.ch/fr/proces-verbaux-1825.html
+    how: procès-verbaux page, /data/documents/ PDFs; only one PV (assemblée primaire 2023-12-04) is published; the
+      comptes-budgets page holds none
+- bfs_id: 6214
+  name: Finhaut
+  canton: VS
+  status: blocked_robots
+  website: https://www.finhaut.ch
+  reachable: true
+  checked: 2026-10-27
+  checked_by: crawler dry run (unverified)
+  notes: The served HTML of the assembly page holds 75 PDF links (assembly minutes, convocations, presentations)
+    and the comptes et budgets page 29 (budgets and accounts 2021 to 2026). Every file is under /UserFiles/, which
+    robots.txt disallows for all user agents. Not configured.
+  publications:
+  - body: assembly
+    kind: minutes
+    status: blocked_robots
+    listing_url: https://www.finhaut.ch/fr/assemblee-primaire-et-bourgeoisiale-fp48057
+    from: '2021-02-26'
+    to: '2026-06-16'
+    obstacle: robots.txt disallows /UserFiles/, where all PDFs are stored (20 procès-verbaux of the assemblée
+      primaire and bourgeoisiale listed)
+  - body: assembly
+    kind: documents
+    status: blocked_robots
+    listing_url: https://www.finhaut.ch/fr/comptes-et-budgets-fp47951
+    from: '2021'
+    to: '2026'
+    obstacle: robots.txt disallows /UserFiles/, where the budget and accounts brochures are stored
+- bfs_id: 6215
+  name: Massongex
+  canton: VS
+  status: configured
+  website: http://www.massongex.ch
+  vendor: wordpress
+  reachable: true
+  checked: 2026-10-18
+  checked_by: crawler dry run (unverified)
+  publications:
+  - body: assembly
+    kind: minutes
+    status: configured
+    listing_url: https://www.massongex.ch/wp-json/wp/v2/media?search=pv
+    how: 'wp_media search pv: PV of the assemblée primaire and bourgeoisiale; crawl delay 10; dry run on the 3 newest
+      pages: 22 documents, 2021-2025'
+- bfs_id: 6217
+  name: Saint-Maurice
+  canton: VS
+  status: configured
+  website: https://www.st-maurice.ch
+  vendor: custom
+  reachable: true
+  checked: 2026-09-08
+  checked_by: listing review
+  notes: Conseil general; anchor texts are bare dates.
+  publications:
+  - body: parliament
+    kind: minutes
+    status: configured
+    listing_url: https://www.st-maurice.ch/fr/administration/politique-et-autorites/conseil-general-61/
+    from: '2013-01-30'
+    to: '2026-06-16'
+    how: html_links, 1 hop
+- bfs_id: 6218
+  name: Salvan
+  canton: VS
+  status: blocked_robots
+  website: https://www.salvan.ch
+  reachable: true
+  checked: 2026-10-27
+  checked_by: crawler dry run (unverified)
+  notes: Same Valais CMS as Finhaut, Vernayaz and Champéry (-fp<id> and -lm page slugs, shared host). The home page,
+    autorités communales and publications officielles link no assembly, council, budget or accounts page. On this
+    CMS every file is stored under /UserFiles/, which robots.txt disallows for all user agents, so even a published
+    document could not be fetched. Not configured.
+  publications: []
+- bfs_id: 6219
+  name: Vernayaz
+  canton: VS
+  status: blocked_robots
+  website: https://www.vernayaz.ch
+  reachable: true
+  checked: 2026-10-27
+  checked_by: crawler dry run (unverified)
+  notes: The certificate chain is incomplete; the crawler completes the missing intermediate. Same Valais CMS as
+    Salvan, Finhaut and Champéry. The Décisions du Conseil page lists bimonthly PDF summaries of the executive council's
+    decisions (January-February 2025 to July-August 2026); the finances page lists budgets and accounts of the commune
+    and the bourgeoisie (2022 to 2026); the assemblies page holds no minutes. Every file is under /UserFiles/, which
+    robots.txt disallows for all user agents. Not configured.
+  publications:
+  - body: executive
+    kind: decisions
+    status: blocked_robots
+    listing_url: https://www.vernayaz.ch/fr/decisions-du-conseil-fp47989
+    from: '2025-01-01'
+    to: '2026-08-31'
+    cadence: 2 months
+    obstacle: robots.txt disallows /UserFiles/, where the decision summaries are stored
+  - body: assembly
+    kind: documents
+    status: blocked_robots
+    listing_url: https://www.vernayaz.ch/fr/finances-fp972
+    from: '2022'
+    to: '2026'
+    obstacle: robots.txt disallows /UserFiles/, where the budgets and accounts are stored
+- bfs_id: 6220
+  name: Vérossaz
+  canton: VS
+  status: candidate
+  website: https://verossaz.ch
+  vendor: custom
+  reachable: true
+  checked: 2026-10-19
+  checked_by: crawler dry run (unverified)
+  notes: The site is no longer a Megaphone application; the current site runs PHP. The home page answers HTTP 200
+    with an empty body and no links; no listing found. The site has answered HTTP 429 with a one-hour cooldown,
+    which the crawler honours.
+  publications: []
+- bfs_id: 6232
+  name: Chalais
+  canton: VS
+  status: configured
+  website: https://www.chalais.ch
+  vendor: custom
+  reachable: true
+  checked: 2026-10-18
+  checked_by: crawler dry run (unverified)
+  notes: The broad archive collects the commune's public PDFs, untagged (linked-sources.yaml).
+  publications:
+  - body: assembly
+    kind: documents
+    status: configured
+    listing_url: https://www.chalais.ch/commune/comptes-budgets-89.html
+    how: 'html_links, 1 hop: budgets 2016-2026 and comptes 2016-2024 on one page (/data/ PDFs); no minutes found;
+      dry run: 27 documents, undated'
+- bfs_id: 6235
+  name: Chippis
+  canton: VS
+  status: configured
+  website: http://www.chippis.ch
+  vendor: wordpress
+  reachable: true
+  checked: 2026-10-19
+  checked_by: crawler dry run (unverified)
+  publications:
+  - body: assembly
+    kind: documents
+    status: configured
+    listing_url: https://chippis.ch/administration/comptes-et-budgets
+    how: 'html_links, 1 hop: ''Comptes et budgets'' page (budgets 2019-2026, comptes); second source wp_media searches
+      pv and assemblee (convocations and PV of the assemblée primaire and bourgeoisiale); crawl delay 10'
+  - body: assembly
+    kind: documents
+    status: configured
+    listing_url: https://chippis.ch/wp-json/wp/v2/media?search=pv
+    how: 'second source: wp_media'
+- bfs_id: 6238
+  name: Grône
+  canton: VS
+  status: candidate
+  website: https://www.grone.ch
+  vendor: custom
+  reachable: true
+  checked: 2026-10-18
+  checked_by: crawler dry run (unverified)
+  notes: 'Automated probe: the home page links no page about minutes or a council. The broad archive collects the
+    commune''s public PDFs, untagged (linked-sources.yaml).'
+  publications:
+  - body: assembly
+    kind: minutes
+    status: candidate
+    obstacle: navigation shows authorities and public notices (avis publics, enquêtes) only; no assembly or finance
+      listing found
+    listing_url: https://www.grone.ch/commune/publications-bulletin-officiel-avis-publics-364.html
+- bfs_id: 6239
+  name: Icogne
+  canton: VS
+  status: configured
+  website: https://www.icogne.ch
+  vendor: umbraco
+  reachable: true
+  checked: 2026-10-19
+  checked_by: crawler dry run (unverified)
+  notes: 'The broad archive collects the commune''s public PDFs (finance, regulations and assembly, including older
+    records), untagged (linked-sources.yaml). The broad archive collects the commune''s public PDFs, untagged (linked-sources.yaml).
+    Earlier address: http://www.icogne.ch.'
+  publications:
+  - body: assembly
+    kind: minutes
+    status: configured
+    listing_url: https://www.icogne.ch/fr/services-communaux/comptes-budgets-et-taxes/
+    how: 'Comptes, budgets et taxes page: municipal budgets 2011-2026, accounts 2011-2024 and the PV of the assemblée
+      primaire on budget and accounts 2014-2025. PV are dated by the session date at the start of the file name;
+      budgets and accounts are undated (year only) except where the file name carries a signing date (Budget 2026:
+      20251220). Excluded as contradictory or unclear: Budget 2019 (copy timestamp 20200305), Budget 2022 (file
+      dated 21.06.2022), Comptes 2020 (file dated 29.07.2021), PV Budget 2016 (file of 15.12.2014), PV Comptes 2023
+      (file 20241121 for the session of 17.06.2024), PV Comptes 2018 (file 20190820 for the session of 24.06.2019),
+      and both Comptes 2017 files (the convocation names 16.06.2018, the PV 11.06.2018). The bourgeoisie''s accounts
+      and regulation are left out. Dry run 45 documents.'
+- bfs_id: 6240
+  name: Lens
+  canton: VS
+  status: not_published
+  website: https://www.lens.ch
+  vendor: custom
+  reachable: true
+  checked: 2026-09-08
+  checked_by: listing review
+  publications:
+  - body: assembly
+    kind: minutes
+    status: not_published
+    listing_url: https://www.lens.ch/cmsscripts/default.aspx?lang=fr&page=HomeInfo
+    obstacle: '''Lens officiel'', ''Documents officiels'' and ''La vie politique'' carry no assemblee primaire PVs,
+      only ''Echos du Conseil'' (executive news)'
+    how: on request from the commune
+- bfs_id: 6246
+  name: Saint-Léonard
+  canton: VS
+  status: not_published
+  website: http://www.st-leonard.ch
+  vendor: wordpress
+  reachable: true
+  checked: 2026-09-08
+  checked_by: listing review
+  publications:
+  - body: assembly
+    kind: minutes
+    status: not_published
+    listing_url: https://st-leonard.ch/administration/autorites/assemblee-primaire/
+    obstacle: Assemblee primaire page has budgets and accounts only; the 'Comptes, budgets & PV' page belongs to
+      the Bourgeoisie, not the political commune
+    how: on request from the commune
+- bfs_id: 6248
+  name: Sierre
+  canton: VS
+  status: configured
+  website: https://www.sierre.ch
+  vendor: custom
+  reachable: true
+  checked: 2026-10-19
+  checked_by: crawler dry run (unverified)
+  notes: Nuxt app; the sitemap advertised in robots.txt lists the document pages, which are rendered on the server
+    with their PDF link. Crawl-delay 10 s. The broad archive also collects the commune's public PDFs from those
+    pages, untagged (linked-sources.yaml).
+  publications:
+  - body: parliament
+    kind: minutes
+    status: configured
+    listing_url: https://www.sierre.ch/sitemap/fr_1.xml
+    how: 'html_links, 2 hops: sitemap <loc> entries of /documents/proces-verbal-du-... and /documents/ordre-du-jour-du-...
+      (Conseil général 2020-2026), then the PDF on each page. PDF names start with the upload date (04-09-2025-proc-s-verbal-du-11-juin-2025...),
+      so date_regex takes the date after ''du''; documents without such a date (budgets, accounts) are not selected,
+      since they would take the upload date. Dry run 28 documents.'
+- bfs_id: 6252
+  name: Anniviers
+  canton: VS
+  status: configured
+  website: https://www.anniviers.org
+  vendor: custom
+  reachable: true
+  checked: 2026-10-18
+  checked_by: crawler dry run (unverified)
+  notes: The broad archive collects the commune's public PDFs, untagged (linked-sources.yaml).
+  publications:
+  - body: assembly
+    kind: minutes
+    status: configured
+    listing_url: https://www.anniviers.org/fr/assemblee-primaire-100.html
+    how: 'html_links, 1 hop: Procès-verbaux de l''Assemblée primaire 2018-2026 under /Autorites/AP/'
+- bfs_id: 6253
+  name: Crans-Montana
+  canton: VS
+  status: configured
+  website: https://www.commune-cransmontana.ch
+  vendor: iomedia-classic
+  reachable: true
+  checked: 2026-09-08
+  checked_by: listing review
+  notes: 'Assemblee primaire; robots.txt asks for a 10 s crawl delay (honoured); the newest PV is hosted on cransmontana2022.allinone.io,
+    whose robots.txt disallows it; the newest PV is hosted on allinone.io, which robots.txt disallows (issue #30)'
+  publications:
+  - body: assembly
+    kind: minutes
+    status: configured
+    listing_url: https://www.commune-cransmontana.ch/pages/assemblee-primaire/assemblee-primaire-773
+    from: '2017-03-30'
+    to: '2026-06-16'
+    how: html_links, 1 hop, url_regex restricted to the commune host
+- bfs_id: 6254
+  name: Noble-Contrée
+  canton: VS
+  status: configured
+  website: https://www.noble-contree.ch
+  vendor: custom
+  reachable: true
+  checked: 2026-10-19
+  checked_by: crawler dry run (unverified)
+  notes: The broad archive collects the commune's public PDFs, untagged (linked-sources.yaml). Noble-Contrée was
+    formed in 2021 from Miège, Venthône and Veyras; the assembly page also carries their last assembly PV (24 August
+    2020) and 2020 accounts.
+  publications:
+  - body: assembly
+    kind: minutes
+    status: configured
+    listing_url: https://www.noble-contree.ch/fr/assemblee-primaire-2118.html
+    how: 'Assemblée primaire page plus the Budgets et comptes page: convocations, PV, fascicules (budget, comptes,
+      complete booklets), messages and regulations put to the assembly, 2020-2026, dated from the link text or the
+      file name; documents without a date in title or file name undated. Dry run 73 documents'
+- bfs_id: 6261
+  name: Arbaz
+  canton: VS
+  status: configured
+  website: http://www.arbaz.ch
+  vendor: custom
+  reachable: true
+  checked: 2026-10-19
+  checked_by: crawler dry run (unverified)
+  notes: The broad archive collects the commune's public PDFs, untagged (linked-sources.yaml).
+  publications:
+  - body: assembly
+    kind: documents
+    status: configured
+    listing_url: https://www.arbaz.ch/commune/comptes-budgets-proces-verbaux.html
+    how: 'html_links, comptes-budgets-procès-verbaux page: budgets and accounts of the municipality and the bourgeoisie
+      since 2017, PV of the assemblée primaire; minutes of the bourgeoisie assemblies excluded (admissions to the
+      bourgeoisie name applicants); dry run: 48 documents'
+- bfs_id: 6263
+  name: Grimisuat
+  canton: VS
+  status: blocked_waf
+  website: https://www.grimisuat.ch
+  vendor: custom
+  reachable: true
+  checked: 2026-10-19
+  checked_by: probe
+  notes: robots.txt allows the site, but the first page request (Comptes, budgets, PV) gets HTTP 429 Too Many Requests,
+    also five hours later; no further requests are sent. Not configured. The broad archive collects the commune's
+    public PDFs, untagged (linked-sources.yaml).
+  publications:
+  - body: assembly
+    kind: minutes
+    status: blocked_waf
+    listing_url: https://www.grimisuat.ch/fr/administration/services-communaux/finances-taxes-et-contributions/comptes-budgets-pv-437/
+    obstacle: the Comptes, budgets, PV page answers HTTP 429 (Too Many Requests), also on a second attempt five
+      hours later
+- bfs_id: 6265
+  name: Savièse
+  canton: VS
+  status: not_published
+  website: https://www.saviese.ch
+  vendor: custom
+  reachable: true
+  checked: 2026-09-08
+  checked_by: listing review
+  notes: Assemblee primaire. The broad archive collects the commune's public PDFs, untagged (linked-sources.yaml).
+  publications:
+  - body: assembly
+    kind: minutes
+    status: not_published
+    listing_url: https://www.saviese.ch/fr/proces-verbaux-assemblees-primaires-622.html
+    obstacle: the 'Proces-verbaux des assemblees primaires et bourgeoisiales' page holds no PV document
+    how: on request from the commune
+- bfs_id: 6266
+  name: Sion
+  canton: VS
+  status: configured
+  website: https://www.sion.ch
+  vendor: i-web
+  reachable: true
+  checked: 2026-10-18
+  checked_by: crawler dry run (unverified)
+  notes: Conseil général.
+  publications:
+  - body: parliament
+    kind: minutes
+    status: configured
+    listing_url: https://www.sion.ch/plenums
+    how: 'html_links, 2 hops: /plenums (Conseil général, 63 sessions since 2017; /sitzung and /seances are 404)
+      -> Procès-verbal (décisionnel) and Résumé des principales décisions'
+- bfs_id: 6267
+  name: Veysonnaz
+  canton: VS
+  status: configured
+  website: https://veysonnaz.org
+  vendor: custom
+  reachable: true
+  checked: 2026-10-19
+  checked_by: crawler dry run (unverified)
+  notes: 'The broad archive collects the commune''s public PDFs, untagged (linked-sources.yaml). Assemblée primaire
+    page plus budget and comptes pages, /images/ PDFs: PV of the assemblée primaire 2019-2025 dated by session,
+    budgets 2020-2026 and comptes 2016-2025 undated (year in title); the link titled ''12 décembre 2023'' points
+    to the June 2023 file and is excluded; dry run 30.'
+  publications:
+  - body: assembly
+    kind: minutes
+    status: configured
+    listing_url: https://veysonnaz.org/vie_politique/politique/assemblee-primaire
+    how: 'assemblée primaire page plus budget and comptes pages, /images/ PDFs: PV of the assemblée primaire 2019-2025
+      dated by session, budgets 2020-2026 and comptes 2016-2025 undated (year in title); the link titled ''12 décembre
+      2023'' points to the June 2023 file and is excluded; dry run 30'
+- bfs_id: 6281
+  name: Baltschieder
+  canton: VS
+  status: candidate
+  website: http://www.baltschieder.ch
+  vendor: custom
+  reachable: true
+  checked: 2026-10-19
+  checked_by: crawler dry run (unverified)
+  notes: 'Automated probe: the home page links no page about minutes or a council. The broad archive collects the
+    commune''s public PDFs (finance, regulations, assembly and public notices), untagged (linked-sources.yaml).
+    The Gemeindefinanzen and council pages link no documents in the HTML.'
+  publications: []
+- bfs_id: 6282
+  name: Eisten
+  canton: VS
+  status: blocked_js
+  website: https://www.eisten.ch
+  vendor: megaphone
+  reachable: true
+  checked: *id004
+  checked_by: website check
+  notes: The website is a JavaScript application (Megaphone); its API answers only requests from the commune's own
+    pages. Not collected. When last checked, the Verwaltung and Gemeinderat pages carried no minutes.
+- bfs_id: 6283
+  name: Embd
+  canton: VS
+  status: not_found
+  website: http://www.embd.ch
+  vendor: wordpress
+  reachable: true
+  checked: 2026-10-19
+  checked_by: crawler dry run (unverified)
+  notes: 'Automated probe: the home page links no page about minutes or a council. WordPress media API returns no
+    PDFs for protokoll, urversammlung, budget, rechnung; home page uploads are notices and calendars.'
+  publications:
+  - body: assembly
+    kind: minutes
+    status: not_found
+    listing_url: https://www.embd.ch
+    obstacle: no minutes or finance PDFs; media API empty for protokoll, urversammlung, budget, rechnung
+- bfs_id: 6285
+  name: Grächen
+  canton: VS
+  status: configured
+  website: https://gemeinde.graechen.ch/
+  vendor: wordpress
+  reachable: true
+  checked: 2026-10-19
+  checked_by: crawler dry run (unverified)
+  notes: 'Earlier address: http://www.gemeinde-graechen.ch. The broad archive collects the commune''s public PDFs
+    from the WordPress media library (about 370 items), untagged (linked-sources.yaml). The configuration searches
+    the media library for protokoll, budget and rechnung: Urversammlung minutes and budget only; Burgerversammlung
+    (bourgeoisie) documents, job ads and forms are excluded; dry run 4 documents 2023-2025.'
+  publications:
+  - body: assembly
+    kind: minutes
+    status: configured
+    listing_url: https://gemeinde.graechen.ch/wp-json/wp/v2/media?search=protokoll
+    how: 'wp_media searches protokoll, budget, rechnung; Urversammlung minutes and budget only, Burgerversammlung
+      (bourgeoisie) documents, job ads and forms excluded; dry run: 4 documents 2023-2025'
+- bfs_id: 6286
+  name: Lalden
+  canton: VS
+  status: candidate
+  website: http://www.lalden.ch
+  vendor: custom
+  reachable: true
+  checked: 2026-10-19
+  checked_by: crawler dry run (unverified)
+  notes: 'Automated probe: the home page links no page about minutes or a council. The broad archive collects the
+    commune''s public PDFs (finance, regulations, assembly and public notices), untagged (linked-sources.yaml).
+    The Gemeinderat and Finanzen pages link no documents.'
+  publications: []
+- bfs_id: 6287
+  name: Randa
+  canton: VS
+  status: configured
+  website: https://www.randa.ch
+  vendor: wordpress
+  reachable: true
+  checked: 2026-10-19
+  checked_by: crawler dry run (unverified)
+  publications:
+  - body: assembly
+    kind: documents
+    status: configured
+    listing_url: https://www.randa.ch/wp-json/wp/v2/media?search=protokoll
+    how: 'wp_media: Urversammlung Traktanden, Jahresrechnungen, election protocols; Kurtaxe forms and Burgergemeinde
+      excluded'
+- bfs_id: 6288
+  name: Saas-Almagell
+  canton: VS
+  status: not_published
+  website: https://www.saas-almagell.org
+  vendor: i-web
+  reachable: true
+  checked: 2026-10-19
+  checked_by: crawler dry run (unverified)
+  notes: 'Automated probe: the session list (/sitzung) shows 2 sessions since 2023 (2. Wahlgang Ständerat, Ur- und
+    Burgerversammlung vom); the newest three carry no minutes or decision list, and the site map names no minutes
+    page. /sitzung is 404; /urversammlung says the page does not exist at present, /budget links no documents; /publikationen
+    holds only the Mitteilungsblatt newsletter (resident news, not collected).'
+  publications:
+  - body: assembly
+    kind: minutes
+    status: not_published
+    listing_url: https://www.saas-almagell.org/urversammlung
+    obstacle: /sitzung is 404; /urversammlung says the page does not exist at present, /budget links no documents;
+      /publikationen holds only the Mitteilungsblatt newsletter (resident news, not collected)
+- bfs_id: 6289
+  name: Saas-Balen
+  canton: VS
+  status: configured
+  website: https://www.3908.ch
+  vendor: i-web
+  reachable: true
+  checked: 2026-10-19
+  checked_by: crawler dry run (unverified)
+  notes: The website moved to www.3908.ch.
+  publications:
+  - body: assembly
+    kind: minutes
+    status: configured
+    listing_url: https://www.3908.ch/jahresrechnung
+    how: 'website moved to www.3908.ch (gemeinde-saas-balen.ch redirects there; its https certificate is the host''s
+      *.metanet.ch default); html_links, 1 hop on /jahresrechnung: the commune''s budgets and accounts, titled by
+      year only and so undated (Jahresrechnung 2019-2024); /urversammlung and /gemeinderatsbeschluesse link no documents;
+      dry run on the 3 newest pages: 6 documents'
+- bfs_id: 6290
+  name: Saas-Fee
+  canton: VS
+  status: configured
+  website: https://www.3906.ch
+  vendor: i-web
+  reachable: true
+  checked: 2026-10-19
+  checked_by: crawler dry run (unverified)
+  publications:
+  - body: assembly
+    kind: minutes
+    status: configured
+    listing_url: https://www.3906.ch/sitzung
+    how: 'html_links, 2 hops: i-web session table /sitzung (cancelled sessions excluded; other bodies only when
+      the title starts with Kirch-, Ortsbürger-, Schul- or Kreisgemeinde, so joint sessions stay), then Protokoll,
+      Beschlüsse, Einladung/Botschaft/Weisung, Traktanden documents, Jahresrechnung, Budget, Finanzplan and Kreditabrechnung;
+      naturalisation and resignation documents excluded; Valais joint Ur- und Burgerversammlung; Burgergemeinde
+      reports and Burgerversammlung minutes (PROTOKOLLBV/PROTOKOLLBU) excluded, because the Burgergemeinde decides
+      naturalisations; the dry run below still listed 3 PROTOKOLLBU files, excluded since by a pattern tested on
+      those titles; dry run on the 3 newest pages: 17 documents (2024, 2025, 2026)'
+- bfs_id: 6291
+  name: Saas-Grund
+  canton: VS
+  status: configured
+  website: https://www.3910.ch
+  vendor: contao
+  reachable: true
+  checked: 2026-10-19
+  checked_by: crawler dry run (unverified)
+  notes: 'The cantonal directory names 3910.ch as the municipal website (earlier address: saas-grund.ch). Contao
+    CMS. The finance page lists Jahresrechnung 2018-2025 and Budget 2022-2026 behind ?file= links; Burgergemeinde
+    documents are excluded.'
+  publications:
+  - body: assembly
+    kind: documents
+    status: configured
+    listing_url: https://www.3910.ch/finanzen.html
+    how: html_links, 1 hop, Contao ?file= links filtered to Budget, Rechnung, Finanzplan; dry run 22 documents,
+      year in the file name
+- bfs_id: 6292
+  name: St. Niklaus
+  canton: VS
+  status: blocked_js
+  website: https://st-niklaus.ch/de
+  vendor: megaphone
+  reachable: true
+  checked: *id004
+  checked_by: website check
+  notes: The website is a JavaScript application (Megaphone); its API answers only requests from the commune's own
+    pages. Not collected. When last checked, the site search found 'Protokoll' only on a commission page; the Ur-
+    and Burgerversammlung pages carried no minutes.
+- bfs_id: 6293
+  name: Stalden
+  canton: VS
+  status: configured
+  website: https://www.stalden.ch
+  vendor: custom
+  reachable: true
+  checked: 2026-10-19
+  checked_by: crawler dry run (unverified)
+  notes: The broad archive collects the commune's public PDFs, untagged (linked-sources.yaml). Urversammlung minutes,
+    accounts, budgets and bulletins on the finance page; configured from a dry run.
+  publications:
+  - body: assembly
+    kind: minutes
+    status: configured
+    listing_url: https://www.stalden.ch/sites/verwaltung/finanzen
+    how: 'html_links on the finance page (/sites/images/ PDFs): Protokoll Urversammlung, Rechnung, Budget, INFO-Stalden,
+      date yyyy-mm-dd from the file name; Burgergemeinde documents excluded; dry run 18 documents 2023-2026'
+- bfs_id: 6294
+  name: Staldenried
+  canton: VS
+  status: configured
+  website: http://www.staldenried.ch
+  vendor: wordpress
+  reachable: true
+  checked: 2026-10-19
+  checked_by: crawler dry run (unverified)
+  notes: Dry run 2 documents, dates checked against titles.
+  publications:
+  - body: assembly
+    kind: minutes
+    status: configured
+    listing_url: https://staldenried.ch/wp-json/wp/v2/media?search=protokoll
+    how: wp_media searches protokoll, urversammlung, budget, rechnung (budget only found)
+- bfs_id: 6295
+  name: Täsch
+  canton: VS
+  status: candidate
+  website: https://www.gemeinde-taesch.ch
+  vendor: i-web
+  reachable: true
+  checked: 2026-10-19
+  checked_by: crawler dry run (unverified)
+  notes: 'Automated probe: the i-web session list (/sitzung) is readable. /sitzung lists the joint ''Einberufung
+    Burger- und Urversammlung'' 2024-2026, but the 2025 and 2026 session pages carry no documents.'
+  publications:
+  - body: assembly
+    kind: minutes
+    status: candidate
+    listing_url: https://www.gemeinde-taesch.ch/sitzung
+    obstacle: /sitzung lists the joint 'Einberufung Burger- und Urversammlung' 2024-2026, but the 2025 and 2026
+      session pages carry no documents
+- bfs_id: 6296
+  name: Törbel
+  canton: VS
+  status: candidate
+  website: https://www.toerbel.ch
+  vendor: custom
+  reachable: true
+  checked: 2026-10-19
+  checked_by: crawler dry run (unverified)
+  notes: 'Automated probe: no dated minutes PDFs on the 2 pages tested (https://www.toerbel.ch/online-schalter/veranstaltungen/koordinationssitzung-fur-veranstaltungen-2026,
+    https://www.toerbel.ch/online-schalter/veranstaltungen/gemeinde-koordinationssitzung-veranstaltungen-2025).
+    The broad archive collects the commune''s public PDFs, untagged (linked-sources.yaml). Assembly notices (''Einberufung
+    der Ur- und Burgerversammlung'') answer 404, and robots.txt disallows the /assets/<hash>/ file paths.'
+  publications: []
+- bfs_id: 6297
+  name: Visp
+  canton: VS
+  status: not_published
+  website: http://www.visp.ch
+  vendor: indual
+  reachable: true
+  checked: 2026-09-08
+  checked_by: listing review
+  notes: Urversammlung / Gemeinderat. The broad archive collects the commune's public PDFs (finance, regulations
+    and assembly, including older records), untagged (linked-sources.yaml).
+  publications:
+  - body: assembly
+    kind: minutes
+    status: not_published
+    listing_url: https://www.visp.ch/de/gemeinde-visp/gemeinderat-behoerden/gemeinderat
+    obstacle: no protocol or Urversammlung link in the navigation, none on the Gemeinderat page
+    how: on request from the commune
+- bfs_id: 6298
+  name: Visperterminen
+  canton: VS
+  status: candidate
+  website: https://www.heidadorf.ch
+  vendor: custom
+  reachable: true
+  checked: 2026-10-19
+  checked_by: crawler dry run (unverified)
+  notes: The official domain redirects to heidadorf.ch. The finance pages list accounts 2019-2024 and budgets 2021-2026,
+    but the PDFs sit on a.storyblok.com, whose robots.txt answers HTTP 403; not configured.
+  publications: []
+- bfs_id: 6299
+  name: Zeneggen
+  canton: VS
+  status: configured
+  website: https://www.zeneggen.ch/
+  vendor: typo3
+  reachable: true
+  checked: *id005
+  checked_by: listing review
+  notes: Urversammlung; notice board with 'Protokoll Urversammlung vom 22.11.2025 (pdf)' and 'Einladung Urversammlung
+    (pdf)'; 9 found, 9 dated.
+  publications:
+  - body: assembly
+    kind: minutes
+    status: configured
+    listing_url: https://www.zeneggen.ch/verwaltung/anschlagsbrett
+    from: '2021'
+    to: '2025'
+    how: html_links, 1 hop
+- bfs_id: 6300
+  name: Zermatt
+  canton: VS
+  status: blocked_network
+  website: https://gemeinde.zermatt.ch/
+  reachable: false
+  checked: 2026-10-18
+  checked_by: crawler dry run (unverified)
+  notes: gemeinde.zermatt.ch answers HTTP 429 to the very first request (robots.txt); no further requests are sent.
+  publications: []

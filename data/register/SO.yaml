@@ -1,0 +1,1860 @@
+# Register of commune publications, canton SO. What each commune publishes and whether it is collected; see docs/REGISTER.md.
+- bfs_id: 2401
+  name: Egerkingen
+  canton: SO
+  status: configured
+  website: http://www.egerkingen.ch
+  vendor: i-web
+  reachable: true
+  checked: &id001 2026-09-10
+  checked_by: crawler dry run (unverified)
+  publications:
+  - body: assembly
+    kind: minutes
+    status: configured
+    listing_url: https://www.egerkingen.ch/sitzung
+    how: 'html_links, i-web session table /sitzung, then the session documents; Bürgergemeinde sessions excluded;
+      naturalisation documents excluded; dry run on the 3 newest pages: 10 documents (2025, 2026)'
+- bfs_id: 2402
+  name: Härkingen
+  canton: SO
+  status: configured
+  website: http://www.haerkingen.ch
+  vendor: govis
+  reachable: true
+  checked: &id002 2026-09-10
+  checked_by: crawler dry run (unverified)
+  notes: 'GOViS site: the home page loads its content from /route/, the assembly page is served as HTML.'
+  publications:
+  - body: assembly
+    kind: documents
+    status: configured
+    listing_url: https://www.haerkingen.ch/politik/gemeindeversammlung/gv-auflageakten.html/331
+    how: 'html_links, 2 hops: GV-Auflageakten list (assemblies since 2024-12), then each assembly page: Einladung,
+      Anträge, Botschaft, Jahresrechnung, Budget, Geschäftsbericht; no minutes seen'
+- bfs_id: 2403
+  name: Kestenholz
+  canton: SO
+  status: blocked_js
+  website: https://www.kestenholz.ch
+  vendor: govis
+  reachable: true
+  checked: *id001
+  checked_by: scripts/probe_vendors.py (unverified)
+  notes: GOViS site that loads its page content from /route/, which robots.txt disallows. The assembly page carries
+    PDFs, none of them minutes or decisions.
+- bfs_id: 2404
+  name: Neuendorf
+  canton: SO
+  status: configured
+  website: https://www.neuendorf.ch
+  vendor: custom
+  reachable: false
+  checked: 2026-10-19
+  checked_by: crawler dry run (unverified)
+  notes: The broad archive collects the commune's public PDFs, untagged (linked-sources.yaml).
+  publications:
+  - body: assembly
+    kind: minutes
+    status: configured
+    listing_url: https://www.neuendorf.ch/index.php/verwaltung-und-behoerden/behoerden/gemeindeversammlung
+    how: 'Gemeindeversammlung page: Protokolle 2017-2026, and for 2025-2026 the Kurz-Botschaft, Traktandenliste,
+      Beschlussanträge (BA), Jahresrechnung, budget, Finanzplan and Kreditabrechnungen, dated from the folder or
+      file name (GV20260602, EGV20251204...). Bürgergemeinde has its own page (not taken). Dry run 45 documents'
+- bfs_id: 2405
+  name: Niederbuchsiten
+  canton: SO
+  status: configured
+  website: https://www.niederbuchsiten.ch
+  vendor: i-web
+  reachable: true
+  checked: 2026-10-19
+  checked_by: crawler dry run (unverified)
+  publications:
+  - body: assembly
+    kind: minutes
+    status: configured
+    listing_url: https://www.niederbuchsiten.ch/sitzung
+    how: 'html_links, 2 hops: i-web session table /sitzung (cancelled sessions excluded; other bodies only when
+      the title starts with Kirch-, Ortsbürger-, Schul- or Kreisgemeinde, so joint sessions stay), then Protokoll,
+      Beschlüsse, Einladung/Botschaft/Weisung, Traktanden documents, Jahresrechnung, Budget, Finanzplan and Kreditabrechnung;
+      naturalisation and resignation documents excluded; Solothurn: Bürgergemeinde documents excluded; minutes titled
+      ''Proto GV dd.mm.yyyy'' taken; dry run on the 3 newest pages: 12 documents (2024, 2025, 2026)'
+- bfs_id: 2406
+  name: Oberbuchsiten
+  canton: SO
+  status: candidate
+  website: https://www.oberbuchsiten.ch
+  vendor: i-web
+  reachable: true
+  checked: 2026-10-19
+  checked_by: crawler dry run (unverified)
+  notes: 'Automated probe: no session list and no minutes page in the site map. The 2025 session page links only
+    the newsletter DerBuchster, the 2024 page nothing.'
+  publications:
+  - body: assembly
+    kind: minutes
+    status: candidate
+    listing_url: https://www.oberbuchsiten.ch/sitzung
+    obstacle: the 2025 session page links only the newsletter DerBuchster, the 2024 page nothing
+- bfs_id: 2407
+  name: Oensingen
+  canton: SO
+  status: configured
+  website: http://www.oensingen.ch
+  vendor: i-web
+  reachable: true
+  checked: 2026-10-18
+  checked_by: crawler dry run (unverified)
+  publications:
+  - body: assembly
+    kind: minutes
+    status: configured
+    listing_url: https://www.oensingen.ch/sitzung
+    how: 'html_links, 2 hops: i-web session list /sitzung, cancelled sessions excluded, then minutes, decisions,
+      invitations/Botschaft and finance documents per session; dry run on the 3 newest sessions: 9 documents (2025,
+      2026)'
+- bfs_id: 2408
+  name: Wolfwil
+  canton: SO
+  status: configured
+  website: https://www.wolfwil.ch
+  vendor: i-web
+  reachable: true
+  checked: 2026-10-19
+  checked_by: crawler dry run (unverified)
+  publications:
+  - body: assembly
+    kind: minutes
+    status: configured
+    listing_url: https://www.wolfwil.ch/sitzung
+    how: 'html_links, 2 hops: i-web session table /sitzung (cancelled sessions excluded; other bodies only when
+      the title starts with Kirch-, Ortsbürger-, Schul- or Kreisgemeinde, so joint sessions stay), then Protokoll,
+      Beschlüsse, Einladung/Botschaft/Weisung, Traktanden documents, Jahresrechnung, Budget, Finanzplan and Kreditabrechnung;
+      naturalisation and resignation documents excluded; Solothurn: Bürgergemeinde documents excluded; dry run on
+      the 3 newest pages: 16 documents (2024, 2025, 2026)'
+- bfs_id: 2421
+  name: Aedermannsdorf
+  canton: SO
+  status: configured
+  website: https://www.aedermannsdorf.ch
+  vendor: i-web
+  reachable: true
+  checked: 2026-10-19
+  checked_by: crawler dry run (unverified)
+  publications:
+  - body: assembly
+    kind: minutes
+    status: configured
+    listing_url: https://www.aedermannsdorf.ch/sitzung
+    how: 'html_links, 2 hops: i-web session table /sitzung (cancelled sessions excluded; other bodies only when
+      the title starts with them, so joint sessions stay; at most 40 sessions per run), then the session documents
+      filtered by title, dated by their own title date or else by the session; naturalisation, resignation and Bürgergemeinde
+      documents, newsletters, presentations, contracts and annual reports excluded; Solothurn: Bürgergemeinde documents
+      excluded by name; dry run on the 3 newest pages: 11 documents (2025-2026)'
+- bfs_id: 2422
+  name: Balsthal
+  canton: SO
+  status: configured
+  website: https://www.balsthal.ch
+  vendor: i-web
+  reachable: true
+  checked: 2026-10-18
+  checked_by: crawler dry run (unverified)
+  publications:
+  - body: assembly
+    kind: minutes
+    status: configured
+    listing_url: https://www.balsthal.ch/protokollegv
+    how: 'html_links, 2 hops: i-web session list /protokollegv, cancelled sessions excluded, then minutes, decisions,
+      invitations/Botschaft and finance documents per session; two sources: /protokollegv (assembly minutes via
+      yearly publication pages) and /gemeinderatssitzungen (executive Gemeinderat minutes, one publication page
+      per year back to 2016); dry run on the 3 newest sessions: 35 documents (2024, 2025, 2026)'
+  - body: executive
+    kind: minutes
+    status: configured
+    listing_url: https://www.balsthal.ch/gemeinderatssitzungen
+    how: 'html_links, 2 hops: one i-web publication page per year (2016-2026), then the Gemeinderat minutes PDFs
+      (about 14 a year)'
+- bfs_id: 2424
+  name: Herbetswil
+  canton: SO
+  status: configured
+  website: https://www.herbetswil.ch
+  vendor: i-web
+  reachable: true
+  checked: 2026-10-19
+  checked_by: crawler dry run (unverified)
+  publications:
+  - body: assembly
+    kind: minutes
+    status: configured
+    listing_url: https://www.herbetswil.ch/sitzung
+    how: 'html_links, 2 hops: i-web session table /sitzung (cancelled sessions excluded; other bodies only when
+      the title starts with them, so joint sessions stay; at most 40 sessions per run), then the session documents
+      filtered by title, dated by their own title date or else by the session; naturalisation, resignation and Bürgergemeinde
+      documents, newsletters, presentations, contracts and annual reports excluded; Solothurn: Bürgergemeinde documents
+      excluded by name; dry run on the 3 newest pages: 8 documents (2025-2026)'
+- bfs_id: 2425
+  name: Holderbank
+  canton: SO
+  status: candidate
+  website: http://www.holderbank-so.ch
+  vendor: custom
+  reachable: true
+  checked: 2026-10-19
+  checked_by: crawler dry run (unverified)
+  notes: 'Automated probe: no dated minutes PDFs on the page tested (https://www.holderbank-so.ch/politik/gemeindeversammlung).
+    The broad archive collects the commune''s public PDFs, untagged (linked-sources.yaml). The assembly page holds
+    only the current three documents, and its Botschaft is named 20250625 for the 2026 accounts assembly (date ambiguous);
+    the publications page has unrelated items; left unconfigured.'
+  publications: []
+- bfs_id: 2426
+  name: Laupersdorf
+  canton: SO
+  status: configured
+  website: https://www.laupersdorf.ch
+  vendor: weblication
+  reachable: true
+  checked: &id004 2026-09-10
+  checked_by: listing review
+  publications:
+  - body: executive
+    kind: minutes
+    status: configured
+    listing_url: https://www.laupersdorf.ch/de/politik/gemeinderat/protokolle/
+    to: '2026-08-10'
+    how: html_links, 1 hop
+- bfs_id: 2427
+  name: Matzendorf
+  canton: SO
+  status: configured
+  website: http://www.matzendorf.ch
+  vendor: i-web
+  reachable: true
+  checked: 2026-10-19
+  checked_by: crawler dry run (unverified)
+  publications:
+  - body: assembly
+    kind: minutes
+    status: configured
+    listing_url: https://www.matzendorf.ch/sitzung
+    how: 'html_links, 2 hops: i-web session table /sitzung (cancelled sessions excluded; other bodies only when
+      the title starts with Kirch-, Ortsbürger-, Schul- or Kreisgemeinde, so joint sessions stay), then Protokoll,
+      Beschlüsse, Einladung/Botschaft/Weisung, Traktanden documents, Jahresrechnung, Budget, Finanzplan and Kreditabrechnung;
+      naturalisation and resignation documents excluded; Solothurn: Bürgergemeinde documents excluded; annual report
+      file ''JR yyyy'' taken; dry run on the 3 newest pages: 7 documents (2025, 2026)'
+- bfs_id: 2428
+  name: Mümliswil-Ramiswil
+  canton: SO
+  status: configured
+  website: https://www.muemliswil-ramiswil.ch
+  vendor: govis
+  reachable: true
+  checked: 2026-10-18
+  checked_by: crawler dry run (unverified)
+  notes: 'GOViS site: the home page loads its content from /route/, the assembly page is served as HTML. Mixed public
+    PDF listings are archived without inferred decision tags.'
+  publications:
+  - body: assembly
+    kind: minutes
+    status: configured
+    listing_url: https://www.muemliswil-ramiswil.ch/politik/gemeindeversammlung.html/32
+    how: 'html_links, 1 hop: Protokoll Gemeindeversammlung PDFs on the GV page (/route/ disallowed, not used); only
+      2024 listed on 2026-10-18'
+- bfs_id: 2430
+  name: Welschenrohr-Gänsbrunnen
+  canton: SO
+  status: configured
+  website: https://welschenrohr.ch/
+  vendor: govis
+  reachable: true
+  checked: &id003 2026-09-10
+  checked_by: listing review
+  notes: 'Two listings: https://welschenrohr.ch/politik/protokolle.html/73 with 45 executive session minutes 2024-2026
+    (''Gemeinderatssitzung vom 12.01.2026''), and https://welschenrohr.ch/politik/gemeindeversammlung.html/55 with
+    one assembly protocol (''Protokoll Gemeindeversammlung vom 08.12.2025''); all dated.'
+  publications:
+  - body: executive
+    kind: minutes
+    status: configured
+    listing_url: https://www.welschenrohr.ch/politik/protokolle.html/73
+    from: '2024'
+    to: '2026'
+    how: html_links, 1 hop
+- bfs_id: 2445
+  name: Biezwil
+  canton: SO
+  status: configured
+  website: https://www.biezwil.ch
+  vendor: custom
+  reachable: true
+  checked: 2026-10-19
+  checked_by: crawler dry run (unverified)
+  notes: The broad archive collects the commune's public PDFs, untagged (linked-sources.yaml). Jimdo GV page with
+    minutes, agendas, motions and finance files for the last four assemblies.
+  publications:
+  - body: assembly
+    kind: minutes
+    status: configured
+    listing_url: https://www.biezwil.ch/behörden/gemeindeversammlung/
+    from: '2024-11-25'
+    to: '2026-06-01'
+    how: 'html_links on the Jimdo GV page, /app/download/ links with the volatile t parameter: GV Protokolle, Traktandenlisten
+      and Antraege des Gemeinderats 2024-11-25 to 2026-06-01, dated from the titles; Jahresrechnung 2024-2025, Budget
+      2025-2026 and annexes undated; Buergergemeinde files excluded'
+- bfs_id: 2455
+  name: Lüterkofen-Ichertswil
+  canton: SO
+  status: configured
+  website: https://www.lueterkofen-ichertswil.ch
+  vendor: i-web
+  reachable: true
+  checked: 2026-10-19
+  checked_by: crawler dry run (unverified)
+  publications:
+  - body: assembly
+    kind: minutes
+    status: configured
+    listing_url: https://www.lueterkofen-ichertswil.ch/sitzung
+    how: 'html_links, 2 hops: i-web session table /sitzung (cancelled sessions excluded; other bodies only when
+      the title starts with them, so joint sessions stay), then the session documents filtered by title; naturalisation
+      and resignation documents excluded; Solothurn: Bürgergemeinde documents excluded; dry run on the 3 newest
+      pages: 1 document (2025)'
+- bfs_id: 2457
+  name: Messen
+  canton: SO
+  status: not_published
+  website: https://www.messen.ch
+  vendor: drupal
+  reachable: true
+  checked: 2026-09-08
+  checked_by: listing review
+  notes: Drupal template shared by several communes.
+  publications:
+  - body: assembly
+    kind: minutes
+    status: not_published
+    listing_url: https://www.messen.ch/politik/gemeindeversammlungen
+    obstacle: GV page and its event archive carry no documents
+    how: on request from the commune
+- bfs_id: 2461
+  name: Schnottwil
+  canton: SO
+  status: configured
+  website: https://www.schnottwil.ch
+  vendor: i-web
+  reachable: true
+  checked: 2026-10-19
+  checked_by: crawler dry run (unverified)
+  publications:
+  - body: assembly
+    kind: minutes
+    status: configured
+    listing_url: https://www.schnottwil.ch/sitzung
+    how: 'html_links, 2 hops: i-web session table /sitzung (cancelled sessions excluded; other bodies only when
+      the title starts with Kirch-, Ortsbürger-, Schul- or Kreisgemeinde, so joint sessions stay), then Protokoll,
+      Beschlüsse, Einladung/Botschaft/Weisung, Traktanden documents, Jahresrechnung, Budget, Finanzplan and Kreditabrechnung;
+      naturalisation and resignation documents excluded; Solothurn: the table lists the Bürgergemeinde''s own sessions
+      (''... Bürgergemeinde''), excluded with their documents; dry run on the 3 newest pages: 9 documents (2025,
+      2026)'
+- bfs_id: 2463
+  name: Unterramsern
+  canton: SO
+  status: configured
+  website: https://www.unterramsern.ch
+  vendor: custom
+  reachable: true
+  checked: 2026-10-19
+  checked_by: crawler dry run (unverified)
+  notes: 'The broad archive collects the commune''s public PDFs (finance, regulations and older assembly documents),
+    untagged (linked-sources.yaml). Configured html_links on the Politik page (/s/ PDFs; organigram and meeting
+    calendar excluded); dry run 4 files: Protokoll GV 2025-06-25 and 2025-12-04, Einladung and Protokoll GV 2026-06-23;
+    dates from the file names (GV2025-2506 = 25.06.2025, via date_regex). Nothing before 2025 online.'
+  publications:
+  - body: assembly
+    kind: minutes
+    status: configured
+    listing_url: https://www.unterramsern.ch/politik
+    how: html_links, /s/ PDF links; GVyyyy-ddmm date_regex
+- bfs_id: 2464
+  name: Lüsslingen-Nennigkofen
+  canton: SO
+  status: configured
+  website: https://www.luesslingen-nennigkofen.ch
+  vendor: i-web
+  reachable: true
+  checked: 2026-10-19
+  checked_by: crawler dry run (unverified)
+  publications:
+  - body: assembly
+    kind: minutes
+    status: configured
+    listing_url: https://www.luesslingen-nennigkofen.ch/sitzung
+    how: 'html_links, 2 hops: i-web session table /sitzung (cancelled sessions excluded; other bodies only when
+      the title starts with Kirch-, Ortsbürger-, Schul- or Kreisgemeinde, so joint sessions stay), then Protokoll,
+      Beschlüsse, Einladung/Botschaft/Weisung, Traktanden documents, Jahresrechnung, Budget, Finanzplan and Kreditabrechnung;
+      naturalisation and resignation documents excluded; Solothurn: Bürgergemeinde documents excluded; dry run on
+      the 3 newest pages: 7 documents (2025, 2026)'
+- bfs_id: 2465
+  name: Buchegg
+  canton: SO
+  status: configured
+  website: https://www.buchegg-so.ch
+  vendor: i-web
+  reachable: true
+  checked: 2026-10-19
+  checked_by: crawler dry run (unverified)
+  publications:
+  - body: assembly
+    kind: minutes
+    status: configured
+    listing_url: https://www.buchegg-so.ch/sitzung
+    how: 'html_links, 2 hops: i-web session table /sitzung (cancelled sessions excluded; other bodies only when
+      the title starts with Kirch-, Ortsbürger-, Schul- or Kreisgemeinde, so joint sessions stay), then Protokoll,
+      Beschlüsse, Einladung/Botschaft/Weisung, Traktanden documents, Jahresrechnung, Budget, Finanzplan and Kreditabrechnung;
+      naturalisation and resignation documents excluded; dry run on the 3 newest pages: 16 documents (2025, 2026)'
+- bfs_id: 2471
+  name: Bättwil
+  canton: SO
+  status: configured
+  website: http://www.baettwil.ch
+  vendor: govis
+  reachable: true
+  checked: 2026-10-19
+  checked_by: crawler dry run (unverified)
+  publications:
+  - body: assembly
+    kind: minutes
+    status: configured
+    listing_url: https://www.baettwil.ch/politik/gemeindeversammlung.html/39
+    how: 'html_links on the GOViS assembly page (/public/upload/assets/): Protokoll, Einladung mit Erläuterungen,
+      Beschlüsse, Budget, Jahresabschluss; current and previous assembly, 14 documents'
+- bfs_id: 2472
+  name: Büren
+  canton: SO
+  status: blocked_js
+  website: http://www.bueren-so.ch
+  vendor: govis
+  reachable: true
+  checked: *id001
+  checked_by: scripts/probe_vendors.py (unverified)
+  notes: GOViS site that loads its page content from /route/, which robots.txt disallows. The assembly page is empty
+    without the disallowed /route/ call.
+- bfs_id: 2473
+  name: Dornach
+  canton: SO
+  status: configured
+  website: https://www.dornach.ch
+  vendor: i-web
+  reachable: true
+  checked: 2026-10-18
+  checked_by: crawler dry run (unverified)
+  publications:
+  - body: assembly
+    kind: minutes
+    status: configured
+    listing_url: https://www.dornach.ch/sitzung
+    how: 'html_links, 2 hops: i-web session list /sitzung, cancelled sessions excluded, then minutes, decisions,
+      invitations/Botschaft and finance documents per session; dry run on the 3 newest sessions: 19 documents (2026)'
+- bfs_id: 2474
+  name: Gempen
+  canton: SO
+  status: configured
+  website: http://www.gempen.ch
+  vendor: wordpress
+  reachable: true
+  checked: *id003
+  checked_by: listing review
+  publications:
+  - body: assembly
+    kind: minutes
+    status: configured
+    listing_url: https://gempen.ch/verschiedenes/
+    to: '2026-06-23'
+    how: html_links, 1 hop
+- bfs_id: 2475
+  name: Hochwald
+  canton: SO
+  status: configured
+  website: https://www.hochwald.ch
+  vendor: custom
+  reachable: true
+  checked: 2026-10-19
+  checked_by: crawler dry run (unverified)
+  notes: The broad archive collects the commune's public PDFs, untagged (linked-sources.yaml).
+  publications:
+  - body: assembly
+    kind: minutes
+    status: configured
+    listing_url: https://www.hochwald.ch/de/gemeinde/gemeindeorganisation/einwohnergemeinde/protokolle.html
+    how: 'html_links: protocol page: Protokoll and Beschlussprotokoll of the Einwohnergemeindeversammlung 2014-2026
+      (/download/ links, dd.mm.yy and dd.mm.yyyy dates); dry run: 35 documents'
+- bfs_id: 2476
+  name: Hofstetten-Flüh
+  canton: SO
+  status: configured
+  website: http://www.hofstettenflueh.ch
+  vendor: i-web
+  reachable: true
+  checked: 2026-10-19
+  checked_by: crawler dry run (unverified)
+  publications:
+  - body: assembly
+    kind: minutes
+    status: configured
+    listing_url: https://www.hofstettenflueh.ch/sitzung
+    how: 'html_links, 2 hops: i-web session table /sitzung (cancelled sessions excluded; other bodies only when
+      the title starts with Kirch-, Ortsbürger-, Schul- or Kreisgemeinde, so joint sessions stay), then Protokoll,
+      Beschlüsse, Einladung/Botschaft/Weisung, Traktanden documents, Jahresrechnung, Budget, Finanzplan and Kreditabrechnung;
+      naturalisation and resignation documents excluded; dry run on the 3 newest pages: 12 documents (2024, 2025,
+      2026)'
+- bfs_id: 2477
+  name: Metzerlen-Mariastein
+  canton: SO
+  status: configured
+  website: http://www.metzerlen.ch
+  vendor: i-web
+  reachable: true
+  checked: 2026-10-19
+  checked_by: crawler dry run (unverified)
+  publications:
+  - body: assembly
+    kind: minutes
+    status: configured
+    listing_url: https://www.metzerlen.ch/gemeindeversammlung
+    how: 'html_links, 2 hops: i-web publications table /gemeindeversammlung, filtered by title, then the PDFs; Solothurn:
+      four i-web publications on /gemeindeversammlung (Einladungen, Beschlussprotokoll, Budget, Rechnung); the decision
+      minutes carry the session date in the title; Bürgergemeinde documents excluded (/sitzung is 404); dry run
+      on the 3 newest pages: 23 documents (2022, 2023, 2024, 2025, 2026)'
+- bfs_id: 2478
+  name: Nuglar-St. Pantaleon
+  canton: SO
+  status: not_published
+  website: https://www.nuglar.ch
+  vendor: drupal
+  reachable: true
+  checked: 2026-09-08
+  checked_by: listing review
+  notes: Drupal template shared by several communes; Messen's identical archive was empty.
+  publications:
+  - body: assembly
+    kind: minutes
+    status: not_published
+    listing_url: https://www.nuglar.ch/politik/gemeindeversammlungen-0
+    obstacle: GV page has no documents, only an event-archive link (archive not fetched)
+    how: on request from the commune
+- bfs_id: 2479
+  name: Rodersdorf
+  canton: SO
+  status: configured
+  website: https://www.rodersdorf.ch/
+  vendor: i-web
+  reachable: true
+  checked: 2026-10-19
+  checked_by: crawler dry run (unverified)
+  publications:
+  - body: assembly
+    kind: minutes
+    status: configured
+    listing_url: https://www.rodersdorf.ch/protokolle-gemeindeversammlung
+    how: 'html_links, 2 hops: i-web publications table /protokolle-gemeindeversammlung, filtered by title, then
+      the PDFs; Solothurn: one publication per year on /protokolle-gemeindeversammlung, minutes titled with the
+      session date; Bürgergemeinde documents excluded; dry run on the 3 newest pages: 7 documents (2023, 2024, 2026)'
+- bfs_id: 2480
+  name: Seewen
+  canton: SO
+  status: configured
+  website: https://www.seewen.ch
+  vendor: i-web
+  reachable: true
+  checked: 2026-10-19
+  checked_by: crawler dry run (unverified)
+  publications:
+  - body: assembly
+    kind: minutes
+    status: configured
+    listing_url: https://www.seewen.ch/sitzung
+    how: 'html_links, 2 hops: i-web session table /sitzung (cancelled sessions excluded; other bodies only when
+      the title starts with Kirch-, Ortsbürger-, Schul- or Kreisgemeinde, so joint sessions stay), then Protokoll,
+      Beschlüsse, Einladung/Botschaft/Weisung, Traktanden documents, Jahresrechnung, Budget, Finanzplan and Kreditabrechnung;
+      naturalisation and resignation documents excluded; Solothurn: Bürgergemeinde documents excluded; dry run on
+      the 3 newest pages: 11 documents (2025, 2026)'
+- bfs_id: 2481
+  name: Witterswil
+  canton: SO
+  status: configured
+  website: https://www.witterswil.ch
+  vendor: drupal
+  reachable: true
+  checked: 2026-09-08
+  checked_by: listing review
+  notes: '''GV Protokoll vom dd.mm.yyyy'' anchors in a Protokolle panel; Drupal template shared by several communes;
+    span.file a, 7 found, 7 dated.'
+  publications:
+  - body: assembly
+    kind: minutes
+    status: configured
+    listing_url: https://www.witterswil.ch/politik/gemeindeversammlung
+    from: '2023-08-22'
+    to: '2026-06-09'
+    how: html_links, 1 hop
+- bfs_id: 2491
+  name: Hauenstein-Ifenthal
+  canton: SO
+  status: configured
+  website: https://www.hauenstein-ifenthal.ch
+  vendor: wordpress
+  reachable: true
+  checked: 2026-10-19
+  checked_by: crawler dry run (unverified)
+  notes: Only the 2025 accounts are in the media library; protokoll and gemeindeversammlung searches return nothing.
+  publications:
+  - body: assembly
+    kind: documents
+    status: configured
+    listing_url: https://www.hauenstein-ifenthal.ch/wp-json/wp/v2/media?search=rechnung
+    how: 'wp_media searches rechnung, budget: Jahresrechnung 2025 (two versions), undated'
+- bfs_id: 2492
+  name: Kienberg
+  canton: SO
+  status: configured
+  website: http://www.kienberg.ch
+  vendor: wordpress
+  reachable: true
+  checked: 2026-10-19
+  checked_by: crawler dry run (unverified)
+  notes: Dry run 14 documents, dates checked against titles.
+  publications:
+  - body: assembly
+    kind: minutes
+    status: configured
+    listing_url: https://www.kienberg.ch/wp-json/wp/v2/media?search=protokoll
+    how: wp_media searches protokoll, budget, rechnung, botschaft; mostly undated
+- bfs_id: 2493
+  name: Lostorf
+  canton: SO
+  status: configured
+  website: http://www.lostorf.ch
+  vendor: i-web
+  reachable: true
+  checked: 2026-10-19
+  checked_by: crawler dry run (unverified)
+  publications:
+  - body: assembly
+    kind: minutes
+    status: configured
+    listing_url: https://www.lostorf.ch/sitzung
+    how: 'html_links, i-web session table /sitzung, then the session documents; naturalisation documents excluded;
+      dry run on the 3 newest pages: 9 documents (2025, 2026)'
+- bfs_id: 2495
+  name: Niedergösgen
+  canton: SO
+  status: configured
+  website: https://www.niedergoesgen.ch/
+  vendor: i-web
+  reachable: true
+  checked: 2026-10-19
+  checked_by: crawler dry run (unverified)
+  publications:
+  - body: assembly
+    kind: minutes
+    status: configured
+    listing_url: https://www.niedergoesgen.ch/sitzung
+    how: 'html_links, i-web session table /sitzung, then the session documents; naturalisation documents excluded;
+      dry run on the 3 newest pages: 4 documents (2025)'
+- bfs_id: 2497
+  name: Obergösgen
+  canton: SO
+  status: configured
+  website: https://www.obergoesgen.ch
+  vendor: i-web
+  reachable: true
+  checked: 2026-10-19
+  checked_by: crawler dry run (unverified)
+  publications:
+  - body: assembly
+    kind: minutes
+    status: configured
+    listing_url: https://www.obergoesgen.ch/sitzung
+    how: 'html_links, 2 hops: i-web session table /sitzung (cancelled sessions excluded; other bodies only when
+      the title starts with Kirch-, Ortsbürger-, Schul- or Kreisgemeinde, so joint sessions stay), then Protokoll,
+      Beschlüsse, Einladung/Botschaft/Weisung, Traktanden documents, Jahresrechnung, Budget, Finanzplan and Kreditabrechnung;
+      naturalisation and resignation documents excluded; Solothurn: Bürgergemeinde documents excluded; dry run on
+      the 3 newest pages: 11 documents (2025, 2026)'
+- bfs_id: 2499
+  name: Stüsslingen
+  canton: SO
+  status: configured
+  website: http://www.stuesslingen.ch
+  vendor: govis
+  reachable: true
+  checked: 2026-10-19
+  checked_by: crawler dry run (unverified)
+  notes: 'html_links, 2 hops: assembly page and archive (GV pages back to 2015), then Botschaft, Budget, Rechnung,
+    Kreditabrechnung, Protokoll assets per GV; dry run: 11 documents in a 3-session test; archive back to 2015 with
+    credit statements.'
+  publications:
+  - body: assembly
+    kind: minutes
+    status: configured
+    listing_url: https://www.stuesslingen.ch/politik/gemeindeversammlung.html/178
+    how: 'html_links, 2 hops: assembly page and archive (GV pages back to 2015), then Botschaft, Budget, Rechnung,
+      Kreditabrechnung, Protokoll assets per GV'
+- bfs_id: 2500
+  name: Trimbach
+  canton: SO
+  status: blocked_waf
+  website: http://www.trimbach.ch
+  vendor: custom
+  reachable: true
+  checked: 2026-10-18
+  checked_by: crawler dry run (unverified)
+  notes: 'Automated probe: the home page links no page about minutes or a council. The broad archive collects the
+    commune''s public PDFs (finance, regulations and older assembly documents), untagged (linked-sources.yaml).'
+  publications:
+  - body: assembly
+    kind: minutes
+    status: blocked_waf
+    listing_url: https://www.trimbach.ch/index.php?apid=858289371&apparentid=230752437
+    obstacle: 'anthrazit CMS: the assembly page lists one event subpage per assembly (apparentid=858289371); after
+      7 requests at >= 2 s an event subpage answered with a CAPTCHA (''Ich bin kein Roboter''); robots.txt also
+      disallows /upload/; the Budget & Rechnung page (apid=345724935) showed no direct document links'
+    how: collectable only with a crawlable listing from the commune or anthrazit; no further requests after the
+      challenge
+- bfs_id: 2501
+  name: Winznau
+  canton: SO
+  status: configured
+  website: https://www.winznau.ch
+  vendor: i-web
+  reachable: true
+  checked: 2026-10-19
+  checked_by: crawler dry run (unverified)
+  publications:
+  - body: assembly
+    kind: minutes
+    status: configured
+    listing_url: https://www.winznau.ch/sitzung
+    how: 'html_links, 2 hops: i-web session table /sitzung (cancelled sessions excluded; other bodies only when
+      the title starts with Kirch-, Ortsbürger-, Schul- or Kreisgemeinde, so joint sessions stay), then Protokoll,
+      Beschlüsse, Einladung/Botschaft/Weisung, Traktanden documents, Jahresrechnung, Budget, Finanzplan and Kreditabrechnung;
+      naturalisation and resignation documents excluded; Solothurn: Bürgergemeinde documents excluded; dry run on
+      the 3 newest pages: 12 documents (2025, 2026)'
+- bfs_id: 2502
+  name: Wisen
+  canton: SO
+  status: configured
+  website: https://www.wisen.ch
+  vendor: i-web
+  reachable: true
+  checked: 2026-10-19
+  checked_by: crawler dry run (unverified)
+  publications:
+  - body: assembly
+    kind: minutes
+    status: configured
+    listing_url: https://www.wisen.ch/sitzung
+    how: 'html_links, 2 hops: i-web session table /sitzung (cancelled sessions excluded; other bodies only when
+      the title starts with them, so joint sessions stay; at most 40 sessions per run), then the session documents
+      filtered by title, dated by their own title date or else by the session; naturalisation, resignation and Bürgergemeinde
+      documents, newsletters, presentations, contracts and annual reports excluded; Solothurn: Bürgergemeinde documents
+      excluded by name; the one assembly file is titled only ''Gemeindeversammlung'' and takes its session''s date;
+      dry run on the 3 newest pages: 2 documents (2025-2026)'
+- bfs_id: 2503
+  name: Erlinsbach
+  canton: SO
+  status: not_published
+  website: http://www.erlinsbach-so.ch
+  vendor: govis
+  reachable: true
+  checked: 2026-10-19
+  checked_by: crawler dry run (unverified)
+  notes: 'Automated probe: no dated minutes PDFs on the page tested (https://www.erlinsbach-so.ch/gemeindeversammlung.html/374).
+    robots.txt disallows only /route/; the Gemeindeversammlung page links no documents; robots.txt also disallows
+    /documents/.'
+  publications: []
+- bfs_id: 2511
+  name: Aeschi
+  canton: SO
+  status: configured
+  website: http://www.aeschi-so.ch
+  vendor: i-web
+  reachable: true
+  checked: 2026-10-19
+  checked_by: crawler dry run (unverified)
+  publications:
+  - body: assembly
+    kind: minutes
+    status: configured
+    listing_url: https://www.aeschi-so.ch/sitzung
+    how: 'html_links, 2 hops: i-web session table /sitzung (cancelled sessions excluded; other bodies only when
+      the title starts with Kirch-, Ortsbürger-, Schul- or Kreisgemeinde, so joint sessions stay), then Protokoll,
+      Beschlüsse, Einladung/Botschaft/Weisung, Traktanden documents, Jahresrechnung, Budget, Finanzplan and Kreditabrechnung;
+      naturalisation and resignation documents excluded; Solothurn: Bürgergemeinde documents excluded; dry run on
+      the 3 newest pages: 10 documents (2024, 2025, 2026)'
+- bfs_id: 2513
+  name: Biberist
+  canton: SO
+  status: configured
+  website: https://www.biberist.ch
+  vendor: weblication
+  reachable: true
+  checked: 2026-09-08
+  checked_by: listing review
+  publications:
+  - body: assembly
+    kind: minutes
+    status: configured
+    listing_url: https://www.biberist.ch/de/politik/gemeindeversammlung/
+    from: '2023-06-29'
+    to: '2026-06-25'
+    obstacle: 'partial: Gemeindeversammlung; anchor text is ''GV-Protokoll Nr. 2'', the year is only in the section
+      heading; 5 of 19 dated (files with a date in the name such as ...vom-20260625.pdf or GV-Protokoll-27.11.2025.pdf
+      parse, files like 2017-01.pdf do not)'
+    how: html_links, 1 hop; date (year) from the enclosing section heading would date the rest
+- bfs_id: 2514
+  name: Bolken
+  canton: SO
+  status: configured
+  website: https://www.bolken.ch
+  vendor: i-web
+  reachable: true
+  checked: 2026-10-19
+  checked_by: crawler dry run (unverified)
+  publications:
+  - body: assembly
+    kind: minutes
+    status: configured
+    listing_url: https://www.bolken.ch/sitzung
+    how: 'html_links, 2 hops: i-web session table /sitzung (cancelled sessions excluded; other bodies only when
+      the title starts with them, so joint sessions stay; at most 40 sessions per run), then the session documents
+      filtered by title, dated by their own title date or else by the session; naturalisation, resignation and Bürgergemeinde
+      documents, newsletters, presentations, contracts and annual reports excluded; BGV/RGV are the Budget- and
+      Rechnungs-Gemeindeversammlung here, not the Bürgergemeinde, so the shared BGV exclusion is not used; Bürgergemeinde
+      documents are excluded by name; dry run on the 3 newest pages: 18 documents (2024-2026)'
+- bfs_id: 2516
+  name: Deitingen
+  canton: SO
+  status: configured
+  website: http://www.deitingen.ch
+  vendor: custom
+  reachable: true
+  checked: 2026-10-23
+  checked_by: robots.txt recheck and fetch
+  notes: The broad archive collects the commune's public PDFs (finance, regulations and older assembly documents),
+    untagged (linked-sources.yaml). The Gemeindeversammlung page only links to Downloads; the Downloads page lists
+    Gemeinderat minutes 2024-2026 and finance files, all on the Webflow file host cdn.prod.website-files.com, whose
+    robots.txt answers HTTP 403. RFC 9309 treats a 4xx robots.txt as no rules, so the files are collected.
+  publications:
+  - body: executive
+    kind: minutes
+    status: configured
+    listing_url: https://www.deitingen.ch/downloads
+    obstacle: null
+    how: html_links, 1 hop, the 'Protokoll N. GR-Sitzung' PDFs on the downloads page (Webflow file host, robots.txt
+      4xx is no rule); Buergerrat and Buergergemeinde files left out
+  - body: assembly
+    kind: minutes
+    status: configured
+    listing_url: https://www.deitingen.ch/downloads
+    obstacle: null
+    how: html_links, 1 hop, the 'Gemeindeversammlung Protokoll' PDFs on the downloads page
+- bfs_id: 2517
+  name: Derendingen
+  canton: SO
+  status: not_published
+  website: https://www.derendingen.ch
+  vendor: wordpress
+  reachable: true
+  checked: 2026-09-08
+  checked_by: listing review
+  notes: Gemeinderatssitzungen are HTML news posts. The WordPress media API is not available. The broad archive
+    collects the commune's public PDFs linked from the regulations, finance and council pages, untagged (linked-sources.yaml).
+  publications:
+  - body: assembly
+    kind: minutes
+    status: not_published
+    listing_url: https://derendingen.ch/politik/gemeindeversammlung/
+    obstacle: Gemeindeversammlung event pages carry Traktandenliste and Botschaften only; Downloads page has no
+      protocols
+    how: on request from the commune
+- bfs_id: 2518
+  name: Etziken
+  canton: SO
+  status: configured
+  website: http://etziken.ch
+  vendor: govis
+  reachable: true
+  checked: 2026-10-19
+  checked_by: crawler dry run (unverified)
+  notes: Crawled at most one request per 8 seconds, as the hosting network requires.
+  publications:
+  - body: assembly
+    kind: minutes
+    status: configured
+    listing_url: https://www.etziken.ch/politik/protokolle.html/171
+    how: 'html_links, 1 hop: GOViS Protokolle page with Gemeinderatssitzung and Gemeindeversammlung minutes, date
+      dd-mm-yyyy from the title; dry run 9 documents 2025-2026'
+- bfs_id: 2519
+  name: Gerlafingen
+  canton: SO
+  status: configured
+  website: http://www.gerlafingen.ch
+  vendor: i-web
+  reachable: true
+  checked: 2026-10-18
+  checked_by: crawler dry run (unverified)
+  publications:
+  - body: assembly
+    kind: minutes
+    status: configured
+    listing_url: https://www.gerlafingen.ch/protokolle
+    how: 'html_links, 2 hops: i-web publication table /protokolle, then the PDF on each publication page; dry run
+      on 3 publications: 6 documents (2025-2026)'
+  - body: executive
+    kind: minutes
+    status: configured
+    listing_url: https://www.gerlafingen.ch/protokolle
+    how: 'html_links, 2 hops: i-web publication table /protokolle, then the PDF on each publication page; Gemeinderat
+      minutes from the same table; dry run on 3 publications: 6 documents (2025-2026)'
+- bfs_id: 2523
+  name: Horriwil
+  canton: SO
+  status: configured
+  website: http://www.horriwil.ch
+  vendor: custom
+  reachable: true
+  checked: 2026-10-19
+  checked_by: crawler dry run (unverified)
+  notes: The broad archive collects the commune's public PDFs, untagged (linked-sources.yaml).
+  publications:
+  - body: assembly
+    kind: minutes
+    status: configured
+    listing_url: https://www.horriwil.ch/gemeinde/politik/gemeindeversammlung
+    how: 'Gemeindeversammlung page: Protokolle GV 2016-2026 dated from the title (Protokoll GV DD.MM.YYYY). Dry
+      run 94 documents.'
+  - body: executive
+    kind: minutes
+    status: configured
+    listing_url: https://www.horriwil.ch/gemeinde/politik/protokolleinfos
+    how: 'Second source: the GR Protokolle page, Gemeinderat minutes 2023-2026 dated by the session date in their
+      table row (context row, prefer_context_date; file names carry the session date or a prefix). Only the versions
+      the commune marks public (_oeffentlich) are taken. Excluded: the file Protokoll-GRS-03-vom-14.03.2024 in the
+      row of 13. März 2024. The yearly ZIP archives 2011-2013 are not PDFs and are not taken.'
+- bfs_id: 2524
+  name: Hüniken
+  canton: SO
+  status: configured
+  website: http://www.hueniken.ch
+  vendor: drupal
+  reachable: true
+  checked: 2026-10-19
+  checked_by: crawler dry run (unverified)
+  notes: Mixed public PDF listings are archived without inferred decision tags.
+  publications:
+  - body: assembly
+    kind: minutes
+    status: configured
+    listing_url: https://www.hueniken.ch/gemeindeversammlung-{3..4}
+    how: Event pages gemeindeversammlung-3 to -14 (-5 answers 403; -1, -2 and -8 hold no documents, -1 and -2 left
+      out) with Einladung, Protokoll of the previous GV and Traktandum files, plus the Termine Verwaltung page for
+      the next meeting; dates from the titles or the file name, Traktandum files mostly undated; Bürgergemeinde
+      accounts excluded. New meeting pages beyond -14 are found through Termine Verwaltung only while announced.
+      Dry run 69 documents, 2021-2026
+  - body: assembly
+    kind: minutes
+    status: configured
+    listing_url: https://www.hueniken.ch/verwaltung/termine-verwaltung
+    how: 'Second source: the Termine Verwaltung page links the announced Gemeindeversammlung event page (followed,
+      then its PDFs); at the dry run it linked gemeindeversammlung-14 (03.12.2026), which holds no documents yet'
+- bfs_id: 2525
+  name: Kriegstetten
+  canton: SO
+  status: configured
+  website: https://www.kriegstetten.ch
+  vendor: govis
+  reachable: true
+  checked: 2026-10-19
+  checked_by: crawler dry run (unverified)
+  notes: Mixed public PDF listings are archived without inferred decision tags. GOViS Protokolle page, Protokoll
+    assets, date yyyymmdd from the file name; dry run. 4 documents 2025-2026.
+  publications:
+  - body: assembly
+    kind: minutes
+    status: configured
+    listing_url: https://www.kriegstetten.ch/politik/gemeindeversammlung/protokolle.html/157
+    how: 'GOViS Protokolle page, Protokoll assets, date yyyymmdd from the file name; dry run: 4 documents 2025-2026'
+- bfs_id: 2526
+  name: Lohn-Ammannsegg
+  canton: SO
+  status: configured
+  website: https://www.lohn-ammannsegg.ch
+  vendor: govis
+  reachable: true
+  checked: 2026-10-19
+  checked_by: crawler dry run (unverified)
+  notes: 'GOViS site: the home page loads its content from /route/, the assembly page is served as HTML. robots.txt
+    disallows only /route/, and the listing page is server-rendered. The broad archive collects the commune''s public
+    PDFs, untagged (linked-sources.yaml). Earlier address: http://www.lohn-ammannsegg.ch.'
+  publications:
+  - body: assembly
+    kind: minutes
+    status: configured
+    listing_url: https://www.lohn-ammannsegg.ch/politik/gemeindeversammlung/gemeindeversammlungen.html/41
+    how: 'Gemeindeversammlungen page: Botschaften, minutes, decisions, budgets, accounts and regulations 2013-2026,
+      dated by title or file name; the press report is left out. Dry run 94 documents (52 dated, 2013-2026).'
+  - body: executive
+    kind: decisions
+    status: configured
+    listing_url: https://www.lohn-ammannsegg.ch/politik/gemeinderat/gemeinderatssitzungen.html/40
+    how: 'Gemeinderatssitzungen page and its archive (second source): monthly decision summaries (Beschlüsse) of
+      the Gemeinderat, dated by the session date in the file name (GRB_NN_ddmmyyyy); 2014-2018 files without a date
+      stay undated; media releases left out. Dry run 152 documents (97 dated, 2013-2026).'
+- bfs_id: 2527
+  name: Luterbach
+  canton: SO
+  status: configured
+  website: http://www.luterbach.ch
+  vendor: i-web
+  reachable: true
+  checked: 2026-10-19
+  checked_by: crawler dry run (unverified)
+  publications:
+  - body: assembly
+    kind: minutes
+    status: configured
+    listing_url: https://www.luterbach.ch/sitzung
+    how: 'html_links, 2 hops: i-web session table /sitzung (cancelled sessions excluded; other bodies only when
+      the title starts with Kirch-, Ortsbürger-, Schul- or Kreisgemeinde, so joint sessions stay), then Protokoll,
+      Beschlüsse, Einladung/Botschaft/Weisung, Traktanden documents, Jahresrechnung, Budget, Finanzplan and Kreditabrechnung;
+      naturalisation and resignation documents excluded; dry run on the 3 newest pages: 8 documents (2025, 2026)'
+- bfs_id: 2528
+  name: Obergerlafingen
+  canton: SO
+  status: configured
+  website: http://www.obergerlafingen.ch
+  vendor: custom
+  reachable: true
+  checked: 2026-10-19
+  checked_by: crawler dry run (unverified)
+  notes: The broad archive collects the commune's public PDFs, untagged (linked-sources.yaml).
+  publications:
+  - body: assembly
+    kind: minutes
+    status: configured
+    listing_url: https://www.obergerlafingen.ch/gemeindeversammlung.html
+    how: 'Gemeindeversammlung page: Protokolle 2008-2026 dated from the link text (Budgetgemeinde DD.MM.YYYY), the
+      Unterlagen (assembly documents) for each assembly undated (their file names carry only year and month). Dry
+      run 56 documents.'
+- bfs_id: 2530
+  name: Recherswil
+  canton: SO
+  status: configured
+  website: https://www.recherswil.ch/
+  vendor: custom
+  reachable: true
+  checked: 2026-10-19
+  checked_by: crawler dry run (unverified)
+  notes: The broad archive collects the commune's public PDFs, untagged (linked-sources.yaml).
+  publications:
+  - body: assembly
+    kind: minutes
+    status: configured
+    listing_url: https://www.recherswil.ch/gemeindeversammlung
+    how: 'html_links, 1 hop: the documents listed on the page; assembly minutes on /gemeindeversammlung (/sitzung
+      is 404) plus the Gemeinderat minutes on /gemeinderatsprotokolle (current year); naturalisation documents excluded;
+      dry run on the 3 newest pages: 7 documents (2026)'
+  - body: executive
+    kind: minutes
+    status: configured
+    listing_url: https://www.recherswil.ch/gemeinderatsprotokolle
+    how: 'html_links, 1 hop: GR-Protokoll PDFs on the Gemeinderat minutes page (current year)'
+- bfs_id: 2532
+  name: Subingen
+  canton: SO
+  status: candidate
+  website: https://www.subingen.ch
+  vendor: custom
+  reachable: false
+  checked: 2026-10-18
+  checked_by: crawler dry run (unverified)
+  notes: The site links an external council information system at subingen.ratsinfomanagement.net; its TLS handshake
+    failed (connection closed), so its robots.txt could not be read and nothing was requested; the homepage shows
+    only a news item on the assembly of 22 June 2026.
+  publications: []
+- bfs_id: 2534
+  name: Zuchwil
+  canton: SO
+  status: configured
+  website: https://www.zuchwil.ch
+  vendor: weblication
+  reachable: true
+  checked: 2026-09-08
+  checked_by: listing review
+  notes: Gemeindeversammlung; the sitzungsdatum query parameter is the same bogus value for all files; the Gemeinderat
+    (executive) protocol page protokolle_gr showed no document links
+  publications:
+  - body: assembly
+    kind: minutes
+    status: configured
+    listing_url: https://www.zuchwil.ch/de/politik/protokolle_gv/
+    from: '2020-06-22'
+    to: '2026-06-22'
+    how: html_links, 1 hop, cdws document module (dok.php?...filename=Protokoll_GV_vom_22.06.2026), date from the
+      anchor text
+- bfs_id: 2535
+  name: Drei Höfe
+  canton: SO
+  status: configured
+  website: http://www.dreihoefe.ch
+  vendor: custom
+  reachable: true
+  checked: 2026-10-19
+  checked_by: crawler dry run (unverified)
+  notes: 'The broad archive collects the commune''s public PDFs, untagged (linked-sources.yaml). html_links, 1 hop:
+    GV page, /32inhaltepdf*/ Protokolle of the Budget- and Rechnungs-GV since 2022, invitation and Jahresrechnung;
+    dry run 11.'
+  publications:
+  - body: assembly
+    kind: minutes
+    status: configured
+    listing_url: https://www.dreihoefe.ch/politik_gmdversammlungen.php
+    how: 'html_links, 1 hop: GV page, /32inhaltepdf*/ Protokolle of the Budget- and Rechnungs-GV since 2022, invitation
+      and Jahresrechnung; dry run 11'
+- bfs_id: 2541
+  name: Balm bei Günsberg
+  canton: SO
+  status: configured
+  website: http://www.balm-balmberg.ch
+  vendor: custom
+  reachable: true
+  checked: *id003
+  checked_by: listing review
+  publications:
+  - body: assembly
+    kind: minutes
+    status: configured
+    listing_url: https://www.balm-balmberg.ch/protokolle
+    to: '2026-07-02'
+    how: html_links, 1 hop
+  - body: executive
+    kind: minutes
+    status: configured
+    listing_url: https://www.balm-balmberg.ch/protokolle
+    how: html_links, 1 hop
+- bfs_id: 2542
+  name: Bellach
+  canton: SO
+  status: not_published
+  website: http://www.bellach.ch
+  vendor: govis
+  reachable: true
+  checked: 2026-10-19
+  checked_by: crawler dry run (unverified)
+  notes: robots.txt disallows only /route/; the Gemeindeversammlung and Gemeinderat pages link only the Gemeindeordnung;
+    no assembly or council documents.
+  publications: []
+- bfs_id: 2543
+  name: Bettlach
+  canton: SO
+  status: not_published
+  website: https://www.bettlach.ch
+  vendor: custom
+  reachable: true
+  checked: 2026-09-08
+  checked_by: listing review
+  publications:
+  - body: assembly
+    kind: minutes
+    status: not_published
+    listing_url: https://bettlach.ch/site.html?sid=120&OID=213
+    from: '2025-12-09'
+    to: '2026-06-09'
+    obstacle: only the last two GV-Protokolle (/documents/2771.PDF, /documents/2708.PDF; Dec 2025 and Jun 2026)
+      are online, below the three-document threshold; no archive under Einwohnergemeinde or Behoerden
+    how: the archive only on request from the commune
+  notes: The broad archive collects the commune's public PDFs, untagged (linked-sources.yaml).
+- bfs_id: 2544
+  name: Feldbrunnen-St. Niklaus
+  canton: SO
+  status: configured
+  website: https://www.feldbrunnen.ch
+  vendor: wordpress
+  reachable: true
+  checked: *id003
+  checked_by: listing review
+  publications:
+  - body: assembly
+    kind: minutes
+    status: candidate
+    listing_url: https://www.feldbrunnen.ch/politik/protokolle/
+    to: '2026-03-03'
+    how: 'automated probe: 4 dated PDF links on the page, newest 2026-03-03; body inferred from the URL'
+  - body: executive
+    kind: minutes
+    status: configured
+    listing_url: https://www.feldbrunnen.ch/politik/protokolle/
+    how: html_links, 1 hop
+- bfs_id: 2545
+  name: Flumenthal
+  canton: SO
+  status: configured
+  website: https://www.flumenthal.ch
+  vendor: typo3
+  reachable: true
+  checked: 2026-10-19
+  checked_by: crawler dry run (unverified)
+  notes: TYPO3 site; assembly minutes P<date> since 2024 and Gemeinderat minutes since 2024 under /fileadmin (robots.txt
+    empty).
+  publications:
+  - body: assembly
+    kind: minutes
+    status: configured
+    listing_url: https://www.flumenthal.ch/behoerden-und-verwaltung/gemeindeversammlung/
+    how: html_links, 1 hop, P<yyyymmdd> assembly minutes; dry run (both sources) 43 documents 2024-2026
+  - body: executive
+    kind: minutes
+    status: configured
+    listing_url: https://www.flumenthal.ch/behoerden-und-verwaltung/gemeinderat/
+    how: html_links, second source, GR-Protokolle PDFs of the Gemeinderat page
+- bfs_id: 2546
+  name: Grenchen
+  canton: SO
+  status: configured
+  website: https://www.grenchen.ch
+  vendor: i-web
+  reachable: true
+  checked: 2026-10-18
+  checked_by: crawler dry run (unverified)
+  publications:
+  - body: executive
+    kind: minutes
+    status: configured
+    listing_url: https://www.grenchen.ch/protokollefs
+    how: 'html_links, 1 hop: /protokollefs lists ''Protokoll vom ...'' of the Gemeinderat (105 links 2017-2026,
+      complete from 2020) and the Gemeindeversammlung protocols; dry run on the 3 newest sessions: 105 documents
+      (2015, 2016, 2017, 2018, 2019, 2020, 2021, 2022, 2023, 2024, 2025, 2026)'
+- bfs_id: 2547
+  name: Günsberg
+  canton: SO
+  status: configured
+  website: https://www.guensberg.ch
+  vendor: govis
+  reachable: true
+  checked: 2026-10-19
+  checked_by: crawler dry run (unverified)
+  notes: robots.txt disallows only /route/, and the listing page is server-rendered. The broad archive collects
+    the commune's public PDFs, untagged (linked-sources.yaml).
+  publications:
+  - body: assembly
+    kind: minutes
+    status: configured
+    listing_url: https://www.guensberg.ch/politik/gemeindeversammlung/2021.html/173
+    how: 'html_links on /public/upload/assets/ links (GOViS, fp parameter dropped). Gemeindeversammlung page: assembly
+      minutes 2020-2025 dated by the file-name prefix (the assembly date). Dry run 12 documents (12 dated, 2020-2025).'
+- bfs_id: 2548
+  name: Hubersdorf
+  canton: SO
+  status: candidate
+  website: http://www.hubersdorf.ch
+  vendor: wix
+  reachable: true
+  checked: 2026-10-19
+  checked_by: crawler dry run (unverified)
+  notes: 'Wix site: the politics and downloads pages link no assembly or finance documents, only cantonal forms.
+    The broad archive collects PDF attachments of the municipal news, untagged (linked-sources.yaml); other Wix
+    file lists are not read.'
+  publications: []
+- bfs_id: 2549
+  name: Kammersrohr
+  canton: SO
+  status: not_examined
+- bfs_id: 2550
+  name: Langendorf
+  canton: SO
+  status: configured
+  website: https://www.langendorf-so.ch
+  vendor: custom
+  reachable: true
+  checked: 2026-10-18
+  checked_by: crawler dry run (unverified)
+  notes: The broad archive collects the commune's public PDFs, untagged (linked-sources.yaml).
+  publications:
+  - body: assembly
+    kind: minutes
+    status: configured
+    listing_url: https://langendorf-so.ch/politik/gemeindeversammlung
+    how: 'html_links, 1 hop: "Protokoll Nr. N vom ..." PDFs on the assembly page; dry run: 5 minutes 2024-2026'
+- bfs_id: 2551
+  name: Lommiswil
+  canton: SO
+  status: configured
+  website: https://www.lommiswil.ch
+  vendor: custom
+  reachable: true
+  checked: *id004
+  checked_by: listing review
+  publications:
+  - body: assembly
+    kind: minutes
+    status: configured
+    listing_url: https://www.lommiswil.ch/protokolle.html
+    to: '2026-08-06'
+    how: html_links, 2 hops
+  - body: executive
+    kind: minutes
+    status: configured
+    listing_url: https://www.lommiswil.ch/protokolle.html
+    how: html_links, 2 hops
+- bfs_id: 2553
+  name: Oberdorf
+  canton: SO
+  status: configured
+  website: https://www.oberdorf.ch
+  vendor: i-web
+  reachable: true
+  checked: 2026-10-19
+  checked_by: crawler dry run (unverified)
+  publications:
+  - body: assembly
+    kind: minutes
+    status: configured
+    listing_url: https://www.oberdorf.ch/sitzung
+    how: 'html_links, 2 hops: i-web session table /sitzung (cancelled sessions excluded; other bodies only when
+      the title starts with Kirch-, Ortsbürger-, Schul- or Kreisgemeinde, so joint sessions stay), then Protokoll,
+      Beschlüsse, Einladung/Botschaft/Weisung, Traktanden documents, Jahresrechnung, Budget, Finanzplan and Kreditabrechnung;
+      naturalisation and resignation documents excluded; Solothurn: Bürgergemeinde documents excluded; dry run on
+      the 3 newest pages: 4 documents (2025, 2026)'
+- bfs_id: 2554
+  name: Riedholz
+  canton: SO
+  status: candidate
+  website: http://www.riedholz.ch
+  vendor: custom
+  reachable: true
+  checked: 2026-10-18
+  checked_by: crawler dry run (unverified)
+  notes: 'Automated probe: the home page links no page about minutes or a council. The broad archive collects the
+    commune''s public PDFs, untagged (linked-sources.yaml).'
+  publications:
+  - body: assembly
+    kind: documents
+    status: candidate
+    listing_url: https://www.riedholz.ch/de/politik-verwaltung/politik/index.php
+    obstacle: the politics index links no assembly or minutes page; council and votes pages not examined
+    how: check the Gemeinderat and Abstimmungen pages
+- bfs_id: 2555
+  name: Rüttenen
+  canton: SO
+  status: configured
+  website: http://www.ruettenen.ch
+  vendor: custom
+  reachable: true
+  checked: 2026-10-19
+  checked_by: crawler dry run (unverified)
+  notes: The broad archive collects the commune's public PDFs (archive sections and their detail pages), untagged
+    (linked-sources.yaml).
+  publications:
+  - body: executive
+    kind: decisions
+    status: configured
+    listing_url: https://ruettenen.ch/politik
+    how: 'html_links, Politik page: ''Bericht aus der Gemeinderatssitzung'' and Traktandenlisten (HubSpot /hubfs/
+      PDFs, hsLang volatile); dry run: 68 documents 2023-2026; no assembly documents online'
+- bfs_id: 2556
+  name: Selzach
+  canton: SO
+  status: blocked_js
+  website: https://www.selzach.ch
+  vendor: govis
+  reachable: true
+  checked: *id001
+  checked_by: scripts/probe_vendors.py (unverified)
+  notes: GOViS site that loads its page content from /route/, which robots.txt disallows. The assembly page is empty
+    without the disallowed /route/ call.
+- bfs_id: 2571
+  name: Boningen
+  canton: SO
+  status: candidate
+  website: http://www.boningen.ch
+  vendor: govis
+  reachable: true
+  checked: 2026-10-19
+  checked_by: crawler dry run (unverified)
+  notes: 'Automated probe: a page with dated PDF links. The protocol page holds only minutes of the Bürgerversammlung,
+    i.e. the Bürgergemeinde Boningen, which decides naturalisations in Solothurn; not configured under the naturalisation
+    rule. No Einwohnergemeinde listing found on that page.'
+  publications:
+  - body: assembly
+    kind: minutes
+    status: candidate
+    listing_url: https://www.boningen.ch/dienstleistungen/downloads/protokolle.html/103
+    to: '2026-06-16'
+    how: 'automated probe: 2 dated PDF links on the page, newest 2026-06-16, e.g. ''Protokoll der Bürgerversammlung
+      vom 16.06.2026_öffentlich''; body inferred from the URL'
+- bfs_id: 2572
+  name: Däniken
+  canton: SO
+  status: configured
+  website: http://www.daeniken.ch
+  vendor: i-web
+  reachable: true
+  checked: 2026-10-19
+  checked_by: crawler dry run (unverified)
+  publications:
+  - body: assembly
+    kind: minutes
+    status: configured
+    listing_url: https://www.daeniken.ch/sitzung
+    how: 'html_links, 2 hops: i-web session table /sitzung (cancelled sessions excluded; other bodies only when
+      the title starts with Kirch-, Ortsbürger-, Schul- or Kreisgemeinde, so joint sessions stay), then Protokoll,
+      Beschlüsse, Einladung/Botschaft/Weisung, Traktanden documents, Jahresrechnung, Budget, Finanzplan and Kreditabrechnung;
+      naturalisation and resignation documents excluded; Solothurn: Bürgergemeinde documents (e.g. its Jahresrechnung)
+      excluded; joint ''Vereinigte Gemeindeversammlung Bürgergemeinde und Einwohnergemeinde'' sessions kept; dry
+      run on the 3 newest pages: 11 documents (2025, 2026)'
+- bfs_id: 2573
+  name: Dulliken
+  canton: SO
+  status: configured
+  website: http://www.dulliken.ch
+  vendor: i-web
+  reachable: true
+  checked: 2026-10-18
+  checked_by: crawler dry run (unverified)
+  publications:
+  - body: assembly
+    kind: minutes
+    status: configured
+    listing_url: https://www.dulliken.ch/sitzung
+    how: 'html_links, 2 hops: i-web session table /sitzung (cancelled sessions excluded), then the session documents
+      (minutes, decisions, proposals, accounts, budgets); dry run on the 3 newest sessions: 6 documents (2025-2026)'
+- bfs_id: 2574
+  name: Eppenberg-Wöschnau
+  canton: SO
+  status: candidate
+  website: http://www.eppenberg-woeschnau.ch
+  vendor: custom
+  reachable: true
+  checked: 2026-10-23
+  checked_by: robots.txt recheck
+  notes: 'Automated probe: no dated minutes PDFs on the 2 pages tested (https://www.eppenberg-woeschnau.ch/startseite-copy-5,
+    https://www.eppenberg-woeschnau.ch/startseite-copy-4-3). The broad archive collects the commune''s public PDFs
+    (archive sections and their detail pages), untagged (linked-sources.yaml). Documents sit on de.cdn-website.com,
+    whose robots.txt answers 403.'
+  publications:
+  - body: assembly
+    kind: documents
+    status: candidate
+    obstacle: not configured yet; robots.txt of de.cdn-website.com answers 4xx, which RFC 9309 treats as no rules
+- bfs_id: 2575
+  name: Fulenbach
+  canton: SO
+  status: configured
+  website: http://www.fulenbach.ch
+  vendor: i-web
+  reachable: true
+  checked: 2026-10-19
+  checked_by: crawler dry run (unverified)
+  publications:
+  - body: assembly
+    kind: minutes
+    status: configured
+    listing_url: https://www.fulenbach.ch/sitzung
+    how: 'html_links, 2 hops: i-web session table /sitzung (cancelled sessions excluded; other bodies only when
+      the title starts with Kirch-, Ortsbürger-, Schul- or Kreisgemeinde, so joint sessions stay), then Protokoll,
+      Beschlüsse, Einladung/Botschaft/Weisung, Traktanden documents, Jahresrechnung, Budget, Finanzplan and Kreditabrechnung;
+      naturalisation and resignation documents excluded; Solothurn: Bürgergemeinde documents excluded; the Geschäftsberichte
+      of the commune''s utilities (Elektra, ComNet, ThermNet) are attached to the Rechnungs-GV; dry run on the 3
+      newest pages: 17 documents (2024, 2025, 2026)'
+- bfs_id: 2576
+  name: Gretzenbach
+  canton: SO
+  status: blocked_js
+  website: https://www.gretzenbach.ch
+  vendor: govis
+  reachable: true
+  checked: *id001
+  checked_by: scripts/probe_vendors.py (unverified)
+  notes: GOViS site that loads its page content from /route/, which robots.txt disallows. The assembly page is empty
+    without the disallowed /route/ call.
+- bfs_id: 2578
+  name: Gunzgen
+  canton: SO
+  status: candidate
+  website: http://www.gunzgen.ch
+  vendor: i-web
+  reachable: true
+  checked: 2026-10-19
+  checked_by: crawler dry run (unverified)
+  notes: 'Automated probe: the session list (/sitzung) shows 2 sessions since 2025 (Gemeindeversammlung); the newest
+    three carry no minutes or decision list, and the site map names no minutes page. The session table lists only
+    the 2 sessions of 2025, and the 2025 session page and /einwohnergemeinde carry no documents.'
+  publications:
+  - body: assembly
+    kind: minutes
+    status: candidate
+    listing_url: https://www.gunzgen.ch/sitzung
+    obstacle: the session table lists only the 2 sessions of 2025, and the 2025 session page and /einwohnergemeinde
+      carry no documents
+- bfs_id: 2579
+  name: Hägendorf
+  canton: SO
+  status: configured
+  website: http://www.haegendorf.ch
+  vendor: i-web
+  reachable: true
+  checked: 2026-10-18
+  checked_by: crawler dry run (unverified)
+  publications:
+  - body: assembly
+    kind: minutes
+    status: configured
+    listing_url: https://www.haegendorf.ch/sitzung
+    how: 'html_links, 2 hops: i-web session table /sitzung (cancelled sessions excluded), then the session documents
+      (minutes, decisions, proposals, accounts, budgets); dry run on the 3 newest sessions: 15 documents (2024-2026)'
+- bfs_id: 2580
+  name: Kappel
+  canton: SO
+  status: configured
+  website: https://www.kappel-so.ch
+  vendor: custom
+  reachable: true
+  checked: 2026-10-18
+  checked_by: crawler dry run (unverified)
+  notes: The broad archive collects the commune's public PDFs, untagged (linked-sources.yaml).
+  publications:
+  - body: assembly
+    kind: documents
+    status: configured
+    listing_url: https://www.kappel-so.ch/index.asp?inc=downloads.asp&typ=Nav3&cat=114
+    how: 'html_links, 1 hop: finance download lists cat=114 (Budgets) and cat=115 (Rechnungen) under /download/download/;
+      assembly minutes not published; dry run: 10 documents, undated'
+- bfs_id: 2581
+  name: Olten
+  canton: SO
+  status: not_published
+  website: https://www.olten.ch
+  vendor: i-web
+  reachable: true
+  checked: 2026-10-19
+  checked_by: crawler dry run (unverified)
+  notes: Gemeindeparlament; i-web site, now reachable. /sitzung lists the Parlamentssitzungen, but a session page
+    links only business pages ('Antrag Stadtrat', 'Beschluss Parlament', 'Beantwortung Stadtrat') whose decisions
+    are HTML text without PDFs; /protokolle is 404. No PDF source.
+  publications:
+  - body: parliament
+    kind: minutes
+    status: not_published
+    listing_url: https://www.olten.ch/sitzung
+    how: i-web session table /sitzung; session pages link business pages with HTML decisions, no PDFs
+- bfs_id: 2582
+  name: Rickenbach
+  canton: SO
+  status: configured
+  website: https://www.rickenbachso.ch
+  vendor: custom
+  reachable: true
+  checked: 2026-10-19
+  checked_by: crawler dry run (unverified)
+  notes: 'The broad archive collects the commune''s public PDFs, untagged (linked-sources.yaml). html_links, 1 hop:
+    Weblication documents page, Botschaften (yyyy.mm.dd in the file name); the assembly page links no documents;
+    dry run: 1 current Botschaft.'
+  publications:
+  - body: assembly
+    kind: documents
+    status: configured
+    listing_url: https://www.rickenbachso.ch/de/verwaltung/dokumente/
+    how: 'html_links, 1 hop: Weblication documents page, Botschaften (yyyy.mm.dd in the file name); the assembly
+      page links no documents'
+- bfs_id: 2583
+  name: Schönenwerd
+  canton: SO
+  status: configured
+  website: https://www.schoenenwerd.ch
+  vendor: i-web
+  reachable: true
+  checked: 2026-10-18
+  checked_by: crawler dry run (unverified)
+  publications:
+  - body: assembly
+    kind: minutes
+    status: configured
+    listing_url: https://www.schoenenwerd.ch/sitzung
+    how: 'html_links, 2 hops: i-web session table /sitzung (cancelled sessions excluded), then the session documents
+      (minutes, decisions, proposals, accounts, budgets); dry run on the 3 newest sessions: 9 documents (2025-2026)'
+- bfs_id: 2584
+  name: Starrkirch-Wil
+  canton: SO
+  status: configured
+  website: https://www.starrkirch-wil.ch
+  vendor: i-web
+  reachable: true
+  checked: 2026-10-19
+  checked_by: crawler dry run (unverified)
+  publications:
+  - body: assembly
+    kind: minutes
+    status: configured
+    listing_url: https://www.starrkirch-wil.ch/sitzung
+    how: 'html_links, 2 hops: i-web session table /sitzung (cancelled sessions excluded; other bodies only when
+      the title starts with Kirch-, Ortsbürger-, Schul- or Kreisgemeinde, so joint sessions stay), then Protokoll,
+      Beschlüsse, Einladung/Botschaft/Weisung, Traktanden documents, Jahresrechnung, Budget, Finanzplan and Kreditabrechnung;
+      naturalisation and resignation documents excluded; Solothurn: Bürgergemeinde documents excluded; the newspaper
+      report (Pressebericht) of each assembly is taken; dry run on the 3 newest pages: 3 documents (2025, 2026)'
+- bfs_id: 2585
+  name: Walterswil
+  canton: SO
+  status: blocked_js
+  website: https://www.walterswil.ch
+  vendor: govis
+  reachable: true
+  checked: *id001
+  checked_by: scripts/probe_vendors.py (unverified)
+  notes: GOViS site that loads its page content from /route/, which robots.txt disallows. The assembly page is empty
+    without the disallowed /route/ call.
+- bfs_id: 2586
+  name: Wangen bei Olten
+  canton: SO
+  status: configured
+  website: https://www.wangenbo.ch
+  vendor: joomla
+  reachable: true
+  checked: 2026-09-08
+  checked_by: listing review
+  notes: The page https://www.wangenbo.ch/behoerden/gemeinderat/gr-protokolle#protokolle belongs to the executive;
+    the assembly page has minutes back to 2018. 27 of 31 are dated; 4 stay undated because of two-digit years (Protokoll_Gemeindeversammlung_17.06.19.pdf).
+    File names are percent-encoded (Gemeindeversammlung%2024.06.2026.pdf).
+  publications:
+  - body: assembly
+    kind: minutes
+    status: configured
+    listing_url: https://www.wangenbo.ch/behoerden/gemeindeversammlung
+    from: '2018-12-03'
+    to: '2026-06-29'
+    how: html_links, 2 sources, 1 hop each
+  - body: executive
+    kind: minutes
+    status: configured
+    listing_url: https://www.wangenbo.ch/behoerden/gemeinderat/gr-protokolle
+- bfs_id: 2601
+  name: Solothurn
+  canton: SO
+  status: configured
+  website: https://www.stadt-solothurn.ch/
+  vendor: i-web
+  reachable: true
+  checked: 2026-10-18
+  checked_by: crawler dry run (unverified)
+  publications:
+  - body: assembly
+    kind: minutes
+    status: configured
+    listing_url: https://www.stadt-solothurn.ch/sitzung
+    how: 'html_links, 2 hops: i-web session table /sitzung (cancelled sessions excluded), then Einladung, Jahresrechnung,
+      Auszüge Gemeinderat per Traktandum; no minutes on the 2023 and 2026 pages; dry run on the 3 newest sessions:
+      5 documents (2026)'
+- bfs_id: 2611
+  name: Bärschwil
+  canton: SO
+  status: configured
+  website: https://www.baerschwil.ch
+  vendor: i-web
+  reachable: true
+  checked: 2026-10-19
+  checked_by: crawler dry run (unverified)
+  publications:
+  - body: assembly
+    kind: minutes
+    status: configured
+    listing_url: https://www.baerschwil.ch/sitzung
+    how: 'html_links, 2 hops: i-web session table /sitzung (cancelled sessions excluded; other bodies only when
+      the title starts with them, so joint sessions stay), then the session documents filtered by title; naturalisation
+      and resignation documents excluded; Solothurn: Bürgergemeinde documents (accounts, the BG-EG merger balance
+      of 01.01.2025) excluded; dry run on the 3 newest pages: 10 documents (2024-2026)'
+- bfs_id: 2612
+  name: Beinwil
+  canton: SO
+  status: configured
+  website: https://www.beinwil-so.ch
+  vendor: custom
+  reachable: true
+  checked: *id003
+  checked_by: listing review
+  publications:
+  - body: executive
+    kind: minutes
+    status: configured
+    listing_url: https://www.beinwil-so.ch/politik/gemeinderat/gemeinderatsbeschluesse
+    to: '2026-08-10'
+    how: html_links, 1 hop
+- bfs_id: 2613
+  name: Breitenbach
+  canton: SO
+  status: configured
+  website: http://www.breitenbach.ch
+  vendor: i-web
+  reachable: true
+  checked: 2026-10-19
+  checked_by: crawler dry run (unverified)
+  publications:
+  - body: assembly
+    kind: minutes
+    status: configured
+    listing_url: https://www.breitenbach.ch/sitzung
+    how: 'html_links, i-web session table /sitzung, then the session documents; naturalisation documents excluded;
+      dry run on the 3 newest pages: 10 documents (2025, 2026)'
+- bfs_id: 2614
+  name: Büsserach
+  canton: SO
+  status: configured
+  website: https://www.buesserach.ch
+  vendor: i-web
+  reachable: true
+  checked: 2026-10-19
+  checked_by: crawler dry run (unverified)
+  publications:
+  - body: assembly
+    kind: minutes
+    status: configured
+    listing_url: https://www.buesserach.ch/sitzung
+    how: 'html_links, 2 hops: i-web session table /sitzung (cancelled sessions excluded; other bodies only when
+      the title starts with Kirch-, Ortsbürger-, Schul- or Kreisgemeinde, so joint sessions stay), then Protokoll,
+      Beschlüsse, Einladung/Botschaft/Weisung, Traktanden documents, Jahresrechnung, Budget, Finanzplan and Kreditabrechnung;
+      naturalisation and resignation documents excluded; Solothurn: Bürgergemeinde documents (Protokoll GV Bürgergemeinde,
+      Jahresrechnung BG) excluded; dry run on the 3 newest pages: 18 documents (2025, 2026)'
+- bfs_id: 2615
+  name: Erschwil
+  canton: SO
+  status: blocked_robots
+  website: http://www.erschwil.ch
+  vendor: custom
+  reachable: true
+  checked: 2026-09-10
+  checked_by: listing review
+  notes: robots.txt answers HTTP 500, which the crawler treats as disallow-all.
+  publications:
+  - body: executive
+    kind: decisions
+    status: blocked_robots
+    listing_url: https://www.erschwil.ch/gemeinderatsbeschluesse.html
+    to: '2026-08-17'
+    obstacle: www.erschwil.ch answers HTTP 500 on /robots.txt (twice, 40 minutes apart); the crawler treats a 5xx
+      robots.txt as disallow-all; retry when the server is fixed
+    how: 'automated probe: 13 dated PDF links on the page, newest 2026-08-17; body inferred from the URL; Gemeinderatsbeschluesse
+      (decisions of the executive)'
+- bfs_id: 2616
+  name: Fehren
+  canton: SO
+  status: configured
+  website: http://www.fehren.ch
+  vendor: custom
+  reachable: true
+  checked: *id003
+  checked_by: listing review
+  publications:
+  - body: executive
+    kind: minutes
+    status: configured
+    listing_url: https://www.fehren.ch/beschluesse
+    to: '2026-06-04'
+    how: html_links, 1 hop
+- bfs_id: 2617
+  name: Grindel
+  canton: SO
+  status: configured
+  website: https://www.grindel.ch
+  vendor: i-web
+  reachable: true
+  checked: 2026-10-19
+  checked_by: crawler dry run (unverified)
+  publications:
+  - body: assembly
+    kind: minutes
+    status: configured
+    listing_url: https://www.grindel.ch/sitzung
+    how: 'html_links, 2 hops: i-web session table /sitzung (cancelled sessions excluded; other bodies only when
+      the title starts with them, so joint sessions stay; at most 40 sessions per run), then the session documents
+      filtered by title, dated by their own title date or else by the session; naturalisation, resignation and Bürgergemeinde
+      documents, newsletters, presentations, contracts and annual reports excluded; Solothurn: the Bürgerversammlung''s
+      own sessions and the ''Bürger ...'' files excluded; joint sessions kept; dry run on the 3 newest pages: 9
+      documents (2024-2026)'
+- bfs_id: 2618
+  name: Himmelried
+  canton: SO
+  status: blocked_js
+  website: http://www.himmelried.ch
+  vendor: govis
+  reachable: true
+  checked: *id001
+  checked_by: scripts/probe_vendors.py (unverified)
+  notes: GOViS site that loads its page content from /route/, which robots.txt disallows. The site map lists no
+    assembly or minutes page.
+- bfs_id: 2619
+  name: Kleinlützel
+  canton: SO
+  status: configured
+  website: https://www.kleinluetzel.ch
+  vendor: i-web
+  reachable: true
+  checked: 2026-10-19
+  checked_by: crawler dry run (unverified)
+  publications:
+  - body: assembly
+    kind: minutes
+    status: configured
+    listing_url: https://www.kleinluetzel.ch/sitzung
+    how: 'html_links, 2 hops: i-web session table /sitzung (cancelled sessions excluded; other bodies only when
+      the title starts with Kirch-, Ortsbürger-, Schul- or Kreisgemeinde, so joint sessions stay), then Protokoll,
+      Beschlüsse, Einladung/Botschaft/Weisung, Traktanden documents, Jahresrechnung, Budget, Finanzplan and Kreditabrechnung;
+      naturalisation and resignation documents excluded; Solothurn: Bürgergemeinde documents excluded; an information
+      evening excluded; dry run on the 3 newest pages: 13 documents (2025, 2026)'
+- bfs_id: 2620
+  name: Meltingen
+  canton: SO
+  status: candidate
+  website: https://www.meltingen.ch
+  vendor: i-web
+  reachable: true
+  checked: 2026-10-19
+  checked_by: crawler dry run (unverified)
+  notes: 'Automated probe: the session list (/sitzung) shows 7 sessions since 2020 (Budget-Gemeindeversammlung,
+    Gemeindeversammlung, Gemeindeversammlung Budget 2026, Gemeindeversammlung Rechnung 2024, Inf); the newest three
+    carry no minutes or decision list, and the site map names no minutes page. /sitzung lists 7 sessions 2020-2025,
+    but the 2023 and 2025 session pages carry no documents.'
+  publications:
+  - body: assembly
+    kind: minutes
+    status: candidate
+    listing_url: https://www.meltingen.ch/sitzung
+    obstacle: /sitzung lists 7 sessions 2020-2025, but the 2023 and 2025 session pages carry no documents
+- bfs_id: 2621
+  name: Nunningen
+  canton: SO
+  status: configured
+  website: https://www.nunningen.swiss/
+  vendor: govis
+  reachable: true
+  checked: 2026-10-18
+  checked_by: crawler dry run (unverified)
+  notes: 'Earlier address: http://www.nunningen.ch. The broad archive collects the commune''s public PDFs, untagged
+    (linked-sources.yaml).'
+  publications:
+  - body: executive
+    kind: decisions
+    status: configured
+    listing_url: https://www.nunningen.swiss/politik/gemeinderat/gemeinderatsbeschluesse/aktuelle-beschluesse.html/159
+    how: 'html_links, GOViS Gemeinderatsbeschlüsse pages (current, archive 2025, archive 2024): Beschlussprotokoll
+      PDFs; the assembly page /politik/gemeindeversammlung.html/25 not examined; dry run: 30 documents 2025-2026'
+- bfs_id: 2622
+  name: Zullwil
+  canton: SO
+  status: blocked_waf
+  website: http://www.zullwil.ch
+  vendor: custom
+  reachable: true
+  checked: 2026-10-19
+  checked_by: crawler dry run (unverified)
+  notes: The site and its robots.txt answer the crawler with HTTP 403. Not collected.
+  publications: []

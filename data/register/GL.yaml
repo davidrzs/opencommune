@@ -1,0 +1,60 @@
+# Register of commune publications, canton GL. What each commune publishes and whether it is collected; see docs/REGISTER.md.
+- bfs_id: 1630
+  name: Glarus Nord
+  canton: GL
+  status: configured
+  website: https://www.glarus-nord.ch
+  vendor: govis
+  reachable: true
+  checked: 2026-09-08
+  checked_by: listing review
+  notes: PDFs up to 43 MB. A separate script application at gemeindeversammlung.glarus-nord.ch/assembly/<date> shows
+    the assemblies.
+  publications:
+  - body: assembly
+    kind: minutes
+    status: configured
+    listing_url: https://www.glarus-nord.ch/online-schalter/unterlagen-gemeindeversammlungen/unterlagen-vergangener-gemeindeversammlungen.html/2678
+    from: '2025-11-10'
+    to: '2026-06-22'
+    how: html_links, 3 hops (year pages 2009-2026 -> assembly page -> 'Protokoll der Gemeindeversammlung vom ...'),
+      max_follow 80
+- bfs_id: 1631
+  name: Glarus Süd
+  canton: GL
+  status: configured
+  website: https://www.glarus-sued.ch
+  vendor: govis
+  reachable: true
+  checked: 2026-09-08
+  checked_by: listing review
+  notes: Generic anchor text; a separate script application, gemeindeversammlung.glarus-sued.ch/assembly/<date>,
+    shows the newest assemblies.
+  publications:
+  - body: assembly
+    kind: minutes
+    status: configured
+    listing_url: https://www.glarus-sued.ch/politik/gemeindeversammlungen/vergangene-gemeindeversammlungen.html/7614
+    from: '2024-11-21'
+    to: '2025-11-20'
+    how: html_links, 2 hops (overview 'dd.mm.yyyy ordentliche GV' pages 2011-2025 -> 'Protokoll' PDF with date in
+      file name), max_follow 80
+- bfs_id: 1632
+  name: Glarus
+  canton: GL
+  status: configured
+  website: https://www.glarus.ch
+  vendor: govis
+  reachable: true
+  checked: 2026-09-08
+  checked_by: listing review
+  notes: Since November 2025 a separate script app (gemeindeversammlung.glarus.ch/assemblies) is used in parallel.
+  publications:
+  - body: assembly
+    kind: minutes
+    status: configured
+    listing_url: https://www.glarus.ch/politik/gemeindeversammlung/vergangene-gemeindeversammlungen.html/5923
+    from: '2025-06-13'
+    to: '2025-11-28'
+    how: html_links, 2 hops (overview page linking every assembly 2008-2026 -> assembly page 'Protokoll der Gemeindeversammlung
+      vom ...'), max_follow 80
