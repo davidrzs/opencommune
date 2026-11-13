@@ -66,7 +66,8 @@ impl Mode {
     }
 }
 
-/// `search.fts_query`: quoted tokens, implicit AND, a prefix match on the last token.
+/// The FTS5 query for a search string: quoted tokens, implicit AND, a prefix match on the last
+/// token.
 pub fn fts_query(q: &str) -> Option<String> {
     let tokens: Vec<&str> = q
         .split(|c: char| !(c.is_alphanumeric() || c == '_'))
@@ -95,7 +96,7 @@ const DECISION_COLUMNS: &str = "SELECT d.id, d.title, d.summary, d.category, d.o
 const BASE_FROM: &str = " FROM decisions d JOIN communes c ON c.bfs_id = d.commune_bfs_id \
     JOIN documents doc ON doc.id = d.document_id";
 
-/// FROM, joins and WHERE for a filter set in a given mode (`search._assemble`).
+/// FROM, joins and WHERE for a filter set in a given mode.
 fn push_from_where(qb: &mut QueryBuilder<Sqlite>, f: &SearchFilters, mode: Mode, q: &str) {
     qb.push(BASE_FROM);
     if mode == Mode::Fts {
@@ -147,8 +148,8 @@ async fn count(pool: &SqlitePool, f: &SearchFilters, mode: Mode, q: &str) -> sql
     qb.build_query_scalar().fetch_one(pool).await
 }
 
-/// `search.search_decisions`: full-text search when the query is long enough and finds something,
-/// else a LIKE match, else the most recent decisions.
+/// Decision search: full-text search when the query is long enough and finds something, else a
+/// LIKE match, else the most recent decisions.
 pub async fn search(pool: &SqlitePool, f: &SearchFilters) -> sqlx::Result<SearchResult> {
     let q = f.q.as_deref().unwrap_or("").trim();
     let mut mode = Mode::Recent;
@@ -183,7 +184,7 @@ pub async fn search(pool: &SqlitePool, f: &SearchFilters) -> sqlx::Result<Search
     })
 }
 
-/// `search.get_decision`.
+/// One decision by its id.
 pub async fn get(pool: &SqlitePool, id: &str) -> sqlx::Result<Option<Decision>> {
     let sql = format!("{DECISION_COLUMNS}{BASE_FROM} WHERE d.id = ?");
     let row: Option<DecisionRow> = sqlx::query_as(AssertSqlSafe(sql))
@@ -193,7 +194,7 @@ pub async fn get(pool: &SqlitePool, id: &str) -> sqlx::Result<Option<Decision>> 
     Ok(row.map(Decision::from))
 }
 
-/// `search.list_documents`: published documents, newest meeting first.
+/// Published documents, newest meeting first.
 pub async fn documents(
     pool: &SqlitePool,
     commune: Option<i64>,
@@ -292,7 +293,7 @@ async fn scalar(pool: &SqlitePool, sql: &'static str) -> sqlx::Result<i64> {
     sqlx::query_scalar(sql).fetch_one(pool).await
 }
 
-/// `search.stats`. `communes_in_register` is the register's row count: the register has one row
+/// Archive totals. `communes_in_register` is the register's row count: the register has one row
 /// per commune of the BFS snapshot (`opencommune register check`).
 pub async fn stats(pool: &SqlitePool) -> sqlx::Result<Stats> {
     let (date_min, date_max): (Option<String>, Option<String>) =

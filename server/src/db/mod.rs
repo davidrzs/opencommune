@@ -4,6 +4,7 @@ pub mod archive;
 pub mod communes;
 pub mod dataset;
 pub mod decisions;
+pub mod pages;
 
 use std::path::Path;
 

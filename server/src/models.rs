@@ -358,7 +358,7 @@ pub struct CommuneRow {
     pub register_note: Option<String>,
 }
 
-/// One row of `GET /api/communes` (`search.list_communes`).
+/// One row of `GET /api/communes`.
 #[derive(Serialize)]
 pub struct Commune {
     pub bfs_id: i64,
@@ -454,15 +454,6 @@ pub struct SlimRow {
     pub held: Option<i64>,
 }
 
-#[derive(FromRow, Serialize)]
-pub struct SlimAccess {
-    #[serde(skip)]
-    pub bfs_id: i64,
-    pub status: String,
-    pub stale: bool,
-    pub restricted_at: Option<String>,
-}
-
 /// A commune on the map and in the commune list (`GET /api/archive/communes`).
 #[derive(Serialize)]
 pub struct SlimCommune {
@@ -473,7 +464,10 @@ pub struct SlimCommune {
     pub lon: Option<f64>,
     pub documents: i64,
     pub decisions: i64,
-    pub access: Vec<SlimAccess>,
+    /// `restricted`, `earlier` or `temporary` (see `db::communes::slim`); absent when every
+    /// check succeeded.
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub access: Option<String>,
 }
 
 // --- register ----------------------------------------------------------------------------------
@@ -569,8 +563,7 @@ pub fn round1(x: f64) -> f64 {
     format!("{x:.1}").parse().unwrap_or(x)
 }
 
-/// The URL a document redirects to (`catalog.safe_url`): its source URL when that is an absolute
-/// http(s) URL.
+/// The URL a document redirects to: its source URL when that is an absolute http(s) URL.
 pub fn linkable_url(source: Option<&str>) -> Option<&str> {
     let url = source.filter(|u| !u.is_empty())?;
     let (scheme, rest) = url.split_once(':')?;
@@ -614,4 +607,24 @@ mod tests {
         assert!(linkable_url(Some("/relative")).is_none());
         assert!(linkable_url(None).is_none());
     }
+}
+
+// --- crawler-facing pages ------------------------------------------------------------------------
+
+/// The archive's totals on the start page and in `/llms.txt`.
+#[derive(FromRow)]
+pub struct PageTotals {
+    pub decisions: i64,
+    pub decision_communes: i64,
+    pub documents: i64,
+    pub document_communes: i64,
+}
+
+/// A commune with its number of decisions, for the start page's list.
+#[derive(FromRow)]
+pub struct CommuneDecisions {
+    pub bfs_id: i64,
+    pub name: String,
+    pub canton: String,
+    pub decisions: i64,
 }

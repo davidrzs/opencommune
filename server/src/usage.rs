@@ -156,9 +156,15 @@ pub fn is_bot(user_agent: &str) -> bool {
     ua.is_empty() || MARKERS.iter().any(|m| ua.contains(m))
 }
 
-/// The route template of a front-end page, without the language prefix; None for anything else
-/// (assets, unknown paths).
+/// The route template of a page, without the language prefix; None for anything else (assets,
+/// unknown paths).
 pub fn page_template(path: &str) -> Option<&'static str> {
+    match path {
+        "/robots.txt" => return Some("/robots.txt"),
+        "/sitemap.xml" => return Some("/sitemap.xml"),
+        "/llms.txt" => return Some("/llms.txt"),
+        _ => {}
+    }
     let rest = ["/de", "/fr", "/it"]
         .iter()
         .find_map(|l| {
@@ -170,10 +176,18 @@ pub fn page_template(path: &str) -> Option<&'static str> {
         "" | "/" => Some("/"),
         "/suche" => Some("/suche"),
         "/ueber-uns" => Some("/ueber-uns"),
-        _ => rest
-            .strip_prefix("/gemeinden/")
-            .filter(|id| !id.is_empty() && id.bytes().all(|b| b.is_ascii_digit()))
-            .map(|_| "/gemeinden/{id}"),
+        "/datenschutz" => Some("/datenschutz"),
+        _ => {
+            if let Some(id) = rest.strip_prefix("/gemeinden/") {
+                (!id.is_empty() && id.bytes().all(|b| b.is_ascii_digit()))
+                    .then_some("/gemeinden/{id}")
+            } else if let Some(id) = rest.strip_prefix("/entscheide/") {
+                (!id.is_empty() && id.bytes().all(|b| b.is_ascii_alphanumeric() || b == b'-'))
+                    .then_some("/entscheide/{id}")
+            } else {
+                None
+            }
+        }
     }
 }
 
@@ -184,8 +198,8 @@ fn classify(matched: Option<&str>, path: &str) -> Option<(&'static str, String)>
         Some("/mcp") | Some("/api/{*rest}") => None,
         Some(route) if route.starts_with("/api/") => Some(("api", route.to_string())),
         Some(route @ "/original/{sha256}") => Some(("original", route.to_string())),
-        Some(_) => None,
-        None => page_template(path).map(|r| ("web", r.to_string())),
+        // pages, whether the server renders their facts or only serves the front end
+        _ => page_template(path).map(|r| ("web", r.to_string())),
     }
 }
 
@@ -270,6 +284,11 @@ mod tests {
         assert_eq!(page_template("/_app/immutable/x.js"), None);
         assert_eq!(page_template("/dex"), None);
         assert_eq!(page_template("/de/gemeinden/x"), None);
+        assert_eq!(
+            page_template("/fr/entscheide/dec-1a"),
+            Some("/entscheide/{id}")
+        );
+        assert_eq!(page_template("/llms.txt"), Some("/llms.txt"));
     }
 
     #[test]

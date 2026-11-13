@@ -11,6 +11,7 @@ use axum::Router;
 use axum::body::{Body, to_bytes};
 use axum::extract::ConnectInfo;
 use axum::http::{Request, StatusCode, header};
+use opencommune_server::site::Site;
 use opencommune_server::usage::Usage;
 use opencommune_server::{AppState, app, db};
 use serde_json::{Value, json};
@@ -68,13 +69,16 @@ INSERT INTO register_publications VALUES
    '2018', NULL, '50 per year', NULL, NULL),
   (261, 1, 'executive', 'decisions', 'not_published', NULL, NULL, NULL, NULL, 'not public', NULL);
 INSERT INTO access_observations VALUES
-  (261, 'https://www.stadt-zuerich.ch/archiv', 'rate_limited',
-   strftime('%Y-%m-%dT%H:%M:%f+00:00', 'now', '-10 days'), 'https://www.stadt-zuerich.ch/robots.txt', NULL),
-  (261, 'https://www.stadt-zuerich.ch/protokolle', 'restricted',
+  (261, 'https://archiv.stadt-zuerich.ch/', 'rate_limited',
+   strftime('%Y-%m-%dT%H:%M:%f+00:00', 'now', '-10 days'), 'https://archiv.stadt-zuerich.ch/robots.txt', NULL),
+  (261, 'https://www.stadt-zuerich.ch/', 'restricted',
    strftime('%Y-%m-%dT%H:%M:%f+00:00', 'now', '-1 day'), 'https://www.stadt-zuerich.ch/robots.txt',
    strftime('%Y-%m-%dT%H:%M:%f+00:00', 'now', '-1 day')),
-  (4176, 'http://www.schwaderloch.ch/a.pdf', 'technical_error',
-   strftime('%Y-%m-%dT%H:%M:%f+00:00', 'now', '-2 days'), 'http://www.schwaderloch.ch/robots.txt', NULL);
+  (4176, 'http://www.schwaderloch.ch/', 'technical_error',
+   strftime('%Y-%m-%dT%H:%M:%f+00:00', 'now', '-2 days'), 'http://www.schwaderloch.ch/robots.txt', NULL),
+  (5938, 'https://www.example.ch/', 'technical_error',
+   strftime('%Y-%m-%dT%H:%M:%f+00:00', 'now', '-1 day'), 'https://www.example.ch/robots.txt',
+   strftime('%Y-%m-%dT%H:%M:%f+00:00', 'now', '-20 days'));
 "#;
 
 /// A small dataset fixture.
@@ -151,6 +155,14 @@ impl Drop for Fixture {
 }
 
 async fn fixture(with_dataset: bool, with_usage: bool) -> Fixture {
+    build(with_dataset, with_usage, false).await
+}
+
+/// The front end's page shell as the build writes it, reduced to what the server touches.
+const SHELL: &str = "<!doctype html><html lang=\"de\"><head><meta charset=\"utf-8\"></head>\
+<body data-sveltekit-preload-data=\"hover\"><div style=\"display: contents\"></div></body></html>";
+
+async fn build(with_dataset: bool, with_usage: bool, indexing: bool) -> Fixture {
     let archive = temp_path("archive.db");
     create(&archive, &[ARCHIVE, SERVING, ROWS]).await;
     let dataset_path = temp_path("dataset.db");
@@ -169,16 +181,13 @@ async fn fixture(with_dataset: bool, with_usage: bool) -> Fixture {
     };
     let static_dir = temp_path("static");
     std::fs::create_dir_all(static_dir.join("_app/immutable")).unwrap();
-    std::fs::write(
-        static_dir.join("index.html"),
-        "<!doctype html><title>app</title>",
-    )
-    .unwrap();
+    std::fs::write(static_dir.join("index.html"), SHELL).unwrap();
     std::fs::write(static_dir.join("_app/immutable/app.js"), "console.log(1)").unwrap();
     let state = AppState {
         db: db::open_read_only(&archive).await.unwrap(),
         dataset,
         usage,
+        site: Site::new("https://example.test", indexing, &static_dir),
     };
     let router = app(state, &static_dir, &["localhost".to_string()]);
     Fixture {
@@ -303,13 +312,11 @@ async fn the_map_list_is_slim_and_includes_register_only_communes() {
     let zh = by_id(261);
     assert_eq!(zh["documents"], 3); // the catalogue's count
     assert_eq!(by_id(5938)["documents"], 0); // a catalogue exists, this commune has none in it
-    assert_eq!(
-        zh["access"],
-        json!([
-            {"status": "restricted", "stale": false, "restricted_at": zh["access"][0]["restricted_at"]},
-            {"status": "rate_limited", "stale": true, "restricted_at": null},
-        ])
-    );
+    // one access state per commune, never the observations themselves
+    assert_eq!(zh["access"], "restricted");
+    assert_eq!(by_id(5938)["access"], "earlier");
+    assert_eq!(by_id(4176)["access"], "temporary");
+    assert!(by_id(1).get("access").is_none());
     let keys: Vec<&String> = zh.as_object().unwrap().keys().collect();
     assert_eq!(
         keys,
@@ -325,7 +332,6 @@ async fn the_map_list_is_slim_and_includes_register_only_communes() {
         ]
     );
     assert_eq!(by_id(1)["lat"], Value::Null);
-    assert_eq!(by_id(4176)["access"][0]["status"], "technical_error");
 }
 
 #[tokio::test]
@@ -336,7 +342,7 @@ async fn the_commune_page_gets_its_own_detail() {
     assert_eq!(zh["documents"], 3);
     assert_eq!(
         zh["access"][0]["source_url"],
-        "https://www.stadt-zuerich.ch/protokolle"
+        "https://www.stadt-zuerich.ch/"
     );
     assert_eq!(zh["access"][1]["stale"], true);
     assert_eq!(zh["holdings"].as_array().unwrap().len(), 2);
@@ -574,9 +580,7 @@ async fn usage_counts_route_templates_without_paths_or_addresses() {
 #[tokio::test]
 async fn the_front_end_is_served_with_a_fallback_and_api_errors_stay_json() {
     let f = fixture(false, false).await;
-    let request = Request::get("/de/gemeinden/261")
-        .body(Body::empty())
-        .unwrap();
+    let request = Request::get("/gemeinden/261").body(Body::empty()).unwrap();
     let (status, headers, body) = send(&f.router, request).await;
     assert_eq!(status, StatusCode::OK);
     assert_eq!(
@@ -630,6 +634,11 @@ async fn mcp_lists_the_three_tools_and_answers_a_search() {
         .collect();
     names.sort();
     assert_eq!(names, ["get_decision", "list_communes", "search_decisions"]);
+    for tool in body["result"]["tools"].as_array().unwrap() {
+        assert!(tool["title"].is_string(), "{tool}");
+        assert_eq!(tool["annotations"]["readOnlyHint"], true);
+        assert_eq!(tool["annotations"]["destructiveHint"], false);
+    }
     let call = json!({"jsonrpc": "2.0", "id": 3, "method": "tools/call", "params": {
         "name": "search_decisions", "arguments": {"query": "ecole", "limit": 500}}});
     let (_, _, body) = send(&f.router, post(call)).await;
@@ -646,4 +655,112 @@ async fn mcp_lists_the_three_tools_and_answers_a_search() {
         .insert(header::HOST, "evil.example".parse().unwrap());
     let (status, _, _) = send(&f.router, request).await;
     assert!(status.is_client_error());
+}
+
+async fn page(router: &Router, uri: &str) -> (StatusCode, header::HeaderMap, String) {
+    let request = Request::get(uri).body(Body::empty()).unwrap();
+    let (status, headers, body) = send(router, request).await;
+    (status, headers, String::from_utf8(body).unwrap())
+}
+
+#[tokio::test]
+async fn commune_pages_carry_their_facts_for_crawlers() {
+    let f = fixture(false, false).await;
+    let (status, headers, html) = page(&f.router, "/fr/gemeinden/261").await;
+    assert_eq!(status, StatusCode::OK);
+    assert_eq!(headers["x-robots-tag"], "noindex, nofollow"); // indexing is off by default
+    assert!(html.starts_with("<!doctype html><html lang=\"fr\">"));
+    assert!(html.contains("<title>Zürich — OpenCommune</title>"));
+    assert!(
+        html.contains("<link rel=\"canonical\" href=\"https://example.test/fr/gemeinden/261\">")
+    );
+    assert!(html.contains("hreflang=\"de\" href=\"https://example.test/de/gemeinden/261\""));
+    assert!(html.contains("\"@type\":\"AdministrativeArea\""));
+    // the fact sheet opens the body and links the commune's decisions
+    let facts = html.split("<main id=\"oc-facts\">").nth(1).unwrap();
+    assert!(html.contains("data-sveltekit-preload-data=\"hover\"><main id=\"oc-facts\">"));
+    assert!(facts.starts_with("<h1>Zürich</h1>"));
+    assert!(facts.contains("<a href=\"/fr/entscheide/dec-zh\">Kredit für das Schulhaus</a>"));
+    // a newly deployed front end names new script files: the next page uses its shell at once
+    let deployed = SHELL.replace("<head>", "<head><script src=\"/_app/new.js\"></script>");
+    std::fs::write(f.static_dir.join("index.html"), deployed).unwrap();
+    let (_, _, html) = page(&f.router, "/fr/gemeinden/261").await;
+    assert!(html.contains("/_app/new.js"));
+    for unknown in [
+        "/de/gemeinden/999",
+        "/de/gemeinden/abc",
+        "/de/entscheide/nothing",
+    ] {
+        let (status, _, html) = page(&f.router, unknown).await;
+        assert_eq!(status, StatusCode::NOT_FOUND, "{unknown}");
+        assert!(html.contains("<meta name=\"robots\" content=\"noindex\">"));
+    }
+}
+
+#[tokio::test]
+async fn decision_start_about_and_search_pages() {
+    let f = fixture(false, false).await;
+    let (status, _, html) = page(&f.router, "/de/entscheide/dec-zh").await;
+    assert_eq!(status, StatusCode::OK);
+    assert!(html.contains("<h1>Kredit für das Schulhaus</h1>"));
+    assert!(html.contains("<a href=\"/de/gemeinden/261\">Zürich (ZH)</a> · 12.06.2024"));
+    assert!(html.contains("https://www.stadt-zuerich.ch/p.pdf#page="));
+    let (_, _, html) = page(&f.router, "/it").await;
+    assert!(html.contains("\"@type\":\"Dataset\""));
+    assert!(html.contains("<a href=\"/it/gemeinden/261\">Zürich (ZH)</a>"));
+    let (status, _, html) = page(&f.router, "/de/ueber-uns").await;
+    assert_eq!(status, StatusCode::OK);
+    assert!(html.contains("<h1>Über OpenCommune</h1>"));
+    let (status, _, html) = page(&f.router, "/fr/datenschutz").await;
+    assert_eq!(status, StatusCode::OK);
+    assert!(html.contains("<h1>Protection des données</h1>"));
+    let (_, _, html) = page(&f.router, "/de/suche").await;
+    assert!(html.contains("<meta name=\"robots\" content=\"noindex\">"));
+    let request = Request::get("/").body(Body::empty()).unwrap();
+    let (status, headers, _) = send(&f.router, request).await;
+    assert_eq!(status, StatusCode::TEMPORARY_REDIRECT);
+    assert_eq!(headers[header::LOCATION], "/de");
+}
+
+#[tokio::test]
+async fn robots_sitemap_and_llms_txt() {
+    let f = fixture(false, false).await;
+    let (status, headers, robots) = page(&f.router, "/robots.txt").await;
+    assert_eq!(status, StatusCode::OK);
+    assert!(
+        headers[header::CONTENT_TYPE]
+            .to_str()
+            .unwrap()
+            .starts_with("text/plain")
+    );
+    // training crawlers read nothing, everyone else reads the pages but not the API
+    assert!(robots.contains("User-agent: GPTBot\nUser-agent: ClaudeBot\n"));
+    assert!(robots.contains("Bytespider\nUser-agent: cohere-ai\nDisallow: /\n"));
+    assert!(robots.contains("User-agent: *\nDisallow: /api/\n"));
+    assert!(!robots.contains("OAI-SearchBot") && !robots.contains("Claude-SearchBot"));
+    assert!(
+        !robots.contains("Sitemap:"),
+        "no sitemap while indexing is off"
+    );
+    let (_, _, xml) = page(&f.router, "/sitemap.xml").await;
+    assert!(xml.contains("<loc>https://example.test/de/gemeinden/261</loc>"));
+    assert!(xml.contains("<loc>https://example.test/it/entscheide/dec-zh</loc>"));
+    assert!(xml.contains("<loc>https://example.test/fr</loc>"));
+    assert!(xml.contains("<loc>https://example.test/it/datenschutz</loc>"));
+    let (status, headers, llms) = page(&f.router, "/llms.txt").await;
+    assert_eq!(status, StatusCode::OK);
+    assert!(
+        headers[header::CONTENT_TYPE]
+            .to_str()
+            .unwrap()
+            .starts_with("text/markdown")
+    );
+    assert!(llms.starts_with("# OpenCommune\n\n> Open archive"));
+    assert!(llms.contains("[MCP server](https://example.test/mcp)"));
+
+    let indexed = build(false, false, true).await;
+    let (_, headers, _) = page(&indexed.router, "/de/gemeinden/261").await;
+    assert!(headers.get("x-robots-tag").is_none());
+    let (_, _, robots) = page(&indexed.router, "/robots.txt").await;
+    assert!(robots.ends_with("Sitemap: https://example.test/sitemap.xml\n"));
 }

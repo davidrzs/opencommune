@@ -3,6 +3,7 @@ use std::net::SocketAddr;
 use std::process::ExitCode;
 
 use opencommune_server::config::Config;
+use opencommune_server::site::Site;
 use opencommune_server::usage::Usage;
 use opencommune_server::{AppState, app, db};
 use tokio::net::TcpListener;
@@ -59,7 +60,17 @@ async fn run() -> Result<(), Box<dyn std::error::Error>> {
     if !config.static_dir.join("index.html").is_file() {
         tracing::warn!(path = %config.static_dir.display(), "no index.html: the front end is not built");
     }
-    let state = AppState { db, dataset, usage };
+    let site = Site::new(
+        &config.public_url,
+        config.search_indexing,
+        &config.static_dir,
+    );
+    let state = AppState {
+        db,
+        dataset,
+        usage,
+        site,
+    };
     let router = app(state, &config.static_dir, &config.mcp_allowed_hosts);
     let listener = TcpListener::bind(config.bind).await?;
     tracing::info!(

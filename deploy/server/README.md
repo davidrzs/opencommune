@@ -24,3 +24,12 @@ systemctl reload caddy
 
 To update, replace the binary, the site or the database and run `systemctl restart opencommune`.
 Logs: `journalctl -u opencommune`. Settings: `server/API.md`.
+
+Search engines: the unit starts with `SEARCH_INDEXING=false`, so every response says `noindex`.
+Set it to `true` (then `systemctl daemon-reload` and a restart) once the data is ready to be found;
+`robots.txt` then also lists the sitemap. Training crawlers are refused either way.
+
+MCP registry: `server.json` at the repository root describes the public MCP server for the official
+registry (registry.modelcontextprotocol.io), from which many clients and directories read. Publish
+or update it with the registry's `mcp-publisher` tool: `mcp-publisher login github`, then
+`mcp-publisher publish` from the repository root.

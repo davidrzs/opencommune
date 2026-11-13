@@ -20,6 +20,10 @@ pub struct Config {
     pub usage_visitors: bool,
     /// `MCP_ALLOWED_HOSTS`: comma-separated `Host` values `/mcp` accepts (DNS rebinding guard).
     pub mcp_allowed_hosts: Vec<String>,
+    /// `PUBLIC_URL`: the site's address in canonical links, the sitemap and `llms.txt`.
+    pub public_url: String,
+    /// `SEARCH_INDEXING`: let search engines index the pages; off, every response says `noindex`.
+    pub search_indexing: bool,
 }
 
 impl Config {
@@ -50,6 +54,8 @@ impl Config {
                 .map(|h| h.trim().to_string())
                 .filter(|h| !h.is_empty())
                 .collect(),
+            public_url: var("PUBLIC_URL").unwrap_or_else(|| format!("http://{bind}")),
+            search_indexing: flag("SEARCH_INDEXING", false)?,
         })
     }
 }

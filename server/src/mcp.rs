@@ -19,7 +19,9 @@ use crate::routes::valid_date;
 use crate::usage::Hit;
 
 const SEARCH_DESCRIPTION: &str = "Search council decisions. `query` is free text over title and \
-summary (diacritics-insensitive). Filters: `canton` two-letter code, `category` one of zoning, \
+summary (diacritics-insensitive). The decisions are worded as in the minutes, in German, French or \
+Italian: search with words in the commune's language (Schulhaus, école, scuola), not in English. \
+`commune_bfs_id` is the commune's BFS number, from list_communes. Filters: `canton` two-letter code, `category` one of zoning, \
 building_permit, finance_budget, finance_credit, personnel, infrastructure, school, social, \
 naturalization, election, bylaw, procurement, other, `outcome` one of approved, rejected, \
 postponed, noted, `language` de/fr/it, ISO dates, `min_amount_chf`. Returns total count and items \
@@ -88,7 +90,17 @@ fn internal(error: sqlx::Error) -> ErrorData {
 
 #[tool_router]
 impl Archive {
-    #[tool(description = SEARCH_DESCRIPTION)]
+    #[tool(
+        title = "Search decisions",
+        description = SEARCH_DESCRIPTION,
+        annotations(
+            title = "Search decisions",
+            read_only_hint = true,
+            destructive_hint = false,
+            idempotent_hint = true,
+            open_world_hint = false
+        )
+    )]
     async fn search_decisions(
         &self,
         Parameters(args): Parameters<SearchArgs>,
@@ -128,7 +140,16 @@ impl Archive {
     }
 
     /// Fetch one decision by id with all fields and provenance (source PDF, page span, model).
-    #[tool]
+    #[tool(
+        title = "Get a decision",
+        annotations(
+            title = "Get a decision",
+            read_only_hint = true,
+            destructive_hint = false,
+            idempotent_hint = true,
+            open_world_hint = false
+        )
+    )]
     async fn get_decision(
         &self,
         Parameters(args): Parameters<DecisionArgs>,
@@ -150,7 +171,16 @@ impl Archive {
     }
 
     /// List covered communes with canton, language, website, and document and decision counts.
-    #[tool]
+    #[tool(
+        title = "List communes",
+        annotations(
+            title = "List communes",
+            read_only_hint = true,
+            destructive_hint = false,
+            idempotent_hint = true,
+            open_world_hint = false
+        )
+    )]
     async fn list_communes(&self) -> Result<CallToolResult, ErrorData> {
         let started = Instant::now();
         let list = communes::list(&self.state.db).await.map_err(internal)?;
@@ -161,7 +191,7 @@ impl Archive {
 
 #[tool_handler(
     name = "opencommune",
-    instructions = "OpenCommune is an open archive of decisions taken by Swiss municipal councils and assemblies, extracted from published minutes in German, French and Italian and anonymised. Use search_decisions for keyword and filtered search, get_decision for full details, and list_communes to see coverage. Every decision links to the source PDF and page."
+    instructions = "OpenCommune is an open archive of decisions taken by Swiss municipal councils and assemblies, extracted from published minutes in German, French and Italian and anonymised. Use search_decisions for keyword and filtered search, get_decision for full details, and list_communes to see coverage and to find a commune's BFS number. Search in the language of the minutes (German, French or Italian), not in English. Coverage is partial and growing: no result does not mean no decision was taken. Every decision links to the source PDF and page."
 )]
 impl ServerHandler for Archive {}
 

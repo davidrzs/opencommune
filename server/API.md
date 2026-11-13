@@ -22,6 +22,8 @@ DATABASE_PATH=data/opencommune.db STATIC_DIR=frontend/build server/target/releas
 | `USAGE_VISITORS` | `true` | daily visitor estimate |
 | `DATASET_PATH` | unset | optional dataset SQLite; unset, `/api/dataset/*` answers 404 |
 | `MCP_ALLOWED_HOSTS` | `localhost,127.0.0.1,::1` | `Host` values `/mcp` accepts; add the public domains |
+| `PUBLIC_URL` | `http://` + `BIND` | the site's address in canonical links, the sitemap and `llms.txt` |
+| `SEARCH_INDEXING` | `false` | `true`: search engines may index the pages; `false`: every response says `noindex` |
 | `RUST_LOG` | `info,rmcp=warn` | log filter; `debug` logs one line per request (route template only) |
 
 ## Endpoints
@@ -29,7 +31,7 @@ DATABASE_PATH=data/opencommune.db STATIC_DIR=frontend/build server/target/releas
 | Endpoint | Used by |
 | --- | --- |
 | `GET /api/decisions` | search page, commune page, MCP |
-| `GET /api/decisions/{id}` | MCP, API users |
+| `GET /api/decisions/{id}` | decision page, MCP, API users |
 | `GET /api/documents` | API users |
 | `GET /api/stats` | API users |
 | `GET /api/communes` | MCP `list_communes`, API users |
@@ -40,6 +42,7 @@ DATABASE_PATH=data/opencommune.db STATIC_DIR=frontend/build server/target/releas
 | `GET /original/{sha256}` | links in document lists |
 | `GET /api/dataset/communes/{bfs_id}`, `/api/dataset/coverage`, `/api/dataset/findings` | commune and start pages |
 | `POST /mcp` | AI agents |
+| `GET /robots.txt`, `/sitemap.xml`, `/llms.txt` and the pages below | search engines, AI assistants |
 
 Errors are JSON, `{"detail": "..."}`; invalid parameters answer 422, unknown `/api/...` paths 404.
 Dates are `YYYY-MM-DD`.
@@ -97,16 +100,19 @@ cadence, obstacle, how}]`.
 
 ### `GET /api/archive/communes` and `/api/archive/communes/{bfs_id}`
 
-1. The list: `bfs_id, name, canton, lat, lon, documents, decisions, access[{status, stale,
-   restricted_at}]`, for every commune of the `communes` table and of the register.
-2. The detail: the `/api/communes` row with
-   `documents` from the catalogue and `access[{status, checked_at, robots_url, restricted_at,
-   source_url, stale}]`, newest first; a commune only in the register has `bfs_id, name, canton,
-   website, documents: 0, decisions: 0, holdings: [], access`. 404 when unknown.
+1. The list: `bfs_id, name, canton, lat, lon, documents, decisions, access`, for every commune
+   of the `communes` table and of the register. `access` is one state: `restricted` while a
+   website refuses the crawler, `earlier` once that restriction is a week old, `temporary` for
+   other failures (rate limits, robots.txt or technical errors); absent when every check passed.
+2. The detail: the `/api/communes` row with `documents` from the catalogue and
+   `access[{status, checked_at, robots_url, restricted_at, source_url, stale}]`, one entry per
+   website, newest check first; `source_url` is the website, never a document. A commune only in
+   the register has `bfs_id, name, canton, website, documents: 0, decisions: 0, holdings: [],
+   access`. 404 when unknown.
 
 `documents` is the catalogue count once `pdf_catalog` has rows, else the holdings' sum, else the
-published documents. An observation is `stale` when its `restricted_at` (or
-`checked_at`) is 7 days old or more, computed at request time.
+published documents. An entry is `stale` when its `restricted_at` (or `checked_at`) is 7 days old
+or more, computed at request time.
 
 ### `GET /api/archive/documents`
 
@@ -140,8 +146,31 @@ The server opens the file at start; a file that appears later needs a restart.
 
 Streamable HTTP, stateless (no session kept), JSON responses. Tools: `search_decisions(query, commune_bfs_id, canton, category,
 outcome, language, date_from, date_to, min_amount_chf, limit<=100)`, `get_decision(decision_id)`,
-`list_communes()`. Results are `structuredContent` plus the same JSON as text; `list_communes`
-wraps its list as `{"result": [...]}`. A bad date is a tool error with a reason.
+`list_communes()`. Every tool has a title and is marked read-only (`readOnlyHint`). Results are
+`structuredContent` plus the same JSON as text; `list_communes` wraps its list as
+`{"result": [...]}`. A bad date is a tool error with a reason.
+
+## Pages for search engines and AI assistants
+
+The front end renders in the browser. For the pages below the server puts the facts into the HTML
+it sends: title, description, canonical link, links to the other two languages, schema.org JSON-LD
+where it fits, and a fact sheet in `<main id="oc-facts">` that the app replaces on start. Every
+visitor receives the same HTML.
+
+1. `/{lang}` (`de`, `fr`, `it`): the archive's totals and the communes with decisions (JSON-LD
+   `Dataset`). `/` redirects to `/de`.
+2. `/{lang}/gemeinden/{bfs_id}`: the commune's counts, website and twenty newest decisions
+   (JSON-LD `AdministrativeArea`). 404 when the commune is unknown.
+3. `/{lang}/entscheide/{id}`: one decision with commune, date, outcome, amount, summary and the
+   link to its page in the source PDF. 404 when unknown.
+4. `/{lang}/ueber-uns`, `/{lang}/datenschutz`; `/{lang}/suche` (never indexed).
+5. `/robots.txt`: crawlers that collect training data (GPTBot, ClaudeBot, CCBot, Google-Extended
+   and others) may read nothing; all others may read the pages but not `/api/`, `/mcp`,
+   `/original/` or the search. Lists the sitemap when `SEARCH_INDEXING` is on.
+6. `/sitemap.xml`: the start, about and privacy pages, every commune with documents or decisions and every
+   decision, in the three languages.
+7. `/llms.txt`: a Markdown guide for AI agents (llmstxt.org) with the current totals, the MCP
+   address, the API and the dataset.
 
 ## Tables
 

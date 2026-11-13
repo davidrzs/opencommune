@@ -1,5 +1,4 @@
-//! Communes, their holdings, the register and access observations (`search.list_communes`,
-//! `search.list_register`, `catalog.coverage`, `crawl/access.enrich`).
+//! Communes, their holdings, the register and the access observations.
 
 use std::collections::HashMap;
 
@@ -7,7 +6,7 @@ use sqlx::{AssertSqlSafe, SqlitePool};
 
 use crate::models::{
     Access, ArchiveCommune, Commune, CommuneRow, Holding, HoldingRow, Publication, RegisterEntry,
-    RegisterRow, SlimAccess, SlimCommune, SlimRow,
+    RegisterRow, SlimCommune, SlimRow,
 };
 
 const COMMUNE_SELECT: &str = "SELECT c.bfs_id, c.name, c.canton, c.language, c.website, \
@@ -23,12 +22,12 @@ const HOLDING_SELECT: &str = "SELECT commune_bfs_id, body, kinds, documents, und
     stale, listed_not_held, last_crawl, last_result, health, register_status, register_note, \
     available_from FROM holdings";
 
-/// An observation older than a week is shown as stale (`crawl/access.enrich`).
+/// An observation whose last restriction or check is a week old or more is shown as stale.
 const ACCESS_SELECT: &str = "SELECT bfs_id, status, checked_at, robots_url, restricted_at, \
     source_url, julianday('now') - julianday(coalesce(restricted_at, checked_at)) >= 7 AS stale \
     FROM access_observations";
 
-/// `search.list_communes`: every commune of the archive, by canton and name.
+/// Every commune of the archive, by canton and name.
 pub async fn list(pool: &SqlitePool) -> sqlx::Result<Vec<Commune>> {
     let rows: Vec<CommuneRow> = sqlx::query_as(AssertSqlSafe(format!(
         "{COMMUNE_SELECT} GROUP BY c.bfs_id ORDER BY c.canton, c.name"
@@ -112,7 +111,7 @@ pub async fn detail(pool: &SqlitePool, bfs_id: i64) -> sqlx::Result<Option<Archi
     }))
 }
 
-/// `catalog.coverage`: the catalogue's count once there is a catalogue, else what the holdings
+/// A commune's document count: the catalogue's once there is a catalogue, else what the holdings
 /// or the published documents give.
 fn archive_documents(any_catalogue: bool, catalogue: i64, held: Option<i64>, docs: i64) -> i64 {
     if any_catalogue {
@@ -121,6 +120,16 @@ fn archive_documents(any_catalogue: bool, catalogue: i64, held: Option<i64>, doc
         held.unwrap_or(docs)
     }
 }
+
+/// A commune's access state on the map: `restricted` while a website refuses the crawler (a
+/// restriction or check less than a week old), `earlier` once a restriction is older, `temporary`
+/// for other failures (rate limits, robots.txt or technical errors).
+const ACCESS_STATE: &str = "SELECT bfs_id, CASE \
+    WHEN max(status = 'restricted' \
+      AND julianday('now') - julianday(coalesce(restricted_at, checked_at)) < 7) THEN 'restricted' \
+    WHEN max(restricted_at IS NOT NULL) THEN 'earlier' \
+    ELSE 'temporary' END \
+    FROM access_observations GROUP BY bfs_id";
 
 /// The map and the commune list: every commune of the archive and of the register with the
 /// fields the front end shows.
@@ -142,22 +151,16 @@ pub async fn slim(pool: &SqlitePool) -> sqlx::Result<Vec<SlimCommune>> {
     let any_catalogue: bool = sqlx::query_scalar("SELECT EXISTS (SELECT 1 FROM pdf_catalog)")
         .fetch_one(pool)
         .await?;
-    let observed: Vec<SlimAccess> = sqlx::query_as(
-        "SELECT bfs_id, status, \
-         julianday('now') - julianday(coalesce(restricted_at, checked_at)) >= 7 AS stale, \
-         restricted_at FROM access_observations ORDER BY bfs_id, checked_at DESC",
-    )
-    .fetch_all(pool)
-    .await?;
-    let mut access: HashMap<i64, Vec<SlimAccess>> = HashMap::new();
-    for a in observed {
-        access.entry(a.bfs_id).or_default().push(a);
-    }
+    let mut access: HashMap<i64, String> = sqlx::query_as(ACCESS_STATE)
+        .fetch_all(pool)
+        .await?
+        .into_iter()
+        .collect();
     Ok(rows
         .into_iter()
         .map(|r| SlimCommune {
             documents: archive_documents(any_catalogue, r.catalogue, r.held, r.documents),
-            access: access.remove(&r.bfs_id).unwrap_or_default(),
+            access: access.remove(&r.bfs_id),
             bfs_id: r.bfs_id,
             name: r.name,
             canton: r.canton,
@@ -168,7 +171,7 @@ pub async fn slim(pool: &SqlitePool) -> sqlx::Result<Vec<SlimCommune>> {
         .collect())
 }
 
-/// `search.list_register`: every commune of the register with its publications.
+/// Every commune of the register with its publications.
 pub async fn register(pool: &SqlitePool) -> sqlx::Result<Vec<RegisterEntry>> {
     let entries: Vec<RegisterRow> = sqlx::query_as(
         "SELECT bfs_id, name, canton, status, website, vendor, reachable, checked, checked_by, \

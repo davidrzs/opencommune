@@ -1,5 +1,5 @@
-//! The PDF catalogue (`pdf_catalog`, written by `catalog.py`): documents listed before and without
-//! extraction, linked through `/original/<sha256>`.
+//! The PDF catalogue (`pdf_catalog`, written by `opencommune catalog`): documents listed before
+//! and without extraction, linked through `/original/<sha256>`.
 
 use sqlx::{QueryBuilder, Sqlite, SqlitePool};
 

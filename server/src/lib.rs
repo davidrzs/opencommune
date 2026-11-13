@@ -1,5 +1,6 @@
-//! OpenCommune web server: the JSON API, MCP over streamable HTTP and the static front end, all
-//! reading the SQLite database the Python pipeline builds. See `API.md` and `CONVENTIONS.md`.
+//! OpenCommune web server: the JSON API, MCP over streamable HTTP, the static front end and the
+//! pages crawlers read, all from the SQLite database the Python package builds. See `API.md` and
+//! `CONVENTIONS.md`.
 
 pub mod config;
 pub mod db;
@@ -7,6 +8,7 @@ pub mod error;
 pub mod mcp;
 pub mod models;
 pub mod routes;
+pub mod site;
 pub mod usage;
 
 use std::path::Path;
@@ -22,6 +24,7 @@ use tower_http::set_header::SetResponseHeaderLayer;
 use tower_http::trace::{DefaultOnResponse, TraceLayer};
 use tracing::Level;
 
+use crate::site::Site;
 use crate::usage::Usage;
 
 #[derive(Clone)]
@@ -32,6 +35,8 @@ pub struct AppState {
     pub dataset: Option<SqlitePool>,
     /// Usage statistics, when enabled.
     pub usage: Option<Usage>,
+    /// The public address, the indexing switch and the front end's HTML for the crawled pages.
+    pub site: Site,
 }
 
 /// The whole site: API routes, `/mcp`, and the front end with `index.html` for every other path
@@ -56,18 +61,23 @@ pub fn app(state: AppState, static_dir: &Path, mcp_allowed_hosts: &[String]) -> 
             tracing::info_span!("request", method = %request.method(), route)
         })
         .on_response(DefaultOnResponse::new().level(Level::DEBUG));
-    Router::new()
+    let indexing = state.site.indexing;
+    let router = Router::new()
         .merge(routes::router())
         .route_service("/mcp", mcp::service(state.clone(), mcp_allowed_hosts))
         .nest("/_app/immutable", immutable)
         .fallback_service(assets)
         .layer(middleware::from_fn_with_state(state.clone(), usage::count))
         .layer(trace)
-        .layer(CompressionLayer::new())
-        // the site is not for search engines
-        .layer(SetResponseHeaderLayer::if_not_present(
+        .layer(CompressionLayer::new());
+    // until SEARCH_INDEXING is set, the site asks search engines not to index anything
+    let router = if indexing {
+        router
+    } else {
+        router.layer(SetResponseHeaderLayer::if_not_present(
             HeaderName::from_static("x-robots-tag"),
             HeaderValue::from_static("noindex, nofollow"),
         ))
-        .with_state(state)
+    };
+    router.with_state(state)
 }
