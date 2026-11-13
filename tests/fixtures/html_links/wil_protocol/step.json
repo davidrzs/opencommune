@@ -1,0 +1,8 @@
+{
+  "base_url": "https://www.stadtwil.ch/meeting/96415ef80df24409925351647901d722",
+  "step": {
+    "selector": "a[href*='/storage/']",
+    "text_regex": "Protokoll",
+    "exclude_regex": "Auszug|Entwurf"
+  }
+}

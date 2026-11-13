@@ -1,0 +1,7 @@
+{
+ "base_url": "https://www.kreuzlingen.ch/stadt-und-politik/politik/gemeinderatssitzungen/archiv-sitzungen-gemeinderat",
+ "step": {
+  "selector": "x-data",
+  "exclude_regex": "einb[üu]rger|naturali|\\bWahlen\\b"
+ }
+}

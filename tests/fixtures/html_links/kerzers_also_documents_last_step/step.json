@@ -1,0 +1,7 @@
+{
+ "base_url": "https://www.kerzers.ch/politik/gemeindeversammlung",
+ "step": {
+  "selector": "a[href*='/system/files/']",
+  "text_regex": "Protokoll"
+ }
+}

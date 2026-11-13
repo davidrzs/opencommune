@@ -1,0 +1,7 @@
+{
+ "base_url": "https://moutier.ch/autorites/conseil-de-ville/proces-verbal/",
+ "step": {
+  "selector": "div.dwnld a",
+  "text_regex": "^PV"
+ }
+}

@@ -1,0 +1,7 @@
+{
+ "base_url": "https://www.erlenbach.ch/de/politik/gemeinderversammlungen-uebersicht/",
+ "step": {
+  "selector": "li.tile > a",
+  "text_regex": "Gemeindeversammlung"
+ }
+}

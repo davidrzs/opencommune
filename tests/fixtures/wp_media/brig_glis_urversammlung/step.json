@@ -1,0 +1,13 @@
+{
+ "_note": "Recorded 2026-09-08 from https://www.brig-glis.ch/wp-json/wp/v2/media?search=protokoll&per_page=100&page=1&mime_type=application%2Fpdf (21 items on 1 page); trimmed to 10 items and the fields the adapter reads. The search term also matches unrelated forms; text_regex keeps the assembly minutes.",
+ "base_url": "https://www.brig-glis.ch/wp-json/wp/v2/media?search=protokoll&per_page=100&page=1&mime_type=application%2Fpdf",
+ "step": {
+  "selector": "media",
+  "text_regex": "^Protokoll der Urversammlung"
+ },
+ "headers": {
+  "x-wp-total": "21",
+  "x-wp-totalpages": "1",
+  "content-type": "application/json; charset=UTF-8"
+ }
+}

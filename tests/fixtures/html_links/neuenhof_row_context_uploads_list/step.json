@@ -1,0 +1,7 @@
+{
+ "base_url": "https://www.neuenhof.ch/politik/gemeindeversammlungen/einwohnergemeindeversammlung/protokolle/",
+ "step": {
+  "selector": "ul.uploads-list a[href*='/fileadmin/']",
+  "context": "row"
+ }
+}

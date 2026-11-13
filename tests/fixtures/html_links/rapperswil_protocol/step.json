@@ -1,0 +1,12 @@
+{
+  "base_url": "https://www.rapperswil-jona.ch/_rte/anlass/6871519",
+  "step": {
+    "selector": "a[href*='/_doc/'], a[href*='/_docn/']",
+    "text_regex": "Protokoll",
+    "exclude_regex": "Auszug|Entwurf"
+  },
+  "parent": {
+    "url": "https://www.rapperswil-jona.ch/_rte/anlass/6871519",
+    "date": "2026-06-09"
+  }
+}

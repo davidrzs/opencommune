@@ -1,0 +1,9 @@
+{
+ "_note": "Recorded 2026-09-10 from https://www.hallau.ch/CMS/content?contentid=4040278&language=DE (the assembly article with 13 button groups, 2023 to 2026); the widget tree is kept whole, the other fields trimmed to what the adapter reads. Group titles carry the assembly date, custom labels name the protocol.",
+ "base_url": "https://www.hallau.ch/CMS/content?contentid=4040278&language=DE",
+ "step": {
+  "selector": "buttons",
+  "text_regex": "Protokoll",
+  "max_follow": 8
+ }
+}

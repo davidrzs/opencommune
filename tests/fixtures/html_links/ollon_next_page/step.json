@@ -1,0 +1,8 @@
+{
+ "base_url": "https://www.ollon.ch/conseilcommunal/public/documents/recherche/?lngDocumentTypeFK=5&page=1",
+ "step": {
+  "selector": "a[href*='download.asp']",
+  "text_regex": "^PV",
+  "next_selector": "a[rel=next]"
+ }
+}

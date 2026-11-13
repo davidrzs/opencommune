@@ -1,0 +1,65 @@
+{
+ "count": 42,
+ "links": [
+  {
+   "url": "https://ratsinfo.stadtzug.ch/api/meetings/259/agenda_items",
+   "text": "Sitzung Grosser Gemeinderat (GGR) vom 18.08.2026",
+   "date": "2026-08-18"
+  },
+  {
+   "url": "https://ratsinfo.stadtzug.ch/api/meetings/258/agenda_items",
+   "text": "Sitzung Grosser Gemeinderat (GGR) vom 16.06.2026, (Jahresrechnung, Jahresbericht)",
+   "date": "2026-06-16"
+  },
+  {
+   "url": "https://ratsinfo.stadtzug.ch/api/meetings/257/agenda_items",
+   "text": "Sitzung Grosser Gemeinderat (GGR) vom 26.05.2026",
+   "date": "2026-05-26"
+  },
+  {
+   "url": "https://ratsinfo.stadtzug.ch/api/meetings/256/agenda_items",
+   "text": "Sitzung Grosser Gemeinderat (GGR) vom 28.04.2026",
+   "date": "2026-04-28"
+  },
+  {
+   "url": "https://ratsinfo.stadtzug.ch/api/meetings/255/agenda_items",
+   "text": "Sitzung Grosser Gemeinderat (GGR) vom 17.03.2026",
+   "date": "2026-03-17"
+  },
+  {
+   "url": "https://ratsinfo.stadtzug.ch/api/meetings/254/agenda_items",
+   "text": "Sitzung Grosser Gemeinderat (GGR) vom 24.02.2026",
+   "date": "2026-02-24"
+  },
+  {
+   "url": "https://ratsinfo.stadtzug.ch/api/meetings/253/agenda_items",
+   "text": "Sitzung Grosser Gemeinderat (GGR) vom 20.01.2026",
+   "date": "2026-01-20"
+  },
+  {
+   "url": "https://ratsinfo.stadtzug.ch/api/meetings/197/agenda_items",
+   "text": "Sitzung Grosser Gemeinderat (GGR) vom 09.12.2025, (Budget)",
+   "date": "2025-12-09"
+  },
+  {
+   "url": "https://ratsinfo.stadtzug.ch/api/meetings/196/agenda_items",
+   "text": "Sitzung Grosser Gemeinderat (GGR) vom 18.11.2025",
+   "date": "2025-11-18"
+  },
+  {
+   "url": "https://ratsinfo.stadtzug.ch/api/meetings/195/agenda_items",
+   "text": "Sitzung Grosser Gemeinderat (GGR) vom 21.10.2025",
+   "date": "2025-10-21"
+  },
+  {
+   "url": "https://ratsinfo.stadtzug.ch/api/meetings/194/agenda_items",
+   "text": "Sitzung Grosser Gemeinderat (GGR) vom 16.09.2025",
+   "date": "2025-09-16"
+  },
+  {
+   "url": "https://ratsinfo.stadtzug.ch/api/meetings/193/agenda_items",
+   "text": "Sitzung Grosser Gemeinderat (GGR) vom 19.08.2025",
+   "date": "2025-08-19"
+  }
+ ]
+}

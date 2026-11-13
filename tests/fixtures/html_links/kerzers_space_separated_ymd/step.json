@@ -1,0 +1,6 @@
+{
+ "base_url": "https://www.kerzers.ch/node/5255",
+ "step": {
+  "selector": "a[href*='/system/files/']"
+ }
+}

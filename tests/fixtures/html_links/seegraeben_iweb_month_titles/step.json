@@ -1,0 +1,9 @@
+{
+ "base_url": "https://www.seegraeben.ch/behoerdenberichte",
+ "step": {
+  "selector": "a[href*='/_rte/information/']",
+  "text_regex": "^Mitteilungen des Gemeinderates",
+  "exclude_regex": "\\w+/\\w+ \\d{4}",
+  "table_row_dates": false
+ }
+}

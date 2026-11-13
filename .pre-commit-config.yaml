@@ -1,0 +1,47 @@
+# make lint and CI run these on every file; pre-commit install runs them on the staged files at
+# commit.
+repos:
+  - repo: https://github.com/astral-sh/ruff-pre-commit
+    rev: v0.16.6 # keep equal to the ruff version in uv.lock
+    hooks:
+      - id: ruff-check
+        args: [--fix]
+      - id: ruff-format
+  - repo: https://github.com/pre-commit/pre-commit-hooks
+    rev: v5.0.0
+    hooks:
+      - id: check-yaml
+      - id: end-of-file-fixer
+        exclude: ^(tests/fixtures/|frontend/src/lib/ch-map\.json$) # recorded pages and the generated map asset stay as they are
+      - id: trailing-whitespace
+        exclude: ^tests/fixtures/
+      - id: detect-private-key
+      - id: check-added-large-files
+        args: [--maxkb=600] # ch-map.json is 552 KB
+        exclude: ^data/(communes|linked-sources)\.yaml$ # the source lists are large text configuration
+  - repo: local
+    hooks:
+      - id: lint-communes
+        name: lint the commune configuration
+        entry: uv run opencommune lint-communes
+        language: system
+        files: ^data/communes\.yaml$
+        pass_filenames: false
+      - id: register-check
+        name: check the coverage register against the configuration
+        entry: uv run opencommune register check
+        language: system
+        files: ^data/(register/.*\.yaml|communes\.yaml)$
+        pass_filenames: false
+      - id: archive-source-check
+        name: validate the WordPress archive sources
+        entry: uv run opencommune wordpress check
+        language: system
+        files: ^data/(archive-sources\.yaml|register/.*\.yaml)$
+        pass_filenames: false
+      - id: linked-source-check
+        name: validate the linked archive sources
+        entry: uv run opencommune linked-archive check
+        language: system
+        files: ^data/(linked-sources\.yaml|register/.*\.yaml)$
+        pass_filenames: false

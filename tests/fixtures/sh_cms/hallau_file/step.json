@@ -1,0 +1,14 @@
+{
+ "_note": "Recorded 2026-09-10 from https://www.hallau.ch/CMS/content?contentid=22776088&language=DE (the file node behind the '6 Protokoll' button of the June 2026 assembly); trimmed to the fields the adapter reads.",
+ "base_url": "https://www.hallau.ch/CMS/content?contentid=22776088&language=DE",
+ "step": {
+  "selector": "file",
+  "text_regex": "Protokoll",
+  "kind": "minutes"
+ },
+ "parent": {
+  "url": "https://www.hallau.ch/CMS/content?contentid=22776088&language=DE",
+  "text": "6 Protokoll (2. GV 2026 vom 16. Juni 2026)",
+  "date": "2026-06-16"
+ }
+}

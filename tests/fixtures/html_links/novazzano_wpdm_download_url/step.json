@@ -1,0 +1,9 @@
+{
+ "base_url": "https://www.novazzano.ch/albo-comunale/?tax%5Bwpdmcategory%5D=verbali-consiglio-comunale",
+ "step": {
+  "selector": "a.wpdm-download-link",
+  "url_attribute": "data-downloadurl",
+  "context": "row"
+ },
+ "date_regex": "(\\d{1,2})\\.(\\d{1,2})\\.(\\d{4})"
+}

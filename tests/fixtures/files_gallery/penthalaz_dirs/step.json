@@ -1,0 +1,8 @@
+{
+ "_note": "The Conseil communal folder: subfolders only (the PDF beside them is not a dir), dot folders skipped, the election folder dropped by exclude_regex.",
+ "base_url": "https://www.penthalaz.ch/fichiers/?Conseil%20communal",
+ "step": {
+  "selector": "dirs",
+  "exclude_regex": "[ée]lection|votation"
+ }
+}

@@ -1,0 +1,6 @@
+{
+ "base_url": "https://www.allschwil.ch/de/politik/einwohnerrat/traktanden-protokolle-beschluesse.php",
+ "step": {
+  "selector": "a.pdf[href*='/protokolle-beschluesse/']"
+ }
+}

@@ -1,0 +1,7 @@
+{
+ "base_url": "https://kradolf-schoenenberg.ch/gemeinde/gemeindeversammlung/",
+ "step": {
+  "selector": "a[href*='/wp-content/uploads/']",
+  "text_regex": "^Protokoll"
+ }
+}

@@ -1,0 +1,7 @@
+{
+  "base_url": "https://www.stadtgossau.ch/beschluesse2",
+  "step": {
+    "selector": "a[href*='/_rte/information/']",
+    "text_regex": "Protokoll"
+  }
+}

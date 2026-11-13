@@ -1,0 +1,8 @@
+{
+ "base_url": "https://www.lausanne.ch/officiel/conseil-communal/seances/seances-et-ordres-du-jour/archives/calendrier-2019.html",
+ "step": {
+  "selector": "a[href*='seance/D_'], a[href*='seance/PV_'], a[href*='/dam/jcr:'][href$='.pdf']",
+  "context": "row"
+ },
+ "date_regex": "(\\d{2})\\.(\\d{2})\\.(\\d{2})(?!\\d)"
+}

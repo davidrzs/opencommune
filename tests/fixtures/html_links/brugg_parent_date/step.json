@@ -1,0 +1,12 @@
+{
+ "base_url": "https://www.brugg.ch/politik-und-verwaltung/einwohnerrat/sitzungen.html/274/opendcategory/1051",
+ "step": {
+  "selector": "a.dms-filelink",
+  "text_regex": "^(Protokoll ER-Sitzung|Beschl)"
+ },
+ "parent": {
+  "url": "https://www.brugg.ch/politik-und-verwaltung/einwohnerrat/sitzungen.html/274/opendcategory/1051",
+  "text": "Ebene 2: 12.09.2025",
+  "date": "2025-09-12"
+ }
+}

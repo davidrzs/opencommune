@@ -1,0 +1,20 @@
+{
+  "content": [
+    {
+      "entityType": "MESSAGE",
+      "number": "MM 68 /2026",
+      "documents": [
+        {"filename": "MM 68.pdf", "endpoint": "/api/public/messages/563/messageText"},
+        {"filename": "Supplement.PDF", "endpoint": "/api/public/messages/563/attachments/3872"},
+        {"filename": "Video.mov", "endpoint": "/api/public/messages/563/attachments/3873"},
+        {"filename": "Unrelated.pdf", "endpoint": "https://other.test/file.pdf"}
+      ]
+    }
+  ],
+  "pageNumber": 0,
+  "pageSize": 100,
+  "totalElements": 101,
+  "totalPages": 2,
+  "hasNext": true,
+  "hasPrevious": false
+}

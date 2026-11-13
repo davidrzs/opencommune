@@ -1,0 +1,9 @@
+{
+ "base_url": "https://arzier.ch/proces-verbaux-2026",
+ "step": {
+  "selector": "a[href*='/documents/']",
+  "context": "row",
+  "prefer_context_date": true
+ },
+ "date_regex": "(\\d{2})\\.(\\d{2})\\.(\\d{4})"
+}

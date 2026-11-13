@@ -1,0 +1,6 @@
+{
+ "base_url": "https://www.wohlen-be.ch/de/politik-verwaltung/politik/gemeindeversammlung/",
+ "step": {
+  "selector": "a[href*='/protokolle/']"
+ }
+}

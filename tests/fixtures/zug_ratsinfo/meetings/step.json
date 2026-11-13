@@ -1,0 +1,7 @@
+{
+ "base_url": "https://ratsinfo.stadtzug.ch/api/meetings",
+ "step": {
+  "selector": "x",
+  "text_regex": "GGR"
+ }
+}

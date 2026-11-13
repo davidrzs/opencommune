@@ -1,0 +1,7 @@
+{
+ "base_url": "https://www.locarno.ch/it/verbali-consiglio-comunale",
+ "step": {
+  "selector": "a[href$='.pdf']",
+  "url_regex": "verbale"
+ }
+}

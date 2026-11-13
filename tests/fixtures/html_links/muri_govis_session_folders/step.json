@@ -1,0 +1,7 @@
+{
+ "base_url": "https://www.muri-guemligen.ch/x/237/opendcategory/315",
+ "step": {
+  "selector": "a[href*='opendcategory']",
+  "text_regex": "^Ebene 2: \\d{4}-\\d{2}-\\d{2}$"
+ }
+}

@@ -1,0 +1,7 @@
+{
+ "base_url": "https://www.grand-saconnex.ch/politique/seances?f%5B0%5D=cm_archives_name%3AProc%C3%A8s-verbal&page=1",
+ "step": {
+  "selector": "a[href*='/sites/default/files/']",
+  "next_selector": "li.pager__item--next a"
+ }
+}

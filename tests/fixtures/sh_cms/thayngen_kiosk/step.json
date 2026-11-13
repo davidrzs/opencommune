@@ -1,0 +1,8 @@
+{
+ "_note": "The kiosk list answers HTML. Session dates come from the title or the original file name; the item's publication date (02.10.2026 for the session of 27 August 2026) is never used, so the year-only Beschlussverzeichnis stays undated.",
+ "base_url": "https://thayngen.ch/CMS/lists/list?filter_customposttypeid_int=101&filter_approvedpaths_string=*/2257769/2289979/*&rows=200",
+ "step": {
+  "selector": "kiosk",
+  "text_regex": "Protokoll|Beschlussverzeichnis"
+ }
+}

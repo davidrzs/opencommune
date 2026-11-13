@@ -1,0 +1,740 @@
+{
+ "_source": "https://stadtrat.bern.ch/format/module/politik_axioma/sitzungen/sitzungen_data_server.php?dateFrom=01.01.2024&dateTo=31.12.2024, recorded 2026-10-18 by a dry-run probe, trimmed to two sessions",
+ "recordsTotal": 26,
+ "data": [
+  {
+   "Titel": "Stadtratssitzung",
+   "Datum": {
+    "Start": "2024-01-11T00:00:00.000",
+    "End": "2024-01-12T00:00:00.000",
+    "Text": "11.01.2024"
+   },
+   "Dokumente": {
+    "Dokument": [
+     {
+      "Titel": "(<a href=\"https://bern.recapp.ch/shareparl?agendaItemUid=48db02a539b74248b4c9b5a1566f4288&scroll=true\" target=\"_self\">Online-Protokoll</a>",
+      "Kategorie": "Beilage",
+      "File": {
+       "@attributes": {
+        "ID": "1dad3ecaa92942d795096bd7b36e1145-332",
+        "FileName": "(<a href=\"https://bern.recapp.ch/shareparl?agendaItemUid=48db02a539b74248b4c9b5a1566f4288&scroll=true\" target=\"_self\">Online-Protokoll</a>"
+       }
+      }
+     },
+     {
+      "Titel": "20240111 Traktandenliste",
+      "Kategorie": "Traktandenliste",
+      "File": {
+       "@attributes": {
+        "ID": "423ecdffb4a843219bc614c8e6e17b25-332",
+        "FileName": "20240111 Traktandenliste"
+       },
+       "Version": [
+        {
+         "@attributes": {
+          "Nr": "1"
+         },
+         "Rendition": {
+          "@attributes": {
+           "Extension": "docx",
+           "Ansicht": "Original"
+          }
+         }
+        },
+        {
+         "@attributes": {
+          "Nr": "2"
+         },
+         "Rendition": {
+          "@attributes": {
+           "Extension": "docx",
+           "Ansicht": "Original"
+          }
+         }
+        },
+        {
+         "@attributes": {
+          "Nr": "3"
+         },
+         "Rendition": {
+          "@attributes": {
+           "Extension": "docx",
+           "Ansicht": "Original"
+          }
+         }
+        },
+        {
+         "@attributes": {
+          "Nr": "4"
+         },
+         "Rendition": {
+          "@attributes": {
+           "Extension": "docx",
+           "Ansicht": "Original"
+          }
+         }
+        },
+        {
+         "@attributes": {
+          "Nr": "5"
+         },
+         "Rendition": {
+          "@attributes": {
+           "Extension": "docx",
+           "Ansicht": "Original"
+          }
+         }
+        },
+        {
+         "@attributes": {
+          "Nr": "6"
+         },
+         "Rendition": {
+          "@attributes": {
+           "Extension": "docx",
+           "Ansicht": "Original"
+          }
+         }
+        },
+        {
+         "@attributes": {
+          "Nr": "7"
+         },
+         "Rendition": {
+          "@attributes": {
+           "Extension": "docx",
+           "Ansicht": "Original"
+          }
+         }
+        },
+        {
+         "@attributes": {
+          "Nr": "8"
+         },
+         "Rendition": {
+          "@attributes": {
+           "Extension": "docx",
+           "Ansicht": "Original"
+          }
+         }
+        },
+        {
+         "@attributes": {
+          "Nr": "9"
+         },
+         "Rendition": {
+          "@attributes": {
+           "Extension": "docx",
+           "Ansicht": "Original"
+          }
+         }
+        },
+        {
+         "@attributes": {
+          "Nr": "10"
+         },
+         "Rendition": [
+          {
+           "@attributes": {
+            "Extension": "docx",
+            "Ansicht": "Original"
+           }
+          },
+          {
+           "@attributes": {
+            "Extension": "pdf",
+            "Ansicht": "PDF"
+           }
+          }
+         ]
+        }
+       ]
+      }
+     },
+     {
+      "Titel": "(<a href=\"https://www.bern.ch/politik-und-verwaltung/stadtrat/ratsversand/einladung-zur-sitzung-vom-11.01.2024#antworten-berichte\" target=\"_self\">Antworten und Berichte</a>",
+      "Kategorie": "Beilage",
+      "File": {
+       "@attributes": {
+        "ID": "d3798253f2d6418ba9582f84a6b6b038-332",
+        "FileName": "(<a href=\"https://www.bern.ch/politik-und-verwaltung/stadtrat/ratsversand/einladung-zur-sitzung-vom-11.01.2024#antworten-berichte\" target=\"_self\">Antworten und Berichte</a>"
+       }
+      }
+     },
+     {
+      "Titel": "Stadtratsprotokoll 01 vom 11.01.2024 - Genehmigung am 14.03.2024 (genehmigt)",
+      "Kategorie": "Protokoll",
+      "File": {
+       "@attributes": {
+        "ID": "6609c01ca4ec45faaf2077e1ed36942c-332",
+        "FileName": "Stadtratsprotokoll 01 vom 11.01.2024 - Genehmigung am 14.03.2024 (genehmigt)"
+       },
+       "Version": [
+        {
+         "@attributes": {
+          "Nr": "1"
+         },
+         "Rendition": {
+          "@attributes": {
+           "Extension": "docx",
+           "Ansicht": "Original"
+          }
+         }
+        },
+        {
+         "@attributes": {
+          "Nr": "2"
+         },
+         "Rendition": {
+          "@attributes": {
+           "Extension": "docx",
+           "Ansicht": "Original"
+          }
+         }
+        },
+        {
+         "@attributes": {
+          "Nr": "3"
+         },
+         "Rendition": {
+          "@attributes": {
+           "Extension": "docx",
+           "Ansicht": "Original"
+          }
+         }
+        },
+        {
+         "@attributes": {
+          "Nr": "4"
+         },
+         "Rendition": {
+          "@attributes": {
+           "Extension": "docx",
+           "Ansicht": "Original"
+          }
+         }
+        },
+        {
+         "@attributes": {
+          "Nr": "5"
+         },
+         "Rendition": {
+          "@attributes": {
+           "Extension": "docx",
+           "Ansicht": "Original"
+          }
+         }
+        },
+        {
+         "@attributes": {
+          "Nr": "6"
+         },
+         "Rendition": {
+          "@attributes": {
+           "Extension": "docx",
+           "Ansicht": "Original"
+          }
+         }
+        },
+        {
+         "@attributes": {
+          "Nr": "7"
+         },
+         "Rendition": {
+          "@attributes": {
+           "Extension": "docx",
+           "Ansicht": "Original"
+          }
+         }
+        },
+        {
+         "@attributes": {
+          "Nr": "8"
+         },
+         "Rendition": {
+          "@attributes": {
+           "Extension": "docx",
+           "Ansicht": "Original"
+          }
+         }
+        },
+        {
+         "@attributes": {
+          "Nr": "9"
+         },
+         "Rendition": {
+          "@attributes": {
+           "Extension": "docx",
+           "Ansicht": "Original"
+          }
+         }
+        },
+        {
+         "@attributes": {
+          "Nr": "10"
+         },
+         "Rendition": [
+          {
+           "@attributes": {
+            "Extension": "docx",
+            "Ansicht": "Original"
+           }
+          },
+          {
+           "@attributes": {
+            "Extension": "pdf",
+            "Ansicht": "PDF"
+           }
+          }
+         ]
+        }
+       ]
+      }
+     },
+     {
+      "Titel": "20240110 Anträge - für Sitzungstag",
+      "Kategorie": "Antrag",
+      "File": {
+       "@attributes": {
+        "ID": "e473253003fd468a806d82b4c361380b-332",
+        "FileName": "20240110 Anträge - für Sitzungstag"
+       },
+       "Version": [
+        {
+         "@attributes": {
+          "Nr": "1"
+         },
+         "Rendition": {
+          "@attributes": {
+           "Extension": "docx",
+           "Ansicht": "Original"
+          }
+         }
+        },
+        {
+         "@attributes": {
+          "Nr": "2"
+         },
+         "Rendition": {
+          "@attributes": {
+           "Extension": "docx",
+           "Ansicht": "Original"
+          }
+         }
+        },
+        {
+         "@attributes": {
+          "Nr": "3"
+         },
+         "Rendition": {
+          "@attributes": {
+           "Extension": "docx",
+           "Ansicht": "Original"
+          }
+         }
+        },
+        {
+         "@attributes": {
+          "Nr": "4"
+         },
+         "Rendition": {
+          "@attributes": {
+           "Extension": "docx",
+           "Ansicht": "Original"
+          }
+         }
+        },
+        {
+         "@attributes": {
+          "Nr": "5"
+         },
+         "Rendition": {
+          "@attributes": {
+           "Extension": "docx",
+           "Ansicht": "Original"
+          }
+         }
+        },
+        {
+         "@attributes": {
+          "Nr": "6"
+         },
+         "Rendition": [
+          {
+           "@attributes": {
+            "Extension": "docx",
+            "Ansicht": "Original"
+           }
+          },
+          {
+           "@attributes": {
+            "Extension": "pdf",
+            "Ansicht": "PDF"
+           }
+          }
+         ]
+        }
+       ]
+      }
+     }
+    ]
+   }
+  },
+  {
+   "Titel": "Stadtratssitzung",
+   "Datum": {
+    "Start": "2024-01-18T00:00:00.000",
+    "End": "2024-01-19T00:00:00.000",
+    "Text": "18.01.2024"
+   },
+   "Dokumente": {
+    "Dokument": [
+     {
+      "Titel": "(<a href=\"https://bern.recapp.ch/shareparl?agendaItemUid=67b9e5fd698d45eba3dab1db7d23fa52&scroll=true\" target=\"_self\">Online-Protokoll</a>",
+      "Kategorie": "Beilage",
+      "File": {
+       "@attributes": {
+        "ID": "f4f85ec450db41d9a26253f18c6a5b8d-332",
+        "FileName": "(<a href=\"https://bern.recapp.ch/shareparl?agendaItemUid=67b9e5fd698d45eba3dab1db7d23fa52&scroll=true\" target=\"_self\">Online-Protokoll</a>"
+       }
+      }
+     },
+     {
+      "Titel": "20240118 Traktandenliste",
+      "Kategorie": "Traktandenliste",
+      "File": {
+       "@attributes": {
+        "ID": "79c36db5e6bb479fbea6fb07c3f406e9-332",
+        "FileName": "20240118 Traktandenliste"
+       },
+       "Version": [
+        {
+         "@attributes": {
+          "Nr": "1"
+         },
+         "Rendition": {
+          "@attributes": {
+           "Extension": "docx",
+           "Ansicht": "Original"
+          }
+         }
+        },
+        {
+         "@attributes": {
+          "Nr": "2"
+         },
+         "Rendition": {
+          "@attributes": {
+           "Extension": "docx",
+           "Ansicht": "Original"
+          }
+         }
+        },
+        {
+         "@attributes": {
+          "Nr": "3"
+         },
+         "Rendition": {
+          "@attributes": {
+           "Extension": "docx",
+           "Ansicht": "Original"
+          }
+         }
+        },
+        {
+         "@attributes": {
+          "Nr": "4"
+         },
+         "Rendition": {
+          "@attributes": {
+           "Extension": "docx",
+           "Ansicht": "Original"
+          }
+         }
+        },
+        {
+         "@attributes": {
+          "Nr": "5"
+         },
+         "Rendition": {
+          "@attributes": {
+           "Extension": "docx",
+           "Ansicht": "Original"
+          }
+         }
+        },
+        {
+         "@attributes": {
+          "Nr": "6"
+         },
+         "Rendition": {
+          "@attributes": {
+           "Extension": "docx",
+           "Ansicht": "Original"
+          }
+         }
+        },
+        {
+         "@attributes": {
+          "Nr": "7"
+         },
+         "Rendition": {
+          "@attributes": {
+           "Extension": "docx",
+           "Ansicht": "Original"
+          }
+         }
+        },
+        {
+         "@attributes": {
+          "Nr": "8"
+         },
+         "Rendition": {
+          "@attributes": {
+           "Extension": "docx",
+           "Ansicht": "Original"
+          }
+         }
+        },
+        {
+         "@attributes": {
+          "Nr": "9"
+         },
+         "Rendition": {
+          "@attributes": {
+           "Extension": "docx",
+           "Ansicht": "Original"
+          }
+         }
+        },
+        {
+         "@attributes": {
+          "Nr": "10"
+         },
+         "Rendition": {
+          "@attributes": {
+           "Extension": "docx",
+           "Ansicht": "Original"
+          }
+         }
+        },
+        {
+         "@attributes": {
+          "Nr": "11"
+         },
+         "Rendition": {
+          "@attributes": {
+           "Extension": "docx",
+           "Ansicht": "Original"
+          }
+         }
+        },
+        {
+         "@attributes": {
+          "Nr": "12"
+         },
+         "Rendition": {
+          "@attributes": {
+           "Extension": "docx",
+           "Ansicht": "Original"
+          }
+         }
+        },
+        {
+         "@attributes": {
+          "Nr": "13"
+         },
+         "Rendition": [
+          {
+           "@attributes": {
+            "Extension": "docx",
+            "Ansicht": "Original"
+           }
+          },
+          {
+           "@attributes": {
+            "Extension": "pdf",
+            "Ansicht": "PDF"
+           }
+          }
+         ]
+        }
+       ]
+      }
+     },
+     {
+      "Titel": "(<a href=\"https://www.bern.ch/politik-und-verwaltung/stadtrat/ratsversand/einladung-zur-sitzung-vom-18.01.2024#antworten-berichte\" target=\"_self\">Antworten und Berichte</a>",
+      "Kategorie": "Beilage",
+      "File": {
+       "@attributes": {
+        "ID": "de81eab672944042a784e0345ae3f710-332",
+        "FileName": "(<a href=\"https://www.bern.ch/politik-und-verwaltung/stadtrat/ratsversand/einladung-zur-sitzung-vom-18.01.2024#antworten-berichte\" target=\"_self\">Antworten und Berichte</a>"
+       }
+      }
+     },
+     {
+      "Titel": "Stadtratsprotokoll 02 vom 18.01.2024 - Genehmigung am 14.03.2024 (genehmigt)",
+      "Kategorie": "Protokoll",
+      "File": {
+       "@attributes": {
+        "ID": "bcf7603823d84f9ca2e833239d37b00f-332",
+        "FileName": "Stadtratsprotokoll 02 vom 18.01.2024 - Genehmigung am 14.03.2024 (genehmigt)"
+       },
+       "Version": [
+        {
+         "@attributes": {
+          "Nr": "1"
+         },
+         "Rendition": {
+          "@attributes": {
+           "Extension": "docx",
+           "Ansicht": "Original"
+          }
+         }
+        },
+        {
+         "@attributes": {
+          "Nr": "2"
+         },
+         "Rendition": {
+          "@attributes": {
+           "Extension": "docx",
+           "Ansicht": "Original"
+          }
+         }
+        },
+        {
+         "@attributes": {
+          "Nr": "3"
+         },
+         "Rendition": {
+          "@attributes": {
+           "Extension": "docx",
+           "Ansicht": "Original"
+          }
+         }
+        },
+        {
+         "@attributes": {
+          "Nr": "4"
+         },
+         "Rendition": {
+          "@attributes": {
+           "Extension": "docx",
+           "Ansicht": "Original"
+          }
+         }
+        },
+        {
+         "@attributes": {
+          "Nr": "5"
+         },
+         "Rendition": {
+          "@attributes": {
+           "Extension": "docx",
+           "Ansicht": "Original"
+          }
+         }
+        },
+        {
+         "@attributes": {
+          "Nr": "6"
+         },
+         "Rendition": {
+          "@attributes": {
+           "Extension": "docx",
+           "Ansicht": "Original"
+          }
+         }
+        },
+        {
+         "@attributes": {
+          "Nr": "7"
+         },
+         "Rendition": {
+          "@attributes": {
+           "Extension": "docx",
+           "Ansicht": "Original"
+          }
+         }
+        },
+        {
+         "@attributes": {
+          "Nr": "8"
+         },
+         "Rendition": [
+          {
+           "@attributes": {
+            "Extension": "docx",
+            "Ansicht": "Original"
+           }
+          },
+          {
+           "@attributes": {
+            "Extension": "pdf",
+            "Ansicht": "PDF"
+           }
+          }
+         ]
+        }
+       ]
+      }
+     },
+     {
+      "Titel": "20240117 Anträge - für Sitzungstag",
+      "Kategorie": "Antrag",
+      "File": {
+       "@attributes": {
+        "ID": "fec03af9b7074aa28d0169bdf4c543c7-332",
+        "FileName": "20240117 Anträge - für Sitzungstag"
+       },
+       "Version": [
+        {
+         "@attributes": {
+          "Nr": "1"
+         },
+         "Rendition": {
+          "@attributes": {
+           "Extension": "docx",
+           "Ansicht": "Original"
+          }
+         }
+        },
+        {
+         "@attributes": {
+          "Nr": "2"
+         },
+         "Rendition": {
+          "@attributes": {
+           "Extension": "docx",
+           "Ansicht": "Original"
+          }
+         }
+        },
+        {
+         "@attributes": {
+          "Nr": "3"
+         },
+         "Rendition": [
+          {
+           "@attributes": {
+            "Extension": "docx",
+            "Ansicht": "Original"
+           }
+          },
+          {
+           "@attributes": {
+            "Extension": "pdf",
+            "Ansicht": "PDF"
+           }
+          }
+         ]
+        }
+       ]
+      }
+     }
+    ]
+   }
+  }
+ ]
+}

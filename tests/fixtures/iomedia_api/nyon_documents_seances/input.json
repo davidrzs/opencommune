@@ -1,0 +1,142 @@
+{
+ "_source": "https://www.nyon.ch/api/contents?type=documents_seances (types 65, 66), page 1, recorded 2026-10-18, trimmed to 4 members",
+ "hydra:member": [
+  {
+   "@id": "/content/20398",
+   "@type": "documents_seances",
+   "type": [
+    {
+     "@id": "/content/65",
+     "title": "Ordre du jour"
+    }
+   ],
+   "aio:dateFrom": "2026-09-28T00:00:00+02:00",
+   "aio:documents": [
+    {
+     "id": 20282,
+     "name": "03 CCOJ261005",
+     "fileName": "03-ccoj261005",
+     "extension": "pdf",
+     "secure": false,
+     "position": 0,
+     "folder": "2",
+     "weight": "92.67 KiB",
+     "url": "/media/document/2/03-ccoj261005.pdf",
+     "hash": "71c62e18cdbd11f146f3758720318cd8"
+    }
+   ],
+   "seance_1": [
+    {
+     "@id": "/content/19738",
+     "aio:dateFrom": "2026-10-05T00:00:00+02:00",
+     "title": "Séance du 5 octobre 2026"
+    }
+   ],
+   "title": "Ordre du jour de la séance du 5 octobre 2026"
+  },
+  {
+   "@id": "/content/20274",
+   "@type": "documents_seances",
+   "type": [
+    {
+     "@id": "/content/66",
+     "title": "Procès-Verbal"
+    }
+   ],
+   "aio:dateFrom": "2026-09-01T00:00:00+02:00",
+   "aio:documents": [
+    {
+     "id": 20103,
+     "name": "2026-06-22",
+     "fileName": "2026-06-22",
+     "extension": "pdf",
+     "secure": false,
+     "position": 0,
+     "folder": "2",
+     "weight": "404.34 KiB",
+     "url": "/media/document/2/2026-06-22.pdf",
+     "hash": "7263d619fb794a986aa74a1f63b3e32e"
+    }
+   ],
+   "seance_1": [
+    {
+     "@id": "/content/19072",
+     "aio:dateFrom": "2026-06-22T00:00:00+02:00",
+     "title": "Séance du 22 juin 2026"
+    }
+   ],
+   "title": "Procès-verbal de la séance du 22 juin 2026"
+  },
+  {
+   "@id": "/content/20211",
+   "@type": "documents_seances",
+   "type": [
+    {
+     "@id": "/content/65",
+     "title": "Ordre du jour"
+    }
+   ],
+   "aio:dateFrom": "2026-08-24T00:00:00+02:00",
+   "aio:documents": [
+    {
+     "id": 20016,
+     "name": "05 OJCC260831",
+     "fileName": "05-ojcc260831",
+     "extension": "pdf",
+     "secure": false,
+     "position": 0,
+     "folder": "2",
+     "weight": "88.89 KiB",
+     "url": "/media/document/2/05-ojcc260831.pdf",
+     "hash": "ef432621eac09f5a51a2629f950ae3b2"
+    }
+   ],
+   "seance_1": [
+    {
+     "@id": "/content/19735",
+     "aio:dateFrom": "2026-08-31T00:00:00+02:00",
+     "title": "Séance du 31 août 2026"
+    }
+   ],
+   "title": "Ordre du jour de la séance du 31 août 2026"
+  },
+  {
+   "@id": "/content/19955",
+   "@type": "documents_seances",
+   "type": [
+    {
+     "@id": "/content/66",
+     "title": "Procès-Verbal"
+    }
+   ],
+   "aio:dateFrom": "2026-06-23T00:00:00+02:00",
+   "aio:documents": [
+    {
+     "id": 19634,
+     "name": "02 CCpv20260504",
+     "fileName": "02-ccpv20260504",
+     "extension": "pdf",
+     "secure": false,
+     "position": 0,
+     "folder": "1",
+     "weight": "413.72 KiB",
+     "url": "/media/document/1/02-ccpv20260504.pdf",
+     "hash": "d54ef04f49df0008585d3d00c7ac1482"
+    }
+   ],
+   "seance_1": [
+    {
+     "@id": "/content/19071",
+     "aio:dateFrom": "2026-05-04T00:00:00+02:00",
+     "title": "Séance du 4 mai 2026"
+    }
+   ],
+   "title": "Procès-verbal de la séance du 4 mai 2026"
+  }
+ ],
+ "hydra:totalItems": 346,
+ "hydra:view": {
+  "@id": "/api/contents?locale=fr&site=2&embed[]=type&embed[]=seance_1&type=documents_seances&status[]=2&count=100&controls_filters=%7B%22operator%22:%22AND%22,%22matches%22:[%7B%22key%22:%22type%22,%22value%22:[66,65],%22operator%22:%22IN%22%7D]%7D&orderByProperty=dateFrom&orderByDirection=DESC&children=false&return_null_properties=false&embed_medias=true&embed_medias_new_format=true&date_search_on_period=false&page=1",
+  "next": "/api/contents?locale=fr&site=2&embed[]=type&embed[]=seance_1&type=documents_seances&status[]=2&count=100&controls_filters=%7B%22operator%22:%22AND%22,%22matches%22:[%7B%22key%22:%22type%22,%22value%22:[66,65],%22operator%22:%22IN%22%7D]%7D&orderByProperty=dateFrom&orderByDirection=DESC&children=false&return_null_properties=false&embed_medias=true&embed_medias_new_format=true&date_search_on_period=false&page=2"
+ }
+}

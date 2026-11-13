@@ -1,0 +1,7 @@
+{
+ "base_url": "https://www.wettingen.ch/polprotokolle/2415010",
+ "step": {
+  "selector": "a[href*='/_doc/']",
+  "text_regex": "Einwohnerratssitzung"
+ }
+}

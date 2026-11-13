@@ -1,0 +1,7 @@
+{
+ "base_url": "https://legislativo.mendrisio.ch/api/public/sessions?legislationId=5&page=0&size=14",
+ "step": {
+  "selector": "sessions",
+  "kind": "sessions"
+ }
+}

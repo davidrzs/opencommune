@@ -1,0 +1,7 @@
+{
+ "base_url": "https://www.utzenstorf.ch/de/behoerden/gv/",
+ "step": {
+  "selector": "a[href*='inhalte/gemeindeversammlung/']",
+  "url_regex": "protokoll"
+ }
+}

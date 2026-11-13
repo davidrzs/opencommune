@@ -1,0 +1,29 @@
+{
+ "links": [
+  {
+   "url": "https://legislativo.mendrisio.ch/api/public/sessions?legislationId=5&page=0&size=100",
+   "text": "2024-2028",
+   "date": null
+  },
+  {
+   "url": "https://legislativo.mendrisio.ch/api/public/sessions?legislationId=4&page=0&size=100",
+   "text": "2021-2024",
+   "date": null
+  },
+  {
+   "url": "https://legislativo.mendrisio.ch/api/public/sessions?legislationId=3&page=0&size=100",
+   "text": "2016-2021",
+   "date": null
+  },
+  {
+   "url": "https://legislativo.mendrisio.ch/api/public/sessions?legislationId=2&page=0&size=100",
+   "text": "2013-2016",
+   "date": null
+  },
+  {
+   "url": "https://legislativo.mendrisio.ch/api/public/sessions?legislationId=1&page=0&size=100",
+   "text": "2009-2013",
+   "date": null
+  }
+ ]
+}

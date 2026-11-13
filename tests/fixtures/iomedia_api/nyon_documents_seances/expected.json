@@ -1,0 +1,25 @@
+{
+ "links": [
+  {
+   "url": "https://www.nyon.ch/media/document/2/03-ccoj261005.pdf",
+   "text": "Ordre du jour de la séance du 5 octobre 2026",
+   "date": "2026-10-05"
+  },
+  {
+   "url": "https://www.nyon.ch/media/document/2/2026-06-22.pdf",
+   "text": "Procès-verbal de la séance du 22 juin 2026",
+   "date": "2026-06-22"
+  },
+  {
+   "url": "https://www.nyon.ch/media/document/2/05-ojcc260831.pdf",
+   "text": "Ordre du jour de la séance du 31 août 2026",
+   "date": "2026-08-31"
+  },
+  {
+   "url": "https://www.nyon.ch/media/document/1/02-ccpv20260504.pdf",
+   "text": "Procès-verbal de la séance du 4 mai 2026",
+   "date": "2026-05-04"
+  }
+ ],
+ "next_url": "https://www.nyon.ch/api/contents?locale=fr&site=2&embed[]=type&embed[]=seance_1&type=documents_seances&status[]=2&count=100&controls_filters=%7B%22operator%22:%22AND%22,%22matches%22:[%7B%22key%22:%22type%22,%22value%22:[66,65],%22operator%22:%22IN%22%7D]%7D&orderByProperty=dateFrom&orderByDirection=DESC&children=false&return_null_properties=false&embed_medias=true&embed_medias_new_format=true&date_search_on_period=false&page=2"
+}

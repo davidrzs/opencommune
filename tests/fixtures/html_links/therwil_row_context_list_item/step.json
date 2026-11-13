@@ -1,0 +1,7 @@
+{
+ "base_url": "https://www.therwil.ch/de/politik-und-verwaltung/politik/gemeindeversammlung-beschluesse-der-gemeindeversammlungen.php",
+ "step": {
+  "selector": "li.listEntry a[href$='.pdf']",
+  "context": "row"
+ }
+}

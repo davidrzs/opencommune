@@ -1,0 +1,30 @@
+{
+ "links": [
+  {
+   "url": "https://legislativo.mendrisio.ch/api/public/sessions/107/agenda",
+   "text": "Convocazione - Seduta del 14 settembre 2026",
+   "date": "2026-09-14"
+  },
+  {
+   "url": "https://legislativo.mendrisio.ch/api/public/sessions/107/resolutionSummaries/3872",
+   "text": "Estratto risoluzioni - Seduta del 14 settembre 2026",
+   "date": "2026-09-14"
+  },
+  {
+   "url": "https://legislativo.mendrisio.ch/api/public/sessions/104/agenda",
+   "text": "Convocazione - Seduta del 15 giugno 2026",
+   "date": "2026-06-15"
+  },
+  {
+   "url": "https://legislativo.mendrisio.ch/api/public/sessions/104/resolutionSummaries/3800",
+   "text": "Estratto risoluzioni - Seduta del 15 giugno 2026",
+   "date": "2026-06-15"
+  },
+  {
+   "url": "https://legislativo.mendrisio.ch/api/public/sessions/104/minutes/3866",
+   "text": "Verbale - Seduta del 15 giugno 2026",
+   "date": "2026-06-15"
+  }
+ ],
+ "next_url": "https://legislativo.mendrisio.ch/api/public/sessions?legislationId=5&page=1&size=14"
+}

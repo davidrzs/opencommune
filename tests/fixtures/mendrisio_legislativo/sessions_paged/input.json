@@ -1,0 +1,75 @@
+{
+ "_source": "https://legislativo.mendrisio.ch/api/public/sessions?legislationId=5&page=0&size=14, recorded 2026-10-19, trimmed to two sessions (links and empty fields dropped)",
+ "pageNumber": 0,
+ "pageSize": 14,
+ "totalElements": 15,
+ "totalPages": 2,
+ "hasNext": true,
+ "hasPrevious": false,
+ "content": [
+  {
+   "entityType": "SESSION",
+   "number": "Seduta del 14 settembre 2026",
+   "date": "14 settembre 2026",
+   "documents": [
+    {
+     "type": null,
+     "label": "Convocazione",
+     "filename": "2026 09 14 odg cc.pdf",
+     "displayName": "Ordine del giorno",
+     "endpoint": "/api/public/sessions/107/agenda",
+     "isMajority": null,
+     "isMinority": null,
+     "commissions": null
+    },
+    {
+     "type": null,
+     "label": "Estratto risoluzioni",
+     "filename": "2026.09.14  Risoluzioni seduta CC pdf.pdf",
+     "displayName": "2026.09.14  Risoluzioni seduta CC pdf.pdf",
+     "endpoint": "/api/public/sessions/107/resolutionSummaries/3872",
+     "isMajority": null,
+     "isMinority": null,
+     "commissions": null
+    }
+   ]
+  },
+  {
+   "entityType": "SESSION",
+   "number": "Seduta del 15 giugno 2026",
+   "date": "15 giugno 2026",
+   "documents": [
+    {
+     "type": null,
+     "label": "Convocazione",
+     "filename": "2026 06 15 odg CC.pdf",
+     "displayName": "Ordine del giorno",
+     "endpoint": "/api/public/sessions/104/agenda",
+     "isMajority": null,
+     "isMinority": null,
+     "commissions": null
+    },
+    {
+     "type": null,
+     "label": "Estratto risoluzioni",
+     "filename": "2026.06.15  Risoluzioni seduta CC.pdf",
+     "displayName": "Estratto risoluzioni",
+     "endpoint": "/api/public/sessions/104/resolutionSummaries/3800",
+     "isMajority": null,
+     "isMinority": null,
+     "commissions": null
+    },
+    {
+     "type": null,
+     "label": "Verbale",
+     "filename": "2026.06.15 verbale.pdf",
+     "displayName": "Verbale",
+     "endpoint": "/api/public/sessions/104/minutes/3866",
+     "isMajority": null,
+     "isMinority": null,
+     "commissions": null
+    }
+   ]
+  }
+ ]
+}

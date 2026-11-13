@@ -1,0 +1,7 @@
+{
+ "base_url": "https://www.gemeinde-stmoritz.ch/aktuelles/protokolle",
+ "step": {
+  "selector": "a[href*='/pdf/protokolle/']",
+  "next_selector": "link[rel=next], a.pagination__next"
+ }
+}

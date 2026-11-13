@@ -1,0 +1,12 @@
+{
+ "base_url": "https://www.lutry.ch/lutry-officiel/conseil-communal/seances-du-conseil-communal/calendrier-et-documents/seance-du-lundi-23-mars-2026",
+ "step": {
+  "selector": "a[href*='/conseil_communal/seances/']",
+  "text_regex": "^Procès-verbal"
+ },
+ "parent": {
+  "url": "https://www.lutry.ch/lutry-officiel/conseil-communal/seances-du-conseil-communal/calendrier-et-documents/seance-du-lundi-23-mars-2026",
+  "text": "Lundi 23 mars 2026",
+  "date": "2026-03-23"
+ }
+}

@@ -1,0 +1,7 @@
+{
+ "base_url": "https://stadtrat.bern.ch/format/module/politik_axioma/sitzungen/sitzungen_data_server.php?dateFrom=01.01.2024&dateTo=31.12.2024&params%5Blength%5D=450",
+ "step": {
+  "selector": "data",
+  "text_regex": "^(Protokoll|Traktandenliste)$"
+ }
+}

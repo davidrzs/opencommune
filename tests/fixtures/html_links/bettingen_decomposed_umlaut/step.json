@@ -1,0 +1,7 @@
+{
+ "base_url": "https://www.bs.ch/bettingen/politik/gemeindeversammlung",
+ "step": {
+  "selector": "a[href*='media.bs.ch']",
+  "text_regex": "Ausführliches Protokoll"
+ }
+}

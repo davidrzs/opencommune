@@ -1,0 +1,34 @@
+{
+ "links": [
+  {
+   "url": "https://legislativo.mendrisio.ch/api/public/sessions/59/agenda",
+   "text": "Convocazione - Seduta del 8 gennaio 2018",
+   "date": "2018-01-08"
+  },
+  {
+   "url": "https://legislativo.mendrisio.ch/api/public/sessions/59/resolutionSummaries/152",
+   "text": "Estratto risoluzioni - Seduta del 8 gennaio 2018",
+   "date": "2018-01-08"
+  },
+  {
+   "url": "https://legislativo.mendrisio.ch/api/public/sessions/59/minutes/153",
+   "text": "Verbale - Seduta del 8 gennaio 2018",
+   "date": "2018-01-08"
+  },
+  {
+   "url": "https://legislativo.mendrisio.ch/api/public/sessions/50/agenda",
+   "text": "Convocazione - Seduta del 3 ottobre 2016",
+   "date": "2016-10-03"
+  },
+  {
+   "url": "https://legislativo.mendrisio.ch/api/public/sessions/50/resolutionSummaries/125",
+   "text": "Estratto risoluzioni - Seduta del 3 ottobre 2016",
+   "date": "2016-10-03"
+  },
+  {
+   "url": "https://legislativo.mendrisio.ch/api/public/sessions/50/minutes/126",
+   "text": "Verbale - Seduta del 3 ottobre 2016",
+   "date": "2016-10-03"
+  }
+ ]
+}

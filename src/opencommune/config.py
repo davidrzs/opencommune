@@ -1,0 +1,96 @@
+"""Settings loaded from .env and the environment. Pipeline paths derive from DATA_DIR; RAW_DATA_DIR can move raw files separately."""
+
+from __future__ import annotations
+
+from pathlib import Path
+
+from pydantic import Field, SecretStr
+from pydantic_settings import BaseSettings, SettingsConfigDict
+
+
+class Settings(BaseSettings):
+    model_config = SettingsConfigDict(env_file=".env", env_file_encoding="utf-8", extra="ignore")
+
+    data_dir: Path = Path("data")
+    # The checked-in configuration (communes.yaml, source lists, register, cantons). Defaults to
+    # DATA_DIR; set it when crawl state lives outside the repository.
+    config_dir: Path | None = None
+    raw_data_dir: Path | None = None
+    raw_min_free_bytes: int = Field(default=1024**3, ge=0)
+    database_url: str = "sqlite:///data/opencommune.db"
+    user_agent: str | None = None
+    request_delay_seconds: float = 1.0
+    # Rendered model requests wait here until they are answered: they are large, can be rendered
+    # again and hold page images, so a disk that is not backed up suits them. Defaults to
+    # DATA_DIR/scratch.
+    scratch_dir: Path | None = None
+    openai_api_key: SecretStr | None = None
+
+    @property
+    def ua(self) -> str:
+        if self.user_agent:
+            return self.user_agent
+        return "OpenCommuneBot/0.1 (+https://www.opencommune.ch)"
+
+    @property
+    def raw_dir(self) -> Path:
+        if self.raw_data_dir is not None:
+            # A missing volume must not become an empty archive or fill the root disk.
+            if not self.raw_data_dir.is_dir():
+                raise FileNotFoundError("Configured RAW_DATA_DIR is unavailable")
+            return self.raw_data_dir
+        return self.data_dir / "raw"
+
+    # Written by the processing stages; the catalogue reads them for a document's status.
+    @property
+    def parsed_dir(self) -> Path:
+        return self.data_dir / "parsed"
+
+    @property
+    def extracted_dir(self) -> Path:
+        return self.data_dir / "extracted"
+
+    @property
+    def logs_dir(self) -> Path:
+        return self.data_dir / "logs"
+
+    @property
+    def bfs_dir(self) -> Path:
+        return self.data_dir / "bfs"
+
+    @property
+    def scratch(self) -> Path:
+        return self.scratch_dir if self.scratch_dir is not None else self.data_dir / "scratch"
+
+    # Model answers and job state; private, as answers can name people.
+    @property
+    def process_db(self) -> Path:
+        return self.data_dir / "process.db"
+
+    # Batch results exactly as the provider returned them, one compressed file per batch.
+    @property
+    def batch_outputs_dir(self) -> Path:
+        return self.data_dir / "batch-outputs"
+
+    @property
+    def config_root(self) -> Path:
+        return self.config_dir if self.config_dir is not None else self.data_dir
+
+    @property
+    def communes_file(self) -> Path:
+        return self.config_root / "communes.yaml"
+
+    @property
+    def cantons_file(self) -> Path:
+        return self.config_root / "cantons.yaml"
+
+    def ensure_dirs(self) -> None:
+        for d in (
+            self.raw_dir,
+            self.logs_dir,
+            self.bfs_dir,
+        ):
+            d.mkdir(parents=True, exist_ok=True)
+
+
+settings = Settings()

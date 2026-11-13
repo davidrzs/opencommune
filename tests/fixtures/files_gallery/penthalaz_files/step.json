@@ -1,0 +1,8 @@
+{
+ "_note": "Minutes of the 2021-2026 legislature, dated by the session in the file name in both spellings (2021.03.22, 2025-03-10); mtime is the upload time and is not used.",
+ "base_url": "https://www.penthalaz.ch/fichiers/?Conseil%20communal/PV%20du%20conseil/2021-2026",
+ "step": {
+  "selector": "files",
+  "text_regex": "Proc[eè]s-verbal"
+ }
+}

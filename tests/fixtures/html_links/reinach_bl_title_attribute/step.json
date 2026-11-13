@@ -1,0 +1,7 @@
+{
+ "base_url": "https://www.reinach-bl.ch/de/politik/einwohnerrat/einwohnerratssitzungen.php",
+ "step": {
+  "selector": "a.pdf[href*='/wAssets/docs/ER-Unterlagen/']",
+  "url_regex": "Beschluesse"
+ }
+}

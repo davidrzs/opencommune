@@ -1,0 +1,9 @@
+{
+ "base_url": "https://legislativo.mendrisio.ch/api/public/sessions?legislationId=3&page=0&size=100",
+ "step": {
+  "selector": "sessions",
+  "kind": "sessions",
+  "text_regex": "^(Verbale|Estratto risoluzioni|Convocazione)",
+  "exclude_regex": "attinenz|naturali|dimission"
+ }
+}

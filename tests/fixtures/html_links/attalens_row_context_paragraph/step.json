@@ -1,0 +1,8 @@
+{
+ "base_url": "https://www.attalens.ch/conseil-general/",
+ "step": {
+  "selector": "a[href*='/wp-content/uploads/']",
+  "text_regex": "^procès-verbal",
+  "context": "row"
+ }
+}

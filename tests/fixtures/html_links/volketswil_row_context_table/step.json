@@ -1,0 +1,8 @@
+{
+ "base_url": "https://www.volketswil.ch/politik/gemeindeversammlung.html/10",
+ "step": {
+  "selector": "table a[href*='/assets/']",
+  "text_regex": "Protokoll",
+  "context": "row"
+ }
+}

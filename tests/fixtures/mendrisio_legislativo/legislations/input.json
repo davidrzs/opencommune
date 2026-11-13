@@ -1,0 +1,27 @@
+[
+ {
+  "id": 5,
+  "period": "2024-2028",
+  "current": true
+ },
+ {
+  "id": 4,
+  "period": "2021-2024",
+  "current": false
+ },
+ {
+  "id": 3,
+  "period": "2016-2021",
+  "current": false
+ },
+ {
+  "id": 2,
+  "period": "2013-2016",
+  "current": false
+ },
+ {
+  "id": 1,
+  "period": "2009-2013",
+  "current": false
+ }
+]

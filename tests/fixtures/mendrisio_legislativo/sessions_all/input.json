@@ -1,0 +1,85 @@
+{
+ "_source": "https://legislativo.mendrisio.ch/api/public/sessions?legislationId=3&page=0&size=100, recorded 2026-10-19, trimmed to the sessions of 3.10.2016 and 8.1.2018, whose file names carry other dates",
+ "pageNumber": 0,
+ "pageSize": 100,
+ "totalElements": 29,
+ "totalPages": 1,
+ "hasNext": false,
+ "hasPrevious": false,
+ "content": [
+  {
+   "entityType": "SESSION",
+   "number": "Seduta del 8 gennaio 2018",
+   "date": "8 gennaio 2018",
+   "documents": [
+    {
+     "type": null,
+     "label": "Convocazione",
+     "filename": "82_2018_01_08_odg_cc.pdf",
+     "displayName": "Ordine del giorno",
+     "endpoint": "/api/public/sessions/59/agenda",
+     "isMajority": null,
+     "isMinority": null,
+     "commissions": null
+    },
+    {
+     "type": null,
+     "label": "Estratto risoluzioni",
+     "filename": "82_2018-01-08_risoluzioni_seduta_cc.pdf",
+     "displayName": "Estratto risoluzioni",
+     "endpoint": "/api/public/sessions/59/resolutionSummaries/152",
+     "isMajority": null,
+     "isMinority": null,
+     "commissions": null
+    },
+    {
+     "type": null,
+     "label": "Verbale",
+     "filename": "82_2017-12-18_e_2018-01-08_seduta_cc_aggiornamento_verbali.pdf",
+     "displayName": "Verbale",
+     "endpoint": "/api/public/sessions/59/minutes/153",
+     "isMajority": null,
+     "isMinority": null,
+     "commissions": null
+    }
+   ]
+  },
+  {
+   "entityType": "SESSION",
+   "number": "Seduta del 3 ottobre 2016",
+   "date": "3 ottobre 2016",
+   "documents": [
+    {
+     "type": null,
+     "label": "Convocazione",
+     "filename": "72_2016-09-26_convocazione.pdf",
+     "displayName": "Ordine del giorno",
+     "endpoint": "/api/public/sessions/50/agenda",
+     "isMajority": null,
+     "isMinority": null,
+     "commissions": null
+    },
+    {
+     "type": null,
+     "label": "Estratto risoluzioni",
+     "filename": "72_2013_10_03_risoluzioni_seduta_cc.pdf",
+     "displayName": "Estratto risoluzioni",
+     "endpoint": "/api/public/sessions/50/resolutionSummaries/125",
+     "isMajority": null,
+     "isMinority": null,
+     "commissions": null
+    },
+    {
+     "type": null,
+     "label": "Verbale",
+     "filename": "72_verbale_2016-10-03_seduta_cc_aggiornamento.pdf",
+     "displayName": "Verbale",
+     "endpoint": "/api/public/sessions/50/minutes/126",
+     "isMajority": null,
+     "isMinority": null,
+     "commissions": null
+    }
+   ]
+  }
+ ]
+}

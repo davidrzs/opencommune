@@ -12,11 +12,10 @@ jobs:
         with:
           enable-cache: true
       - run: uv sync --locked
-      - run: uv run ruff check src tests scripts
-      - run: uv run ruff format --check src tests scripts
+      # ruff, YAML and whitespace checks, the commune lint, the register check and the source
+      # validations, as make lint runs them
+      - run: uv run pre-commit run --all-files --show-diff-on-failure
       - run: uv run pytest -q
-      - run: uv run opencommune lint-communes
-      - run: uv run opencommune register check
   server:
     runs-on: ubuntu-latest
     defaults:

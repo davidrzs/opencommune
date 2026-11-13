@@ -1,0 +1,7 @@
+{
+ "base_url": "https://www.gemeinderat-zuerich.ch/api/sitzung/searchdetails/?q=sitzungsdatum_start+%3E+%222026-05-11+00%3A00%3A00%22+and+sitzungsdatum_start+%3C+%222026-09-08+23%3A59%3A59%22+sortBy+sitzungsdatum_start%2Fsort.descending&l=de-CH&m=2",
+ "step": {
+  "selector": "Dokument",
+  "text_regex": "^Protokoll$"
+ }
+}

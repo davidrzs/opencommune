@@ -1,0 +1,6 @@
+{
+ "base_url": "https://www.b-e-l.ch/fr/officiel/conseil-communal/s%C3%A9ances-du-conseil",
+ "step": {
+  "selector": "a.minutes"
+ }
+}

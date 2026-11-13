@@ -1,0 +1,6 @@
+{
+ "base_url": "https://www.bellinzona.ch/Sedute",
+ "step": {
+  "selector": "a[href^='Seduta-'], a[href*='/Seduta-']"
+ }
+}

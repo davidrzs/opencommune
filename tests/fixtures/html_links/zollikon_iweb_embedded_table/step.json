@@ -1,0 +1,6 @@
+{
+ "base_url": "https://www.zollikon.ch/sitzung",
+ "step": {
+  "selector": "a[href*='/_rte/anlass/']"
+ }
+}
