@@ -56,7 +56,8 @@
       <p>{t.scope}</p>
       <a class="text-link" href={c.website} target="_blank" rel="noreferrer">{t.official} ↗</a>
     </div>
-    <div class="mini-map"><Map communes={[c]} compact /></div>
+    <!-- the access notice below shows the access state -->
+    <div class="mini-map"><Map communes={[{ ...c, access: undefined }]} compact /></div>
   </div>
   <div class="commune-metrics">
     {#if c.documents}<span><strong>{fmt(c.documents, lang)}</strong> {t.documents}</span
@@ -212,7 +213,11 @@
                   : t.untagged
                 : t.decisions}</span
             >
-            <h2>{item.title === 'Gemeindedokument' ? t.document : item.title}</h2>
+            <h2>
+              {#if data.tab === 'decisions'}<a href={href(`/entscheide/${item.id}`, lang)}
+                  >{item.title}</a
+                >{:else}{item.title === 'Gemeindedokument' ? t.document : item.title}{/if}
+            </h2>
             {#if item.summary}<p>{item.summary}</p>{/if}<a
               class="text-link"
               href={item.url || item.source_link}

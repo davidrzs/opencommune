@@ -1,8 +1,11 @@
 <script lang="ts">
+  import '@fontsource-variable/dm-sans'; // served from this site, not from a font service
   import '../app.css';
   import { about } from '$lib/about';
+  import { privacy } from '$lib/privacy';
   import ReportProblem from '$lib/ReportProblem.svelte';
   import { page } from '$app/state';
+  import { onMount } from 'svelte';
   import { copy, href, type Lang } from '$lib/i18n';
   let { children } = $props();
   let lang = $derived((page.params.lang || 'de') as Lang);
@@ -10,6 +13,9 @@
   $effect(() => {
     document.documentElement.lang = lang;
   });
+  // the server's fact sheet for crawlers (server/src/site.rs); the app renders the same facts. The
+  // server's <title> stays: Svelte writes each page's title into it.
+  onMount(() => document.getElementById('oc-facts')?.remove());
   const languages: Lang[] = ['de', 'fr', 'it'];
   function switchTo(next: Lang) {
     return (
@@ -64,6 +70,7 @@
   </p>
   <div>
     <a href={href('/ueber-uns', lang)}>{about[lang].title}</a><br />
+    <a href={href('/datenschutz', lang)}>{privacy[lang].title}</a><br />
     <ReportProblem {lang} /><br /><a href="https://github.com/davidrzs/opencommune"
       >{t.openSource} ↗</a
     ><br /><a href="https://huggingface.co/datasets/davidrzs/opencommune">{t.dataset} ↗</a>

@@ -9,6 +9,7 @@ old = (dt.datetime.now(dt.UTC) - dt.timedelta(days=8)).isoformat()
 
 
 def commune(bfs, name, documents, status, stale=False):
+    """The commune page's row: one access entry per website."""
     return dict(
         bfs_id=bfs,
         name=name,
@@ -23,11 +24,25 @@ def commune(bfs, name, documents, status, stale=False):
                 checked_at=old if stale else now,
                 restricted_at=old if stale else now if status == "restricted" else None,
                 stale=stale,
-                source_url="https://commune.example/docs/",
+                source_url="https://commune.example/",
                 robots_url="https://commune.example/robots.txt",
             )
         ],
     )
+
+
+def listed(c):
+    """The commune list's row: one access state instead of the entries."""
+    (a,) = c["access"]
+    state = (
+        "restricted"
+        if a["status"] == "restricted" and not a["stale"]
+        else "earlier"
+        if a["restricted_at"]
+        else "temporary"
+    )
+    keys = ("bfs_id", "name", "canton", "documents", "decisions")
+    return {**{k: c[k] for k in keys}, "access": state}
 
 
 class Handler(BaseHTTPRequestHandler):
@@ -40,7 +55,7 @@ class Handler(BaseHTTPRequestHandler):
         ]
         path = self.path.split("?")[0]
         if path == "/api/archive/communes":
-            body = communes
+            body = [listed(c) for c in communes]
         elif path.startswith("/api/archive/communes/"):
             body = next(c for c in communes if str(c["bfs_id"]) == path.rsplit("/", 1)[1])
         elif path.startswith("/api/dataset/"):

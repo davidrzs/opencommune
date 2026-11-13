@@ -1,13 +1,9 @@
 <script lang="ts">
   import { copy, when, type Lang } from './i18n';
-  import type { Commune } from './types';
-  let { access, lang }: { access: NonNullable<Commune['access']>; lang: Lang } = $props();
+  import type { Access } from './types';
+  let { access, lang }: { access: Access[]; lang: Lang } = $props();
   let t = $derived(copy[lang]);
   let restricted = $derived(access.some((a) => a.status === 'restricted' && !a.stale));
-  // Multiple files in one section should not produce dozens of identical notices.
-  let sources = $derived(
-    access.filter((a, i) => access.findIndex((b) => b.source_url === a.source_url) === i)
-  );
 </script>
 
 {#if access.length}
@@ -22,7 +18,7 @@
     <details>
       <summary>{t.accessChecked}: {when(access[0].checked_at, lang)}</summary>
       <ul>
-        {#each sources as a}
+        {#each access as a}
           <li>
             {#if a.status === 'rate_limited'}<p>
                 {t.accessRate}

@@ -10,15 +10,23 @@ export type Commune = {
   finance_years?: number;
   lat?: number | null;
   lon?: number | null;
+  // the list's access state: a website refuses the crawler, did so over a week ago, or failed
+  // otherwise (rate limit, robots.txt, technical error)
+  access?: 'restricted' | 'earlier' | 'temporary';
+};
+// one entry per website, newest check first; source_url is the website, never a document
+export type Access = {
+  status: 'restricted' | 'rate_limited' | 'robots_unavailable' | 'technical_error';
+  checked_at: string;
+  restricted_at: string | null;
+  stale: boolean;
+  robots_url: string;
+  source_url: string;
+};
+// the commune page (/api/archive/communes/{bfs_id})
+export type CommuneDetail = Omit<Commune, 'access'> & {
   website?: string;
-  access?: {
-    status: 'restricted' | 'rate_limited' | 'robots_unavailable' | 'technical_error';
-    checked_at: string;
-    restricted_at: string | null;
-    stale: boolean;
-    robots_url: string;
-    source_url: string;
-  }[];
+  access: Access[];
   holdings?: { last_crawl?: string; first_date?: string; last_date?: string }[];
 };
 export const normalize = (s: string) =>
@@ -29,6 +37,19 @@ export const normalize = (s: string) =>
 export type Findings = {
   deficits: { year: number; type: 'budget' | 'accounts'; deficit: number; n: number }[];
   turnout_by_size: { min: number; max: number | null; median: number | null; n: number }[];
+};
+// one decision (/api/decisions/{id}); source_link opens the original PDF at its page
+export type Decision = {
+  id: string;
+  title: string;
+  summary: string;
+  category: string;
+  outcome: string | null;
+  meeting_date: string | null;
+  amount_chf: number | null;
+  page_start: number;
+  commune: { bfs_id: number; name: string; canton: string };
+  source_link: string;
 };
 export type DatasetVote = {
   meeting_date: string | null;

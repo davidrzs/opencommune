@@ -1,7 +1,7 @@
 <script lang="ts">
   import ReportProblem from '$lib/ReportProblem.svelte';
   import { page } from '$app/state';
-  import { copy, fmt, when, type Lang } from '$lib/i18n';
+  import { copy, fmt, href, when, type Lang } from '$lib/i18n';
   let { data } = $props();
   let lang = $derived((page.params.lang || 'de') as Lang);
   let t = $derived(copy[lang]);
@@ -26,7 +26,7 @@
       <div class="document-date">{when(item.meeting_date, lang)}</div>
       <div>
         <span class="document-kind">{item.commune.name} · {item.commune.canton}</span>
-        <h2>{item.title}</h2>
+        <h2><a href={href(`/entscheide/${item.id}`, lang)}>{item.title}</a></h2>
         <p>{item.summary}</p>
         <a class="text-link" href={item.source_link} target="_blank" rel="noreferrer"
           >{t.original} ↗</a

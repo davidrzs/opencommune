@@ -20,7 +20,16 @@ export const about = {
       'Fragen, Hinweise auf fehlende Quellen, Korrekturen oder Anliegen zu Personendaten nehmen wir per E-Mail entgegen. Wir freuen uns auch über den Austausch mit Forschenden, Medienschaffenden und Gemeinden.',
     email: 'David eine E-Mail schreiben',
     emailSubject: 'Kontakt',
-    sourceLink: 'Zum offenen Quellcode'
+    sourceLink: 'Zum offenen Quellcode',
+    dataTitle: 'Daten nutzen',
+    data: 'Die Daten stehen unter CC0 1.0 und dürfen ohne Bedingungen genutzt werden. Eine Quellenangabe ist rechtlich nicht nötig, aber sehr willkommen. Der Quellcode ist unter der MIT-Lizenz offen.',
+    api: 'JSON-API, ohne Schlüssel',
+    mcp: 'MCP-Server für KI-Assistenten wie Claude oder ChatGPT',
+    dataset: 'Datensatz auf Hugging Face',
+    llms: 'Kurzbeschreibung für KI-Agenten (llms.txt)',
+    privacyTitle: 'Datenschutz',
+    privacy:
+      'Die Website setzt keine Cookies und lädt nichts von Dritten nach. Für die Nutzungsstatistik zählt der Server Aufrufe pro Tag und Seitentyp; IP-Adressen, Suchbegriffe und vollständige Adressen der aufgerufenen Seiten speichert er nicht. Die Zahl der Besuchenden pro Tag wird mit einem täglich wechselnden Schlüssel geschätzt, sodass niemand über Tage hinweg wiedererkannt werden kann. Wer «Do Not Track» oder «Global Privacy Control» sendet, fliesst nicht in diese Schätzung ein. Die Statistik wird nach 30 Tagen gelöscht.'
   },
   fr: {
     title: 'À propos d’OpenCommune',
@@ -43,7 +52,16 @@ export const about = {
       'Vous pouvez nous écrire pour poser une question, signaler une source manquante, demander une correction ou nous faire part d’un problème concernant des données personnelles. Nous souhaitons aussi échanger avec les milieux de la recherche, les journalistes et les communes.',
     email: 'Écrire un e-mail à David',
     emailSubject: 'Contact',
-    sourceLink: 'Voir le code source ouvert'
+    sourceLink: 'Voir le code source ouvert',
+    dataTitle: 'Utiliser les données',
+    data: 'Les données sont publiées sous CC0 1.0 et peuvent être utilisées sans condition. Citer la source n’est pas obligatoire, mais très apprécié. Le code source est ouvert sous licence MIT.',
+    api: 'API JSON, sans clé',
+    mcp: 'Serveur MCP pour les assistants IA comme Claude ou ChatGPT',
+    dataset: 'Jeu de données sur Hugging Face',
+    llms: 'Description courte pour les agents IA (llms.txt)',
+    privacyTitle: 'Protection des données',
+    privacy:
+      'Le site n’utilise pas de cookies et ne charge rien de tiers. Pour les statistiques d’utilisation, le serveur compte les accès par jour et par type de page ; il n’enregistre ni adresses IP, ni termes de recherche, ni adresses complètes des pages consultées. Le nombre de visiteurs par jour est estimé à l’aide d’une clé qui change chaque jour, de sorte que personne ne peut être reconnu d’un jour à l’autre. Les navigateurs qui envoient « Do Not Track » ou « Global Privacy Control » ne sont pas pris en compte dans cette estimation. Les statistiques sont effacées après 30 jours.'
   },
   it: {
     title: 'Informazioni su OpenCommune',
@@ -66,6 +84,15 @@ export const about = {
       'Potete scriverci per domande, segnalazioni di fonti mancanti, correzioni o questioni relative ai dati personali. Ci interessa anche il confronto con ricercatori, giornalisti e comuni.',
     email: 'Scrivi un’e-mail a David',
     emailSubject: 'Contatto',
-    sourceLink: 'Consulta il codice sorgente aperto'
+    sourceLink: 'Consulta il codice sorgente aperto',
+    dataTitle: 'Usare i dati',
+    data: 'I dati sono pubblicati con licenza CC0 1.0 e possono essere usati senza condizioni. Citare la fonte non è obbligatorio, ma è molto gradito. Il codice sorgente è aperto con licenza MIT.',
+    api: 'API JSON, senza chiave',
+    mcp: 'Server MCP per assistenti IA come Claude o ChatGPT',
+    dataset: 'Dataset su Hugging Face',
+    llms: 'Descrizione breve per agenti IA (llms.txt)',
+    privacyTitle: 'Protezione dei dati',
+    privacy:
+      'Il sito non usa cookie e non carica nulla da terzi. Per le statistiche d’uso il server conta gli accessi per giorno e per tipo di pagina; non registra né indirizzi IP, né termini di ricerca, né gli indirizzi completi delle pagine visitate. Il numero di visitatori al giorno è stimato con una chiave che cambia ogni giorno, così nessuno può essere riconosciuto da un giorno all’altro. Chi invia «Do Not Track» o «Global Privacy Control» non viene considerato in questa stima. Le statistiche vengono cancellate dopo 30 giorni.'
   }
 };

@@ -37,13 +37,13 @@
     'JU'
   ];
   const patternId = $props.id();
-  const restricted = (c: Commune) => c.access?.some((a) => a.status === 'restricted' && !a.stale);
+  const restricted = (c: Commune) => c.access === 'restricted';
   const accessLabel = (c: Commune) =>
-    restricted(c)
+    c.access === 'restricted'
       ? t.accessRestricted
-      : c.access?.some((a) => a.restricted_at)
+      : c.access === 'earlier'
         ? t.accessEarlier
-        : c.access?.length
+        : c.access === 'temporary'
           ? t.accessTemporary
           : '';
   const summary = (c: Commune) =>

@@ -21,7 +21,7 @@ export const copy = {
     accessChecked: 'Zuletzt geprüft',
     accessEarlier: 'Zuvor wurde eine Einschränkung festgestellt; eine erneute Prüfung steht aus.',
     accessStale: 'Diese Beobachtung ist älter als sieben Tage.',
-    accessSource: 'Betroffener Bereich',
+    accessSource: 'Website',
     accessEmpty: 'Von dieser Gemeinde sind hier noch keine Dokumente veröffentlicht.',
 
     report: 'Problem melden',
@@ -149,7 +149,7 @@ export const copy = {
     accessEarlier:
       'Une restriction avait été constatée ; une nouvelle vérification reste nécessaire.',
     accessStale: 'Cette observation date de plus de sept jours.',
-    accessSource: 'Section concernée',
+    accessSource: 'Site web',
     accessEmpty: 'Aucun document de cette commune n’est encore publié ici.',
 
     report: 'Signaler un problème',
@@ -277,7 +277,7 @@ export const copy = {
     accessChecked: 'Ultima verifica',
     accessEarlier: 'Era stata rilevata una restrizione; è necessaria una nuova verifica.',
     accessStale: 'Questa osservazione risale a più di sette giorni fa.',
-    accessSource: 'Sezione interessata',
+    accessSource: 'Sito web',
     accessEmpty: 'Di questo comune non sono ancora pubblicati documenti qui.',
 
     report: 'Segnala un problema',

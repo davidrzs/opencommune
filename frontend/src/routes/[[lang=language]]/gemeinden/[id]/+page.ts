@@ -1,11 +1,11 @@
 import { api, apiOptional } from '$lib/api';
-import type { Commune } from '$lib/types';
+import type { CommuneDetail } from '$lib/types';
 import { error } from '@sveltejs/kit';
 const TABS = ['documents', 'decisions', 'votes', 'finance'] as const;
 export async function load({ params, url, fetch }) {
   if (!/^\d+$/.test(params.id)) error(404, 'Commune not found');
   // votes and finances come from the dataset, served only where it is configured
-  const [commune, dataset]: [Commune, any] = await Promise.all([
+  const [commune, dataset]: [CommuneDetail, any] = await Promise.all([
     api(fetch, `/archive/communes/${params.id}`),
     apiOptional(fetch, `/dataset/communes/${params.id}`)
   ]);

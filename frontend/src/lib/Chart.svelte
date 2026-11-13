@@ -118,7 +118,7 @@
     width: 100%;
     height: auto;
     display: block;
-    font-family: 'DM Sans', sans-serif;
+    font-family: 'DM Sans Variable', sans-serif;
   }
   .grid {
     stroke: var(--line);
