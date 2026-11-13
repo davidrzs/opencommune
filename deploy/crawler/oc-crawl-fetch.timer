@@ -1,0 +1,10 @@
+[Unit]
+Description=Weekly pass over the curated sources
+
+[Timer]
+OnCalendar=Sun *-*-* 05:00:00 Europe/Zurich
+Persistent=true
+RandomizedDelaySec=10min
+
+[Install]
+WantedBy=timers.target

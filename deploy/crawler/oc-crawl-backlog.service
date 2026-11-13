@@ -1,0 +1,12 @@
+[Unit]
+Description=OpenCommune crawl: drain discovered archive backlogs in finite batches
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=oneshot
+WorkingDirectory=%h/opencommune
+Environment=PYTHONUNBUFFERED=1
+ExecStart=/bin/bash deploy/crawl.sh backlog
+Nice=10
+TimeoutStartSec=8h

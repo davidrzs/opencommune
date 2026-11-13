@@ -1,0 +1,9 @@
+[Unit]
+Description=Resume archive backlog downloads ten minutes after each pass
+
+[Timer]
+OnBootSec=5min
+OnUnitInactiveSec=10min
+
+[Install]
+WantedBy=timers.target
