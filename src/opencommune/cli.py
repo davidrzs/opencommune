@@ -76,6 +76,10 @@ def fetch(
         None, min=1, help="Cap pages followed per hop for a small initial fetch"
     ),
     only_new: bool = typer.Option(False, help="Only communes without any fetched document yet"),
+    backfill: bool = typer.Option(
+        False,
+        help="Follow up to 1000 pages per hop instead of max_follow, to reach older documents",
+    ),
     source: str | None = typer.Option(
         None, help="Only sources of this adapter, for example wp_media"
     ),
@@ -102,6 +106,7 @@ def fetch(
         dry_run=dry_run,
         source_adapter=source,
         max_follow=max_follow,
+        backfill=backfill,
     ):
         typer.echo(
             f"{res.commune.name} ({res.commune.canton}): {len(res.discovered)} discovered, "
@@ -320,10 +325,12 @@ def _database_path() -> Path:
 
 @app.command()
 def build() -> None:
-    """Write the serving tables the web server reads (register, access observations), from scratch."""
+    """Write the serving database the web server reads, from scratch, into DATA_DIR/serving.db."""
     from . import build as stage
 
-    for table, rows in stage.run(_database_path()).items():
+    for table, rows in stage.run(
+        settings.serving_db, _database_path(), settings.process_db
+    ).items():
         typer.echo(f"{table}: {rows} rows")
 
 
@@ -401,6 +408,10 @@ def catalog_command():
             typer.echo("catalogue refresh already running")
             return
         init_db()
+        from .db import engine
+
+        if catalog.rebuild_if_outdated(engine):
+            typer.echo("pdf_catalog had an older layout and is rebuilt")
         communes = load_communes()
         with session_scope() as session:
             catalog.upsert_communes(session, communes)

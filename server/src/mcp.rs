@@ -1,5 +1,6 @@
-//! MCP server over streamable HTTP at `/mcp`: search, one decision and the commune list, on the
-//! same queries as the REST API. Stateless: every request is answered on its own, no session is kept.
+//! MCP server over streamable HTTP at `/mcp`: the commune list, the document search and one
+//! document, on the same queries as the REST API. Stateless: every request is answered on its own,
+//! no session is kept.
 
 use std::sync::Arc;
 use std::time::Instant;
@@ -14,52 +15,38 @@ use serde::Deserialize;
 use serde_json::{Value, json};
 
 use crate::AppState;
-use crate::db::{communes, decisions};
-use crate::routes::valid_date;
+use crate::db::communes;
+use crate::db::documents::{self, Search};
 use crate::usage::Hit;
 
-const SEARCH_DESCRIPTION: &str = "Search council decisions. `query` is free text over title and \
-summary (diacritics-insensitive). The decisions are worded as in the minutes, in German, French or \
-Italian: search with words in the commune's language (Schulhaus, école, scuola), not in English. \
-`commune_bfs_id` is the commune's BFS number, from list_communes. Filters: `canton` two-letter code, `category` one of zoning, \
-building_permit, finance_budget, finance_credit, personnel, infrastructure, school, social, \
-naturalization, election, bylaw, procurement, other, `outcome` one of approved, rejected, \
-postponed, noted, `language` de/fr/it, ISO dates, `min_amount_chf`. Returns total count and items \
-with summary, amount, votes, commune, meeting date and a link to the source PDF page.";
+const SEARCH_DESCRIPTION: &str = "Search the archive's documents, newest first. Every filter is \
+optional; filters combine with AND. `commune`: a BFS number from list_communes. `section`: \
+documents with at least one section of this type (minutes, decisions, vote_result, budget, \
+accounts, invitation_agenda, proposal, member_request, regulation, report, notice, plan_or_map, \
+news, other, unclear). `family`: documents with at least one section of this family \
+(deliberation, money, proposals, rules, information, other). `body`: parliament, \
+citizens_assembly, executive, commission, commune, other_public_body, private or unknown. `year`: \
+the year of the document's date, else the one year the classifier read, else the year of the \
+commune's listing date. `q`: text the document's title contains, case-insensitive. `limit` 0 to \
+100 (default 20) and `offset` page through the results. Returns `total`, `facets` (documents per \
+year, section type and body, each counted with every filter except its own) and `items`: title \
+and body as printed (private names appear as [name]), dates, pages, sections with their family \
+and pages, the communes that link the document, and `original_url`, a path on this site that \
+redirects to the file on the commune's website (add `?page=N` to open it at a page). Titles, \
+bodies, dates and sections come from an automatic classification by a language model that no \
+person has checked yet.";
+
+const GET_DESCRIPTION: &str = "Fetch one document by its sha256 (from search_documents) with \
+every field and `run`: the classification run that gave its title, body, dates and sections, with \
+the model and a note on what the run's settings do to the data. Titles, bodies, dates and \
+sections come from an automatic classification by a language model that no person has checked \
+yet.";
 
 #[derive(Deserialize, JsonSchema)]
 #[schemars(crate = "rmcp::schemars")]
-pub struct SearchArgs {
-    #[serde(default)]
-    query: Option<String>,
-    #[serde(default)]
-    commune_bfs_id: Option<i64>,
-    #[serde(default)]
-    canton: Option<String>,
-    #[serde(default)]
-    category: Option<String>,
-    #[serde(default)]
-    outcome: Option<String>,
-    #[serde(default)]
-    language: Option<String>,
-    #[serde(default)]
-    date_from: Option<String>,
-    #[serde(default)]
-    date_to: Option<String>,
-    #[serde(default)]
-    min_amount_chf: Option<f64>,
-    #[serde(default = "default_limit")]
-    limit: i64,
-}
-
-fn default_limit() -> i64 {
-    20
-}
-
-#[derive(Deserialize, JsonSchema)]
-#[schemars(crate = "rmcp::schemars")]
-pub struct DecisionArgs {
-    decision_id: String,
+pub struct DocumentArgs {
+    /// The document's sha256, from search_documents.
+    sha256: String,
 }
 
 #[derive(Clone)]
@@ -91,86 +78,71 @@ fn internal(error: sqlx::Error) -> ErrorData {
 #[tool_router]
 impl Archive {
     #[tool(
-        title = "Search decisions",
+        title = "Search documents",
         description = SEARCH_DESCRIPTION,
         annotations(
-            title = "Search decisions",
+            title = "Search documents",
             read_only_hint = true,
             destructive_hint = false,
             idempotent_hint = true,
             open_world_hint = false
         )
     )]
-    async fn search_decisions(
+    async fn search_documents(
         &self,
-        Parameters(args): Parameters<SearchArgs>,
+        Parameters(search): Parameters<Search>,
     ) -> Result<CallToolResult, ErrorData> {
         let started = Instant::now();
-        for date in [&args.date_from, &args.date_to].into_iter().flatten() {
-            if !valid_date(date) {
-                self.count("search_decisions", started, 422, None);
-                return Ok(CallToolResult::error(vec![ContentBlock::text(format!(
-                    "Error executing tool search_decisions: {date:?} is not an ISO date (YYYY-MM-DD)"
-                ))]));
-            }
+        if let Err(reason) = search.check() {
+            self.count("search_documents", started, 400, None);
+            return Ok(CallToolResult::error(vec![ContentBlock::text(format!(
+                "Error executing tool search_documents: {reason}"
+            ))]));
         }
-        let filters = decisions::SearchFilters {
-            q: args.query,
-            commune: args.commune_bfs_id,
-            canton: args.canton,
-            category: args.category,
-            outcome: args.outcome,
-            lang: args.language,
-            body: None,
-            date_from: args.date_from,
-            date_to: args.date_to,
-            min_amount: args.min_amount_chf,
-            limit: args.limit.clamp(1, 100),
-            offset: 0,
-        };
-        let res = decisions::search(&self.state.db, &filters)
+        let page = documents::search(&self.state.db, &search)
             .await
             .map_err(internal)?;
-        self.count("search_decisions", started, 200, Some(res.total));
-        Ok(CallToolResult::structured(json!({
-            "total": res.total,
-            "mode": res.mode,
-            "items": res.items,
-        })))
+        let total = search.is_search().then_some(page.total);
+        self.count("search_documents", started, 200, total);
+        Ok(CallToolResult::structured(
+            serde_json::to_value(page).unwrap_or(Value::Null),
+        ))
     }
 
-    /// Fetch one decision by id with all fields and provenance (source PDF, page span, model).
     #[tool(
-        title = "Get a decision",
+        title = "Get a document",
+        description = GET_DESCRIPTION,
         annotations(
-            title = "Get a decision",
+            title = "Get a document",
             read_only_hint = true,
             destructive_hint = false,
             idempotent_hint = true,
             open_world_hint = false
         )
     )]
-    async fn get_decision(
+    async fn get_document(
         &self,
-        Parameters(args): Parameters<DecisionArgs>,
+        Parameters(args): Parameters<DocumentArgs>,
     ) -> Result<CallToolResult, ErrorData> {
         let started = Instant::now();
-        let decision = decisions::get(&self.state.db, &args.decision_id)
+        let document = documents::get(&self.state.db, &args.sha256)
             .await
             .map_err(internal)?;
         self.count(
-            "get_decision",
+            "get_document",
             started,
-            if decision.is_some() { 200 } else { 404 },
+            if document.is_some() { 200 } else { 404 },
             None,
         );
-        Ok(CallToolResult::structured(match decision {
+        Ok(CallToolResult::structured(match document {
             Some(d) => serde_json::to_value(d).unwrap_or(Value::Null),
             None => json!({"error": "not found"}),
         }))
     }
 
-    /// List covered communes with canton, language, website, and document and decision counts.
+    /// List the communes in the archive with canton, language, website, coordinates, number of
+    /// documents and the coverage register's status and note. Use it to find a commune's BFS
+    /// number.
     #[tool(
         title = "List communes",
         annotations(
@@ -191,7 +163,7 @@ impl Archive {
 
 #[tool_handler(
     name = "opencommune",
-    instructions = "OpenCommune is an open archive of decisions taken by Swiss municipal councils and assemblies, extracted from published minutes in German, French and Italian and anonymised. Use search_decisions for keyword and filtered search, get_decision for full details, and list_communes to see coverage and to find a commune's BFS number. Search in the language of the minutes (German, French or Italian), not in English. Coverage is partial and growing: no result does not mean no decision was taken. Every decision links to the source PDF and page."
+    instructions = "OpenCommune is an open archive of the documents Swiss communes publish on their websites: minutes, decisions, budgets, accounts, vote results and other papers of assemblies, parliaments and councils. Each file is listed once, with a fixed label and a link to the original on the commune's website. Use list_communes to see coverage and to find a commune's BFS number, search_documents to filter documents by commune, section type, kind, body, year and label, and get_document for one document. Kinds, bodies, dates and sections come from an automatic classification by a language model that no person has checked yet. Coverage is partial and growing: no result does not mean that no document exists."
 )]
 impl ServerHandler for Archive {}
 

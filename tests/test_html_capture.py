@@ -43,7 +43,8 @@ def step(selector: str = "div.mod_newsreader", **kw) -> AdapterStep:
     )
 
 
-def commune(max_documents: int = 1, **kw) -> CommuneConfig:
+def commune(**kw) -> CommuneConfig:
+    kw.setdefault("url_regex", "17-09-2026")  # one decision page; the listing links three
     return CommuneConfig(
         bfs_id=989,
         name="Thörigen",
@@ -52,7 +53,7 @@ def commune(max_documents: int = 1, **kw) -> CommuneConfig:
         website=HOST,
         body="executive",
         listing_urls=[LISTING_URL],
-        adapter_config=AdapterConfig(steps=[step(**kw)], max_documents=max_documents),
+        adapter_config=AdapterConfig(steps=[step(**kw)]),
     )
 
 
@@ -114,7 +115,7 @@ def test_step_needs_a_content_selector_for_html_and_only_on_the_last_step():
 def test_listing_yields_the_council_decision_pages(site):
     client = http.make_client(httpx.MockTransport(site.handler))
     polite = http.Politeness(client, 0.0, settings.ua)
-    found = fetch.discover(commune(max_documents=10), client, polite)
+    found = fetch.discover(commune(url_regex=None), client, polite)
     assert found.errors == [] and found.listing == "ok"
     assert [(d.url, d.date) for d in found.listed] == [
         (PAGE_URL, dt.date(2026, 9, 17)),

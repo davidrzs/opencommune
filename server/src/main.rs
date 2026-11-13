@@ -31,22 +31,12 @@ async fn run() -> Result<(), Box<dyn std::error::Error>> {
     let db = db::open_read_only(&config.database_path)
         .await
         .map_err(|e| format!("{}: {e}", config.database_path.display()))?;
-    let fts5: bool = sqlx::query_scalar("SELECT sqlite_compileoption_used('ENABLE_FTS5')")
-        .fetch_one(&db)
-        .await?;
-    if !fts5 {
-        return Err("this SQLite has no FTS5".into());
-    }
-    let dataset = match &config.dataset_path {
-        Some(path) => match db::open_read_only(path).await {
-            Ok(pool) => Some(pool),
-            Err(error) => {
-                tracing::warn!(%error, path = %path.display(), "dataset not opened; /api/dataset answers 404");
-                None
-            }
-        },
-        None => None,
-    };
+    db::check_tables(&db).await.map_err(|e| {
+        format!(
+            "{}: not a serving database: {e}",
+            config.database_path.display()
+        )
+    })?;
     let usage = match &config.usage_path {
         Some(path) => match Usage::open(path, config.usage_visitors).await {
             Ok(usage) => Some(usage),
@@ -65,12 +55,7 @@ async fn run() -> Result<(), Box<dyn std::error::Error>> {
         config.search_indexing,
         &config.static_dir,
     );
-    let state = AppState {
-        db,
-        dataset,
-        usage,
-        site,
-    };
+    let state = AppState { db, usage, site };
     let router = app(state, &config.static_dir, &config.mcp_allowed_hosts);
     let listener = TcpListener::bind(config.bind).await?;
     tracing::info!(

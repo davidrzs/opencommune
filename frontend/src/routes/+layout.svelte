@@ -26,10 +26,10 @@
 
 <a class="skip" href="#main">{t.skip}</a>
 <p class="wip">{t.wip} <ReportProblem {lang} /></p>
-<header class="site-header">
+<header class="site-header container">
   <a class="brand" href={href('/', lang)} aria-label="OpenCommune"
     ><svg class="brand-symbol" viewBox="0 0 32 32" aria-hidden="true" focusable="false"
-      ><path fill="white" d="M13 6h6v7h7v6h-7v7h-6v-7H6v-6h7z" /></svg
+      ><path d="M13 6h6v7h7v6h-7v7h-6v-7H6v-6h7z" /></svg
     >OpenCommune<span class="brand-dot">.</span></a
   >
   <nav aria-label={t.archive}>
@@ -43,9 +43,8 @@
       href={href('/suche', lang)}
       aria-current={page.url.pathname.includes('/suche') ? 'page' : undefined}>{t.search}</a
     ><a
-      href="https://github.com/davidrzs/opencommune/blob/main/server/API.md"
-      target="_blank"
-      rel="noreferrer">API ↗</a
+      href={href('/api', lang)}
+      aria-current={/^\/(de|fr|it)\/api$/.test(page.url.pathname) ? 'page' : undefined}>API</a
     >
     <div class="languages" role="group" aria-label="Sprache / Langue / Lingua">
       {#each languages as l}<a
@@ -57,17 +56,15 @@
   </nav>
 </header>
 <main id="main">{@render children()}</main>
-<footer class="site-footer">
+<footer class="site-footer container">
   <div>
     <a class="footer-brand" href={href('/', lang)}>OpenCommune.</a>
     <p>{t.footer}</p>
     <p class="maintainer">
       {t.maintainedBy} <a href="https://www.davidrzs.com/">David Zollikofer</a>
     </p>
+    <p>{t.disclaimer}</p>
   </div>
-  <p>
-    {t.disclaimer}
-  </p>
   <div>
     <a href={href('/ueber-uns', lang)}>{about[lang].title}</a><br />
     <a href={href('/datenschutz', lang)}>{privacy[lang].title}</a><br />

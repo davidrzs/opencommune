@@ -36,6 +36,10 @@ from .html_parse import parse_html
 
 log = logging.getLogger(__name__)
 
+# A backfill pass follows up to this many pages per hop instead of each step's max_follow, to
+# reach documents older than the weekly pass looks at (David, 2026-11-13). More is logged.
+BACKFILL_FOLLOW = 1000
+
 
 @dataclass(frozen=True)
 class FetchError:
@@ -56,14 +60,13 @@ class FetchError:
 class Discovery:
     """What one source's listing walk produced."""
 
-    links: list[DocumentLink] = field(
-        default_factory=list
-    )  # candidates, newest first, at most max_documents
+    links: list[DocumentLink] = field(default_factory=list)  # every document, newest first
     listed: list[DocumentLink] = field(
         default_factory=list
     )  # every document link seen on the last hop
     errors: list[FetchError] = field(default_factory=list)
     listing: str = "ok"  # ok, empty, or the error kind of the first failed entry page
+    unfollowed: int = 0  # pages of intermediate hops left out by max_follow
 
 
 @dataclass
@@ -82,6 +85,7 @@ class SourceRun:
     errors: list[FetchError] = field(default_factory=list)
     requests: int = 0
     duration: float = 0.0
+    unfollowed: int = 0
 
     def line(self) -> dict:
         """The run-log record, see runlog.py."""
@@ -98,6 +102,7 @@ class SourceRun:
             "requests": self.requests,
             "listing_status": self.listing,
             "listed": len(self.listed),
+            "unfollowed": self.unfollowed,
             "discovered": len(self.discovered),
             "date_min": dates[0].isoformat() if dates else None,
             "date_max": dates[-1].isoformat() if dates else None,
@@ -224,18 +229,23 @@ def discover(
         if not found:
             break
         if depth < len(cfg.steps) - 1:
-            frontier = [
-                (link.url, link)
-                for link, _ in _rank(found, step.max_follow or cfg.max_follow, step)
-            ]
-            log.debug("hop %d: %d links found, following %d", depth + 1, len(found), len(frontier))
+            ranked = _rank(found, len(found), step)
+            cap = step.max_follow or cfg.max_follow
+            frontier = [(link.url, link) for link, _ in ranked[:cap]]
+            if len(ranked) > cap:
+                out.unfollowed += len(ranked) - cap
+                log.info(
+                    "hop %d: following the newest %d of %d pages (max_follow)",
+                    depth + 1,
+                    cap,
+                    len(ranked),
+                )
             found = []
     found = found + also
     out.listed = [
-        _document_link(link, src, source, commune)
-        for link, src in _rank(found, len(found), include_future=cfg.include_future_documents)
+        _document_link(link, src, source, commune) for link, src in _rank(found, len(found))
     ]
-    out.links = out.listed[: cfg.max_documents]
+    out.links = out.listed  # no cap on documents (David, 2026-11-13)
     if out.listing == "ok" and not out.listed:
         out.listing = "empty"
     return out
@@ -327,6 +337,12 @@ def _links_for_hop(
             break
         url = following
         seen.add(url)
+    else:
+        log.info(
+            "%s: pagination stopped after %d pages (max_follow)",
+            page_url,
+            step.max_follow or cfg.max_follow,
+        )
     return links
 
 
@@ -402,19 +418,17 @@ def _rank(
     found: list[tuple[Link, str]],
     limit: int,
     step: AdapterStep | None = None,
-    *,
-    include_future: bool = False,
 ) -> list[tuple[Link, str]]:
-    """Newest first. Dated links sort by date; undated keep listing order after dated ones."""
+    """Newest first. Dated links sort by date; undated keep listing order after dated ones. Links
+    dated in the future are kept: invitations to coming meetings (David, 2026-11-13)."""
     seen: set[str] = set()
     uniq: list[tuple[Link, str]] = []
     for link, src in found:
         if link.url not in seen:
             seen.add(link.url)
             uniq.append((link, src))
-    today = dt.date.today()
     dated = sorted(
-        [x for x in uniq if x[0].date and (include_future or x[0].date <= today)],
+        [x for x in uniq if x[0].date],
         key=lambda x: x[0].date,
         reverse=True,
     )
@@ -481,6 +495,7 @@ def _fetch_source(commune, source, client, polite, index, limit, dry_run) -> Sou
     try:
         found = discover(commune, client, polite, source)
         run.listing, run.listed, run.errors = found.listing, found.listed, list(found.errors)
+        run.unfollowed = found.unfollowed
         run.discovered = found.links[:limit] if limit is not None else found.links
         if not dry_run:
             for link in run.discovered:
@@ -519,9 +534,13 @@ def run(
     source_adapter: str | None = None,
     transport: httpx.BaseTransport | None = None,
     max_follow: int | None = None,
+    backfill: bool = False,
 ) -> list[FetchResult]:
+    """`backfill` follows up to BACKFILL_FOLLOW pages per hop instead of each step's max_follow."""
     if max_follow is not None and max_follow < 1:
         raise ValueError("max_follow must be positive")
+    if backfill and max_follow is not None:
+        raise ValueError("backfill and max_follow exclude each other")
     settings.ensure_dirs()
     index = store.load_index()
     results: list[FetchResult] = []
@@ -529,6 +548,12 @@ def run(
         delay = settings.request_delay_seconds
         polite = http.Politeness(client, delay, settings.ua)
         for commune in communes:
+            if backfill:
+                commune = commune.model_copy(deep=True)
+                for source in commune.all_sources():
+                    source.adapter_config.max_follow = BACKFILL_FOLLOW
+                    for step in source.adapter_config.steps:
+                        step.max_follow = None
             if max_follow is not None:
                 commune = commune.model_copy(deep=True)
                 for source in commune.all_sources():

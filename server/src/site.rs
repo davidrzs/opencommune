@@ -54,112 +54,95 @@ impl Lang {
 pub struct Words {
     pub site: &'static str,
     pub totals: &'static str,
-    pub with_decisions: &'static str,
-    pub commune: &'static str,
+    pub with_documents: &'static str,
     pub commune_line: &'static str,
+    pub by_year: &'static str,
+    pub no_year: &'static str,
+    pub untitled: &'static str,
     pub recent: &'static str,
     pub website: &'static str,
-    pub source: &'static str,
     pub about: &'static str,
     pub about_text: &'static str,
     pub privacy: &'static str,
     pub privacy_text: &'static str,
     pub search: &'static str,
-    pub approved: &'static str,
-    pub rejected: &'static str,
-    pub postponed: &'static str,
-    pub noted: &'static str,
-}
-
-impl Words {
-    pub fn outcome(&self, outcome: &str) -> Option<&'static str> {
-        match outcome {
-            "approved" => Some(self.approved),
-            "rejected" => Some(self.rejected),
-            "postponed" => Some(self.postponed),
-            "noted" => Some(self.noted),
-            _ => None,
-        }
-    }
 }
 
 const DE: Words = Words {
-    site: "Offenes Archiv der Entscheide Schweizer Gemeinden: Protokolle und Beschlüsse von \
-           Gemeindeversammlungen, Parlamenten und Gemeinderäten, mit Links zu den Originalen.",
-    totals: "{decisions} Entscheide aus {decision_communes} Gemeinden; {documents} Dokumente aus \
-             {document_communes} Gemeinden, verlinkt auf die Originale.",
-    with_decisions: "Gemeinden mit erfassten Entscheiden",
-    commune: "Gemeinde",
-    commune_line: "{name} ({canton}): {documents} Dokumente und {decisions} erfasste Entscheide \
-                   im offenen Archiv OpenCommune.",
-    recent: "Neueste Entscheide",
+    site: "Offenes Archiv der Dokumente Schweizer Gemeinden: Protokolle, Beschlüsse, Budgets, \
+           Rechnungen und weitere Unterlagen von Gemeindeversammlungen, Parlamenten und \
+           Gemeinderäten, mit Links zu den Originalen.",
+    totals: "{documents} Dokumente aus {communes} Gemeinden, verlinkt auf die Originale. Sie \
+             sind automatisch nach Titel, Gremium und Abschnitten eingeordnet; diese Einordnung \
+             hat noch niemand geprüft.",
+    with_documents: "Gemeinden mit Dokumenten",
+    commune_line: "{name} ({canton}): {documents} Dokumente im offenen Archiv OpenCommune.",
+    by_year: "Dokumente nach Jahr",
+    no_year: "ohne Jahr",
+    untitled: "Dokument ohne Titel",
+    recent: "Neueste Dokumente",
     website: "Website der Gemeinde",
-    source: "Originaldokument (PDF), Seite {page}",
     about: "Über OpenCommune",
-    about_text: "OpenCommune sammelt öffentliche Dokumente der Schweizer Gemeinden und erschliesst \
-                 ihre Entscheide als offene Daten (CC0).",
+    about_text: "OpenCommune sammelt die öffentlichen Dokumente der Schweizer Gemeinden von ihren \
+                 Websites, ordnet sie automatisch nach Art, Gremium und Abschnitten ein und \
+                 verlinkt sie auf die Originale. Die Einträge sind offene Daten (CC0).",
     privacy: "Datenschutz",
     privacy_text: "Keine Cookies, nichts von Dritten; die Nutzungsstatistik zählt Aufrufe ohne \
-                   IP-Adressen und Suchbegriffe. Namen von Privatpersonen in den Entscheiden werden \
-                   ersetzt.",
+                   IP-Adressen und Suchbegriffe. Das Archiv nennt keine Privatpersonen: Dokumente \
+                   tragen feste Bezeichnungen, Einbürgerungsunterlagen werden nicht aufgeführt.",
     search: "Suche",
-    approved: "angenommen",
-    rejected: "abgelehnt",
-    postponed: "verschoben",
-    noted: "zur Kenntnis genommen",
 };
 
 const FR: Words = Words {
-    site: "Archive ouverte des décisions des communes suisses : procès-verbaux et décisions des \
-           assemblées communales, conseils généraux et conseils communaux, avec des liens vers les \
-           originaux.",
-    totals: "{decisions} décisions de {decision_communes} communes ; {documents} documents de \
-             {document_communes} communes, liés aux originaux.",
-    with_decisions: "Communes avec des décisions saisies",
-    commune: "Commune",
-    commune_line: "{name} ({canton}) : {documents} documents et {decisions} décisions saisies dans \
-                   l’archive ouverte OpenCommune.",
-    recent: "Décisions récentes",
+    site: "Archive ouverte des documents des communes suisses : procès-verbaux, décisions, \
+           budgets, comptes et autres documents des assemblées communales, conseils généraux et \
+           conseils communaux, avec des liens vers les originaux.",
+    totals: "{documents} documents de {communes} communes, liés aux originaux. Ils sont \
+             classés automatiquement par titre, organe et sections ; personne n’a encore \
+             vérifié ce classement.",
+    with_documents: "Communes avec des documents",
+    commune_line: "{name} ({canton}) : {documents} documents dans l’archive ouverte OpenCommune.",
+    by_year: "Documents par année",
+    no_year: "sans année",
+    untitled: "Document sans titre",
+    recent: "Documents récents",
     website: "Site de la commune",
-    source: "Document original (PDF), page {page}",
     about: "À propos d’OpenCommune",
-    about_text: "OpenCommune rassemble les documents publics des communes suisses et publie leurs \
-                 décisions en données ouvertes (CC0).",
+    about_text: "OpenCommune rassemble les documents publics des communes suisses sur leurs \
+                 sites, les classe automatiquement par type, organe et sections et renvoie aux \
+                 originaux. Les entrées sont des données ouvertes (CC0).",
     privacy: "Protection des données",
     privacy_text: "Pas de cookies, rien de tiers ; les statistiques comptent les accès sans \
-                   adresses IP ni termes de recherche. Les noms de personnes privées sont \
-                   remplacés dans les décisions.",
+                   adresses IP ni termes de recherche. L’archive ne nomme aucune personne privée : \
+                   les documents portent des intitulés fixes et les documents de naturalisation ne \
+                   sont pas répertoriés.",
     search: "Recherche",
-    approved: "accepté",
-    rejected: "refusé",
-    postponed: "reporté",
-    noted: "pris acte",
 };
 
 const IT: Words = Words {
-    site: "Archivio aperto delle decisioni dei comuni svizzeri: verbali e decisioni delle \
-           assemblee comunali, dei consigli comunali e dei municipi, con link agli originali.",
-    totals: "{decisions} decisioni da {decision_communes} comuni; {documents} documenti da \
-             {document_communes} comuni, con link agli originali.",
-    with_decisions: "Comuni con decisioni registrate",
-    commune: "Comune",
-    commune_line: "{name} ({canton}): {documents} documenti e {decisions} decisioni registrate \
-                   nell’archivio aperto OpenCommune.",
-    recent: "Decisioni recenti",
+    site: "Archivio aperto dei documenti dei comuni svizzeri: verbali, decisioni, preventivi, \
+           consuntivi e altri documenti delle assemblee comunali, dei consigli comunali e dei \
+           municipi, con link agli originali.",
+    totals: "{documents} documenti da {communes} comuni, con link agli originali. Sono \
+             classificati automaticamente per titolo, organo e sezioni; nessuno ha ancora \
+             verificato questa classificazione.",
+    with_documents: "Comuni con documenti",
+    commune_line: "{name} ({canton}): {documents} documenti nell’archivio aperto OpenCommune.",
+    by_year: "Documenti per anno",
+    no_year: "senza anno",
+    untitled: "Documento senza titolo",
+    recent: "Documenti recenti",
     website: "Sito del comune",
-    source: "Documento originale (PDF), pagina {page}",
     about: "Informazioni su OpenCommune",
-    about_text: "OpenCommune raccoglie i documenti pubblici dei comuni svizzeri e ne pubblica le \
-                 decisioni come dati aperti (CC0).",
+    about_text: "OpenCommune raccoglie i documenti pubblici dei comuni svizzeri dai loro siti, li \
+                 classifica automaticamente per tipo, organo e sezioni e rimanda agli originali. \
+                 Le voci sono dati aperti (CC0).",
     privacy: "Protezione dei dati",
     privacy_text: "Nessun cookie, nulla da terzi; le statistiche contano gli accessi senza \
-                   indirizzi IP né termini di ricerca. I nomi di persone private nelle decisioni \
-                   vengono sostituiti.",
+                   indirizzi IP né termini di ricerca. L’archivio non nomina persone private: i \
+                   documenti portano denominazioni fisse e i documenti di naturalizzazione non \
+                   sono elencati.",
     search: "Ricerca",
-    approved: "approvato",
-    rejected: "respinto",
-    postponed: "rinviato",
-    noted: "preso atto",
 };
 
 /// One page as the server sends it: what goes into `<head>` and the fact sheet.

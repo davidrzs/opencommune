@@ -7,7 +7,7 @@
 
 <svelte:head><title>{page.status} · OpenCommune</title></svelte:head>
 
-<section class="search-page">
+<section class="search-page container">
   <h1>{page.status}</h1>
   <p>{page.status === 404 ? t.noMatch : t.unavailable}</p>
   <a href={href('/', lang)}>OpenCommune →</a>

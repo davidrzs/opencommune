@@ -122,6 +122,10 @@ def check_source(source: SourceConfig, bfs_id: int) -> list[str]:
                 out.append(
                     f"step {j} {field} does not parse: {value!r} ({str(exc).splitlines()[0]})"
                 )
+        if step.exclude_regex is not None and not (step.exclude_approved or "").strip():
+            out.append(
+                f"step {j} exclude_regex has no exclude_approved: every exclusion needs David's approval"
+            )
         for field in ("url_regex", "text_regex", "exclude_regex"):
             value = getattr(step, field)
             if value is not None:

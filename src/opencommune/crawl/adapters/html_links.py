@@ -14,7 +14,7 @@ from bs4.element import NavigableString, Tag
 
 from ...schemas import AdapterStep
 from ..html_parse import parse_html
-from .base import Link, ListingAdapter
+from .base import Link, ListingAdapter, excluded
 
 
 def is_pdf_candidate(anchor: Tag, url: str) -> bool:
@@ -629,7 +629,7 @@ class HtmlLinksAdapter(ListingAdapter):
                     continue
                 if text_re and not text_re.search(text):
                     continue
-                if drop_re and drop_re.search(text + " " + url):
+                if excluded(drop_re, text + " " + url):
                     continue
                 if url in seen:
                     continue

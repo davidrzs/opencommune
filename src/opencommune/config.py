@@ -41,15 +41,6 @@ class Settings(BaseSettings):
             return self.raw_data_dir
         return self.data_dir / "raw"
 
-    # Written by the processing stages; the catalogue reads them for a document's status.
-    @property
-    def parsed_dir(self) -> Path:
-        return self.data_dir / "parsed"
-
-    @property
-    def extracted_dir(self) -> Path:
-        return self.data_dir / "extracted"
-
     @property
     def logs_dir(self) -> Path:
         return self.data_dir / "logs"
@@ -61,6 +52,11 @@ class Settings(BaseSettings):
     @property
     def scratch(self) -> Path:
         return self.scratch_dir if self.scratch_dir is not None else self.data_dir / "scratch"
+
+    # The serving database `opencommune build` writes and the web server reads.
+    @property
+    def serving_db(self) -> Path:
+        return self.data_dir / "serving.db"
 
     # Model answers and job state; private, as answers can name people.
     @property

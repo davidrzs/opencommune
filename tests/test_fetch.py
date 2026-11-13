@@ -168,7 +168,6 @@ def test_also_documents_takes_documents_from_the_listing_page(monkeypatch):
             AdapterStep(selector="a[href*='/node/']", text_regex="Protokoll", also_documents=True),
             AdapterStep(selector="a[href*='/files/']", text_regex="Protokoll"),
         ],
-        max_documents=10,
     )
     commune = CommuneConfig(
         bfs_id=1,

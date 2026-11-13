@@ -226,11 +226,9 @@ def _config(res: dict) -> dict | None:
                     {
                         "selector": "a[href*='/_doc']",
                         "text_regex": "[Pp]rotokoll",
-                        "exclude_regex": "[Aa]uszug|Genehmigung|Stellungnahme|^PA ",
                         "kind": "minutes",
                     },
                 ],
-                "max_documents": 4,
             },
         }
     pages = [p for p in (res.get("pages") or []) if p["minutes_dated"] >= 2]
@@ -244,11 +242,9 @@ def _config(res: dict) -> dict | None:
                     {
                         "selector": "a[href*='/_doc'], a[href*='.pdf']",
                         "text_regex": "[Pp]rotokoll",
-                        "exclude_regex": "[Aa]uszug|Genehmigung",
                         "kind": "minutes",
                     }
                 ],
-                "max_documents": 4,
             },
         }
     if sd.get("decisions"):
@@ -261,11 +257,9 @@ def _config(res: dict) -> dict | None:
                     {
                         "selector": "a[href*='/_doc']",
                         "text_regex": "[Bb]eschl",
-                        "exclude_regex": "[Aa]uszug|Genehmigung|^PA ",
                         "kind": "decisions",
                     },
                 ],
-                "max_documents": 4,
             },
         }
     dated = [p for p in (res.get("pages") or []) if p.get("dated_links", 0) >= 2]
@@ -276,7 +270,6 @@ def _config(res: dict) -> dict | None:
             "adapter": "html_links",
             "adapter_config": {
                 "steps": [{"selector": "a[href*='/_doc'], a[href*='.pdf']", "kind": "minutes"}],
-                "max_documents": 4,
             },
         }
     return None

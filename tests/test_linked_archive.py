@@ -250,8 +250,7 @@ def test_new_commune_is_visible_only_after_pdf_download(site, monkeypatch, tmp_p
         assert catalog.refresh(session, []) == 1
         row = session.get(CatalogPDF, sha)
         assert row.commune_bfs_id == 1 and row.title == "Gemeindedokument"
-        assert row.body == "unknown" and row.source_date is None and row.decision_count == 0
-        assert row.status == "pending_parse"
+        assert row.body == "unknown" and row.source_date is None
     engine.dispose()
     fake = SimpleNamespace(
         adapter="linked_archive", body="unknown", listing_url=url, source_url=SHARED + "/other.pdf"

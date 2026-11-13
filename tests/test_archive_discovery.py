@@ -381,3 +381,26 @@ def test_magnolia_legacy_mime_does_not_accept_html_or_claim_completion(site):
     assert state["pages"][HOST + api]["kind"] == "api_schema"
     assert state["status"] != "complete"
     assert not state["documents"]
+
+
+@pytest.mark.parametrize("field", ["max_depth", "max_pages"])
+def test_raised_limits_read_again_the_pages_they_left_out(site, monkeypatch, field):
+    routes, _calls, run = site
+    monkeypatch.setattr(discovery, "MAX_DEPTH" if field == "max_depth" else "MAX_PAGES", 1)
+    routes["/archive"] = html('<a href="/archive/child">child</a>')
+    routes["/archive/child"] = html('<a href="/archive/child/grandchild">grandchild</a>')
+    routes["/archive/child/grandchild"] = html('<a href="/file.pdf">file</a>')
+    routes["/file.pdf"] = pdf("file")
+    source = archive.LinkedSource(
+        bfs_id=1,
+        website=HOST,
+        vendor="custom",
+        listing_urls=[HOST + "/archive"],
+        crawl_prefixes=[HOST + "/archive"],
+    )
+    state = run(source)
+    counter = {"max_depth": "depth_limited", "max_pages": "capacity_limited"}[field]
+    assert state["discovery"][counter] == 1
+    state = run(source.model_copy(update={field: 5}), limit=5)
+    assert state["downloads"][HOST + "/file.pdf"]["status"] == "held"
+    assert state["discovery"][counter] == 0

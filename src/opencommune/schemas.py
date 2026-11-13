@@ -58,6 +58,10 @@ class AdapterStep(BaseModel):
     url_regex: str | None = None
     text_regex: str | None = None
     exclude_regex: str | None = None
+    # Who approved the exclusion and when, for example "David 2026-11-20". Dropping documents by
+    # their title is a coverage decision: lint-communes rejects an exclude_regex without it
+    # (David, 2026-11-13).
+    exclude_approved: str | None = None
     sort: Literal["none", "text_desc"] = "none"
     max_follow: int | None = None
     # Adapter-defined name of the hop, for multi-hop API adapters that would otherwise tell their hops
@@ -107,9 +111,7 @@ class AdapterConfig(BaseModel):
     steps: list[AdapterStep] = Field(min_length=1)
     date_regex: str | None = None
     date_order: Literal["dmy", "ymd"] = "dmy"
-    max_documents: int = 3
     max_follow: int = 3
-    include_future_documents: bool = False
     since_days: int | None = None
     volatile_params: list[str] = Field(
         default_factory=list

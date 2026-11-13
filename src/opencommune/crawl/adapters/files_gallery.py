@@ -28,7 +28,7 @@ import re
 from urllib.parse import quote, urlsplit
 
 from ...schemas import AdapterStep
-from .base import Link, ListingAdapter
+from .base import Link, ListingAdapter, excluded
 from .html_links import _first_date, clean_text
 
 _MARKER = "const _c = "
@@ -84,7 +84,7 @@ class FilesGalleryAdapter(ListingAdapter):
             url = script_dir + ("?" if is_dir else "") + quote(path, safe=_SAFE)
             if keep and not keep.search(text):
                 continue
-            if drop and drop.search(f"{text} {url}"):
+            if excluded(drop, f"{text} {url}"):
                 continue
             date = None if is_dir else _first_date([text], "", date_regex, date_order)
             links.append(Link(url=url, text=text, date=date))

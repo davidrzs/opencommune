@@ -6048,6 +6048,7 @@
   document_urls:
   - https://www.collex-bossy.ch/media/document/0/pvcm-26.05.2026-corrige--1.pdf
 - bfs_id: 6621
+  max_pages: 20000
   website: https://www.geneve.ch/
   vendor: drupal
   listing_urls:
@@ -7118,6 +7119,7 @@
   - https://www.valsot.ch/rm/politica/cumischiun-turistica.html/22
   - https://www.valsot.ch/rm/politica/suprastanza-cumuenala.html/18
 - bfs_id: 3746
+  max_pages: 20000
   website: https://www.zernez.ch
   vendor: typo3
   listing_urls:
@@ -15691,6 +15693,7 @@
   - https://www.zofingen.ch/verwaltung/hochbau.html/13
   - https://www.zofingen.ch/politik/einwohnerrat/sitzungen-geschaefte.html/113
 - bfs_id: 4401
+  max_pages: 20000
   website: https://www.arbon.ch
   vendor: govis
   listing_urls:
@@ -15755,6 +15758,7 @@
   - https://www.oetwiladl.ch/page/101
   - https://www.oetwiladl.ch/page/386/event/1244/eventdate/1765
 - bfs_id: 4040
+  max_depth: 10
   website: https://www.spreitenbach.ch
   vendor: typo3
   listing_urls:
@@ -16640,6 +16644,8 @@
   - https://www.visp.ch/de/gemeinde-visp/kommunikation/finanzen
   - https://www.visp.ch/de/online-dienste/formulare-und-baugesuche
 - bfs_id: 1707
+  max_pages: 20000
+  max_depth: 10
   website: https://www.zg.ch/behoerden/gemeinden/risch-rotkreuz
   vendor: plone
   listing_urls:
@@ -16704,6 +16710,7 @@
   - https://www.hilterfingen.ch/archiv/gemeindeversammlungen/
   - https://www.hilterfingen.ch/reglemente/
 - bfs_id: 2703
+  max_pages: 20000
   website: https://www.riehen.ch
   vendor: custom
   listing_urls:
@@ -17101,6 +17108,7 @@
   crawl_prefixes:
   - https://www.gemeinde-fiesch.ch/aktuelles/anschlagbrett/
 - bfs_id: 6058
+  max_depth: 10
   website: http://www.fieschertal.ch
   vendor: custom
   listing_urls:
@@ -21963,6 +21971,7 @@
   - https://www.konolfingen.ch/leben-in-konolfingen/schutz-und-rettung/rfo/infos-und-aktuelles
   - https://www.konolfingen.ch/leben-in-konolfingen/schutz-und-rettung/zivilschutz/infos-und-aktuelles
 - bfs_id: 627
+  max_depth: 10
   website: https://www.worb.ch/
   vendor: custom
   listing_urls:
@@ -23079,6 +23088,7 @@
   crawl_prefixes:
   - https://www.unterkulm.ch/gemeinde/politik/gemeindeversammlung.html/478
 - bfs_id: 4181
+  max_depth: 10
   website: https://www.wittnau.ch
   vendor: govis
   listing_urls:
@@ -23929,6 +23939,7 @@
   - https://www.plan-les-ouates.ch/pages/vivre-a-plan-les-ouates/la-proprete/bien-gerer-mes-dechets/guides-et-reglement-des-dechets
   - https://www.plan-les-ouates.ch/pages/vivre-a-plan-les-ouates/lenvironnement/organismes-nuisibles/les-chenilles-processionnaires
 - bfs_id: 6730
+  max_depth: 10
   website: https://www.val-terbi.ch
   vendor: custom
   listing_urls:
@@ -23968,6 +23979,7 @@
   - https://www.val-terbi.ch/fr/Guichet-virtuel/Formulaires/Autorisation-de-sortie-du-territoire-pour-mineurs/Autorisation-de-sortie-du-territoire-suisse.html
   - https://www.val-terbi.ch/fr/Autorites-politiques/Commissions-communales/Commission-des-finances-et-de-verification-des-comptes/Commission-des-finances-et-de-verification-des-comptes.html
 - bfs_id: 1708
+  max_pages: 20000
   website: https://www.steinhausen.ch
   vendor: custom
   listing_urls:

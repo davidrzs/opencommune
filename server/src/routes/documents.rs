@@ -1,63 +1,68 @@
-//! `/api/archive/*` for the front end and the `/original/{sha256}` redirect.
+//! `/api/documents`, `/api/documents/{sha256}`, `/api/runs` and the `/original/{sha256}` redirect.
 
 use axum::Json;
 use axum::extract::State;
 use axum::http::{HeaderValue, StatusCode, header};
 use axum::response::{IntoResponse, Response};
+use rmcp::schemars::JsonSchema;
 use serde::Deserialize;
 
 use crate::AppState;
-use crate::db::{archive, communes};
+use crate::db::documents::{self, Search};
 use crate::error::{ApiError, ApiResult, Path, Query};
-use crate::models::{ArchiveCommune, CataloguePage, SlimCommune};
+use crate::models::{DocumentDetail, Run};
+use crate::usage::SearchTotal;
 
-pub async fn communes(State(state): State<AppState>) -> ApiResult<Vec<SlimCommune>> {
-    Ok(Json(communes::slim(&state.db).await?))
+pub async fn list(
+    State(state): State<AppState>,
+    Query(search): Query<Search>,
+) -> Result<Response, ApiError> {
+    search.check().map_err(ApiError::invalid)?;
+    let page = documents::search(&state.db, &search).await?;
+    let total = page.total;
+    let mut response = Json(page).into_response();
+    if search.is_search() {
+        response.extensions_mut().insert(SearchTotal(total));
+    }
+    Ok(response)
 }
 
-pub async fn commune(
+pub async fn get(
     State(state): State<AppState>,
-    Path(bfs_id): Path<i64>,
-) -> ApiResult<ArchiveCommune> {
-    communes::detail(&state.db, bfs_id)
+    Path(sha256): Path<String>,
+) -> ApiResult<DocumentDetail> {
+    documents::get(&state.db, &sha256)
         .await?
         .map(Json)
-        .ok_or_else(|| ApiError::not_found("commune not found"))
+        .ok_or_else(|| ApiError::not_found("document not found"))
 }
 
-#[derive(Deserialize)]
-pub struct DocumentParams {
+pub async fn runs(State(state): State<AppState>) -> ApiResult<Vec<Run>> {
+    Ok(Json(documents::runs(&state.db).await?))
+}
+
+#[derive(Deserialize, JsonSchema)]
+#[schemars(crate = "rmcp::schemars")]
+pub struct OriginalParams {
+    /// A commune's BFS number: that commune's link, when it has one.
     commune: Option<i64>,
-    #[serde(default)]
-    q: String,
-    year: Option<i64>,
-    offset: Option<i64>,
+    /// Open the file at this page (`#page=`, which PDF viewers follow).
+    page: Option<u32>,
 }
 
-pub async fn documents(
-    State(state): State<AppState>,
-    Query(p): Query<DocumentParams>,
-) -> ApiResult<CataloguePage> {
-    if p.year.is_some_and(|y| !(1800..=2200).contains(&y)) {
-        return Err(ApiError::invalid("year must be between 1800 and 2200"));
-    }
-    let offset = p.offset.unwrap_or(0);
-    if offset < 0 {
-        return Err(ApiError::invalid("offset must not be negative"));
-    }
-    Ok(Json(
-        archive::documents(&state.db, p.commune, &p.q, p.year, offset).await?,
-    ))
-}
-
-/// Redirect to a catalogued document on the commune's site.
+/// Redirect to a document on a commune's site.
 pub async fn original(
     State(state): State<AppState>,
     Path(sha256): Path<String>,
+    Query(p): Query<OriginalParams>,
 ) -> Result<Response, ApiError> {
-    let url = archive::original(&state.db, &sha256)
+    let url = documents::original(&state.db, &sha256, p.commune)
         .await?
         .ok_or_else(|| ApiError::not_found("document not found"))?;
+    let url = match p.page.filter(|page| *page > 0) {
+        Some(page) => format!("{}#page={page}", url.split('#').next().unwrap_or(&url)),
+        None => url,
+    };
     let location = HeaderValue::from_str(&quote(&url))
         .map_err(|_| ApiError::not_found("document not found"))?;
     Ok((

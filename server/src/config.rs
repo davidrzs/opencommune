@@ -6,10 +6,8 @@ use std::path::PathBuf;
 
 #[derive(Clone, Debug)]
 pub struct Config {
-    /// `DATABASE_PATH`: the archive database the Python build writes; opened read-only.
+    /// `DATABASE_PATH`: the serving database the Python build writes; opened read-only.
     pub database_path: PathBuf,
-    /// `DATASET_PATH`: the dataset SQLite; unset, `/api/dataset/*` answers 404.
-    pub dataset_path: Option<PathBuf>,
     /// `STATIC_DIR`: the built front end (`frontend/build`).
     pub static_dir: PathBuf,
     /// `BIND`: the address to listen on.
@@ -37,7 +35,6 @@ impl Config {
             database_path: var("DATABASE_PATH")
                 .unwrap_or_else(|| "data/opencommune.db".into())
                 .into(),
-            dataset_path: var("DATASET_PATH").map(PathBuf::from),
             static_dir: var("STATIC_DIR")
                 .unwrap_or_else(|| "frontend/build".into())
                 .into(),

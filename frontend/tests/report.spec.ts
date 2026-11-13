@@ -27,14 +27,17 @@ test('report opens a contextual draft without exposing the address in initial HT
   await expect(page.locator('.report-address')).toContainText('zdavid@ethz.ch');
 });
 
-test('landing coverage matches all communes with archived PDFs', async ({ page, request }) => {
-  const communes = await (await request.get('/api/archive/communes')).json();
+test('landing coverage matches all communes with collected documents', async ({
+  page,
+  request
+}) => {
+  const communes = await (await request.get('/api/communes')).json();
   const count = communes.filter((c: { documents: number }) => c.documents > 0).length;
   await page.goto('/de');
   await expect(page.locator('.coverage-count')).toContainText(
     new Intl.NumberFormat('de-CH').format(count)
   );
-  await expect(page.locator('.coverage-count')).toContainText('Gemeinden mit Dokumenten im Archiv');
-  await page.goto('/?q=Schule');
-  await expect(page).toHaveURL(/\/de\/suche\?q=Schule$/);
+  await expect(page.locator('.coverage-count')).toContainText(
+    'Gemeinden mit gesammelten Dokumenten'
+  );
 });

@@ -1,6 +1,5 @@
-//! The whole server against small fixture databases created here: the archive schema as the
-//! Python package creates it (`fixtures/archive.sql`) plus the serving tables
-//! (`src/opencommune/serving.sql`).
+//! The whole server against a small database created here from the serving schema
+//! (`src/opencommune/serving.sql`) and the rows below.
 
 use std::net::SocketAddr;
 use std::path::{Path, PathBuf};
@@ -18,45 +17,45 @@ use serde_json::{Value, json};
 use sqlx::sqlite::{SqliteConnectOptions, SqlitePool};
 use tower::ServiceExt;
 
-const ARCHIVE: &str = include_str!("fixtures/archive.sql");
 const SERVING: &str = include_str!("../../src/opencommune/serving.sql");
 
+/// Five classified documents: one linked by two communes, one without a title or a URL, one with
+/// a URL that is not http(s). Aarau has no document and no register entry; Schwaderloch and Aeugst
+/// are only in the register.
 const ROWS: &str = r#"
 INSERT INTO communes VALUES
-  (261, 'Zürich', 'ZH', 'de', 'https://www.stadt-zuerich.ch', 'custom', NULL, NULL,
-   '2026-09-01 10:00:00.000000', 47.37, 8.54),
-  (5938, 'Yverdon-les-Bains', 'VD', 'fr', 'https://www.yverdon.ch', NULL, NULL, NULL, NULL,
-   46.78, 6.64);
-INSERT INTO documents VALUES
-  ('doc-zh', 261, 'assembly', 'https://www.stadt-zuerich.ch/p.pdf', 'aaaa', '2026-09-06 19:55:27.169245',
-   '2024-06-12', 'de', 12, 0, 'Gemeindeversammlung 2024', 0, 'html_links'),
-  ('doc-vd', 5938, 'parliament', 'https://www.yverdon.ch/pv.pdf', 'bbbb', '2026-09-06 19:55:41.000000',
-   '2025-09-03', 'fr', 30, 1, 'Conseil communal', 2, 'html_links');
-INSERT INTO decisions (id, document_id, commune_bfs_id, meeting_date, agenda_no, title, category,
-  sensitive_topic, summary, outcome, votes_for, votes_against, amount_chf, refs, office_holders,
-  page_start, page_end, confidence, contains_private_individuals, redaction_applied,
-  extraction_model, extraction_version, language) VALUES
-  ('dec-zh', 'doc-zh', 261, '2024-06-12', '3', 'Kredit für das Schulhaus', 'finance_credit', 'none',
-   'Die Versammlung bewilligt den Kredit.', 'approved', 50, 10, 2400000.0, '["Art. 1 GO"]', '[]',
-   4, 5, 0.9, 0, 0, 'model-a', '1', 'de'),
-  ('dec-vd', 'doc-vd', 5938, '2025-09-03', NULL, 'Crédit pour l''École', 'school', 'none',
-   'Le conseil accepte le crédit.', NULL, NULL, NULL, NULL, 'null', '["Syndic"]',
-   7, 7, NULL, 0, 1, 'model-b', '1', 'fr');
-INSERT INTO holdings VALUES
-  (261, 'assembly', '["minutes"]', 9, 4, 9, 9, 9, 1, '2018-01-01', '2021-12-31', '{"2018": 2}',
-   91.3, '[]', 0, 0, '2026-10-01 08:00:00.123000', 'ok', 'ok', 'configured', NULL, '2018',
-   '2026-10-01 08:00:00.000000'),
-  (261, 'parliament', '[]', 0, 0, 0, 0, 0, 0, NULL, NULL, '{}', NULL, '[]', 0, 0,
-   '2026-10-02 09:00:00.000000', 'ok', 'empty', NULL, NULL, NULL, '2026-10-02 09:00:00.000000');
-INSERT INTO pdf_catalog VALUES
-  ('aaaa', 261, 'Zürich', 'ZH', 'assembly', '2024-06-12', 'day', 'Gemeindeversammlung 2024',
-   'https://www.stadt-zuerich.ch/p.pdf', 'html_links', 'published', 1,
-   '2026-10-23 00:49:06.430902'),
-  ('cccc', 261, 'Zürich', 'ZH', 'assembly', '2019-05-01', 'month', 'Protokoll 2019',
-   'https://www.stadt-zuerich.ch/Protokoll Mai 2019.pdf', 'html_links', 'pending_parse', 0,
-   '2026-10-23 00:49:06.430902'),
-  ('dddd', 261, 'Zürich', 'ZH', 'executive', NULL, 'day', 'Gemeindedokument',
-   'ftp://old.example/x.pdf', 'html_links', 'pending_parse', 0, '2026-10-23 00:49:06.430902');
+  (261, 'Zürich', 'ZH', 'de', 'https://www.stadt-zuerich.ch', 'custom', NULL, 47.37, 8.54),
+  (5938, 'Yverdon-les-Bains', 'VD', 'fr', 'https://www.yverdon.ch', NULL, NULL, 46.78, 6.64),
+  (4001, 'Aarau', 'AG', NULL, NULL, NULL, NULL, NULL, NULL);
+INSERT INTO runs VALUES
+  ('classify-aaaa', 'classification', 'model-a', '{"dpi": 75, "max_pages": 150}',
+   'Pages are seen at 75 dpi; of documents over 150 pages the model sees 150.', 5);
+INSERT INTO documents (sha256, title, body_name, first_seen, listing_date, page_count, run_id,
+  kind, body_kind, date, years, year, languages, personal_data, pages_seen) VALUES
+  ('aaaa', 'Protokoll Gemeindeversammlung 2024', 'Gemeindeversammlung Zürich', '2026-09-06',
+   '2024-06-20', 12, 'classify-aaaa', 'meeting_booklet', 'citizens_assembly', '2024-06-12', '2024',
+   2024, 'de', 0, 12),
+  ('bbbb', 'Procès-verbal 2025', 'Conseil communal', '2026-09-06', NULL, 30, 'classify-aaaa',
+   'meeting_booklet', 'parliament', '2025-09-03', '2025,2026', 2025, 'fr,de', 1, 30),
+  ('cccc', 'Budget 2024', 'Stadtrat', '2026-09-07', '2023-11-01', 200, 'classify-aaaa',
+   'standalone', 'executive', NULL, '2024', 2023, 'de', 0, 150),
+  ('dddd', NULL, NULL, '2026-09-08', NULL, 3, 'classify-aaaa', NULL, NULL, NULL, '', NULL, '', 0, 3),
+  ('eeee', 'Mitteilungsblatt 100% Mai', NULL, '2026-09-08', '2024-05-01', 4, 'classify-aaaa', NULL,
+   NULL, NULL, '', 2024, 'de', 0, 4);
+INSERT INTO document_communes VALUES
+  ('aaaa', 261, 'https://www.stadt-zuerich.ch/p.pdf'),
+  ('bbbb', 5938, 'https://www.yverdon.ch/pv.pdf'),
+  ('cccc', 261, 'https://www.stadt-zuerich.ch/Budget Mai 2024.pdf'),
+  ('cccc', 5938, 'https://www.yverdon.ch/budget.pdf'),
+  ('dddd', 261, NULL),
+  ('eeee', 261, 'ftp://old.example/x.pdf');
+INSERT INTO sections VALUES
+  ('aaaa', 1, 'invitation_agenda', 'proposals', 1, 1, 0),
+  ('aaaa', 2, 'minutes', 'deliberation', 2, 11, 0),
+  ('aaaa', 3, 'vote_result', 'deliberation', 12, 12, 0),
+  ('bbbb', 1, 'minutes', 'deliberation', 1, 28, 0),
+  ('bbbb', 2, 'minutes', 'deliberation', 29, 30, 0),
+  ('cccc', 1, 'budget', 'money', 1, 200, 1);
 INSERT INTO register VALUES
   (261, 'Zürich', 'ZH', 'configured', 'https://www.stadt-zuerich.ch', 'custom', 1, '2026-09-30',
    'reviewer', NULL, NULL),
@@ -75,45 +74,7 @@ INSERT INTO access_observations VALUES
    strftime('%Y-%m-%dT%H:%M:%f+00:00', 'now', '-1 day'), 'https://www.stadt-zuerich.ch/robots.txt',
    strftime('%Y-%m-%dT%H:%M:%f+00:00', 'now', '-1 day')),
   (4176, 'http://www.schwaderloch.ch/', 'technical_error',
-   strftime('%Y-%m-%dT%H:%M:%f+00:00', 'now', '-2 days'), 'http://www.schwaderloch.ch/robots.txt', NULL),
-  (5938, 'https://www.example.ch/', 'technical_error',
-   strftime('%Y-%m-%dT%H:%M:%f+00:00', 'now', '-1 day'), 'https://www.example.ch/robots.txt',
-   strftime('%Y-%m-%dT%H:%M:%f+00:00', 'now', '-20 days'));
-"#;
-
-/// A small dataset fixture.
-const DATASET: &str = r#"
-create table communes (bfs_id integer primary key, name text, canton text, population integer);
-create table assemblies (sha256 text primary key, commune_bfs_id integer, body text,
-    meeting_date text, eligible_voters integer, attendees integer, turnout real,
-    attendees_agree integer);
-create table assembly_votes (sha256 text, position integer, motion integer, motion_kind text,
-    title text, title_withheld integer, category text, outcome text, vote_method text,
-    votes_yes integer, votes_no integer, abstentions integer, amount_chf real,
-    counts_agree integer, possible_duplicate integer);
-create table finance_panel (commune_bfs_id integer, fiscal_year integer, type text,
-    operating_result real, operating_expenses real, operating_revenue real, net_investments real,
-    self_financing real, tax_rate_percent real, result_agrees integer, results_differ integer,
-    source_url text);
-insert into communes values (1, 'Testdorf', 'BE', 800), (2, 'Grossstadt', 'ZH', 50000);
-insert into assemblies values ('a', 1, 'assembly', '2024-06-12', 600, 60, 0.1, 1),
-    ('b', 1, 'assembly', '2023-12-04', 600, 30, 0.05, 1);
-insert into assembly_votes values
-    ('a', 1, 0, null, 'Genehmigung der Traktandenliste', 0, 'other', 'approved',
-     'unanimous', null, null, null, null, null, 0),
-    ('a', 2, 0, null, 'Kredit Schulhaus', 0, 'finance_credit', 'approved', 'counted',
-     50, 10, 0, 2400000, 1, 0),
-    ('a', 3, 0, null, 'Kredit Schulhaus', 0, 'finance_credit', 'approved', 'counted',
-     50, 10, 0, 2400000, 1, 1),
-    ('a', 4, 0, null, null, 1, 'naturalization', 'approved', 'open_majority',
-     null, null, null, null, null, 0),
-    ('b', 1, 0, null, 'Budget 2024', 0, 'finance_budget', 'rejected', 'counted',
-     12, 18, 0, null, 0, 0);
-insert into finance_panel values
-    (1, 2024, 'budget', -100000, 5000000, 4900000, 300000, 200000, 112, 1, 0,
-     'https://example.ch/budget.pdf'),
-    (1, 2024, 'accounts', 50000, 4900000, 4950000, 250000, 300000, 112, 0, 0,
-     'https://example.ch/rechnung.pdf');
+   strftime('%Y-%m-%dT%H:%M:%f+00:00', 'now', '-2 days'), 'http://www.schwaderloch.ch/robots.txt', NULL);
 "#;
 
 fn temp_path(name: &str) -> PathBuf {
@@ -154,25 +115,17 @@ impl Drop for Fixture {
     }
 }
 
-async fn fixture(with_dataset: bool, with_usage: bool) -> Fixture {
-    build(with_dataset, with_usage, false).await
+async fn fixture(with_usage: bool) -> Fixture {
+    build(with_usage, false).await
 }
 
 /// The front end's page shell as the build writes it, reduced to what the server touches.
 const SHELL: &str = "<!doctype html><html lang=\"de\"><head><meta charset=\"utf-8\"></head>\
 <body data-sveltekit-preload-data=\"hover\"><div style=\"display: contents\"></div></body></html>";
 
-async fn build(with_dataset: bool, with_usage: bool, indexing: bool) -> Fixture {
-    let archive = temp_path("archive.db");
-    create(&archive, &[ARCHIVE, SERVING, ROWS]).await;
-    let dataset_path = temp_path("dataset.db");
-    let dataset = if with_dataset {
-        let path = dataset_path.clone();
-        create(&path, &[DATASET]).await;
-        Some(db::open_read_only(&path).await.unwrap())
-    } else {
-        None
-    };
+async fn build(with_usage: bool, indexing: bool) -> Fixture {
+    let database = temp_path("serving.db");
+    create(&database, &[SERVING, ROWS]).await;
     let usage_path = temp_path("usage.sqlite3");
     let usage = if with_usage {
         Some(Usage::open(&usage_path, true).await.unwrap())
@@ -183,15 +136,16 @@ async fn build(with_dataset: bool, with_usage: bool, indexing: bool) -> Fixture 
     std::fs::create_dir_all(static_dir.join("_app/immutable")).unwrap();
     std::fs::write(static_dir.join("index.html"), SHELL).unwrap();
     std::fs::write(static_dir.join("_app/immutable/app.js"), "console.log(1)").unwrap();
+    let pool = db::open_read_only(&database).await.unwrap();
+    db::check_tables(&pool).await.unwrap();
     let state = AppState {
-        db: db::open_read_only(&archive).await.unwrap(),
-        dataset,
+        db: pool,
         usage,
         site: Site::new("https://example.test", indexing, &static_dir),
     };
     let router = app(state, &static_dir, &["localhost".to_string()]);
     Fixture {
-        files: vec![archive, dataset_path, usage_path.clone()],
+        files: vec![database, usage_path.clone()],
         router,
         usage_path,
         static_dir,
@@ -212,163 +166,126 @@ async fn get(router: &Router, uri: &str) -> (StatusCode, Value) {
     (status, serde_json::from_slice(&body).unwrap_or(Value::Null))
 }
 
-#[tokio::test]
-async fn full_text_search_ignores_diacritics_and_falls_back_to_like() {
-    let f = fixture(false, false).await;
-    let (status, page) = get(&f.router, "/api/decisions?q=ecole").await;
-    assert_eq!(status, StatusCode::OK);
-    assert_eq!(page["mode"], "fts");
-    assert_eq!(page["total"], 1);
-    assert_eq!(page["items"][0]["title"], "Crédit pour l'École");
-    let (_, page) = get(&f.router, "/api/decisions?q=Schulh").await;
-    assert_eq!(
-        (page["mode"].as_str(), page["total"].as_i64()),
-        (Some("fts"), Some(1))
-    );
-    let (_, page) = get(&f.router, "/api/decisions?q=bewilligt%20den").await;
-    assert_eq!(page["mode"], "fts");
-    let (_, page) = get(&f.router, "/api/decisions?q=xy").await;
-    assert_eq!(
-        (page["mode"].as_str(), page["total"].as_i64()),
-        (Some("like"), Some(0))
-    );
-    let (_, page) = get(&f.router, "/api/decisions?q=rlich").await;
-    assert_eq!(page["mode"], "like"); // no token starts with it, a substring match finds nothing
-    let (_, page) = get(&f.router, "/api/decisions").await;
-    assert_eq!(page["mode"], "recent");
-    let ids: Vec<&str> = page["items"]
+fn keys(v: &Value) -> Vec<&str> {
+    v.as_object().unwrap().keys().map(String::as_str).collect()
+}
+
+fn shas(page: &Value) -> Vec<&str> {
+    page["items"]
         .as_array()
         .unwrap()
         .iter()
-        .map(|d| d["id"].as_str().unwrap())
-        .collect();
-    assert_eq!(ids, ["dec-vd", "dec-zh"]); // newest meeting first
-    let (_, page) = get(&f.router, "/api/decisions?canton=zh&min_amount=1000").await;
-    assert_eq!(page["total"], 1);
-    let (status, _) = get(&f.router, "/api/decisions?limit=500").await;
-    assert_eq!(status, StatusCode::UNPROCESSABLE_ENTITY);
-    let (status, _) = get(&f.router, "/api/decisions?from=2024-02-30").await;
-    assert_eq!(status, StatusCode::UNPROCESSABLE_ENTITY);
+        .map(|d| d["sha256"].as_str().unwrap())
+        .collect()
 }
 
 #[tokio::test]
-async fn a_decision_links_the_communes_original() {
-    let f = fixture(false, false).await;
-    let (status, d) = get(&f.router, "/api/decisions/dec-zh").await;
+async fn a_database_without_the_serving_tables_is_refused() {
+    let path = temp_path("other.db");
+    create(
+        &path,
+        &["CREATE TABLE communes (bfs_id INTEGER PRIMARY KEY)"],
+    )
+    .await;
+    let pool = db::open_read_only(&path).await.unwrap();
+    assert!(db::check_tables(&pool).await.is_err());
+    pool.close().await;
+    let _ = std::fs::remove_file(&path);
+}
+
+#[tokio::test]
+async fn communes_carry_their_documents_and_register_status() {
+    let f = fixture(false).await;
+    let (status, list) = get(&f.router, "/api/communes").await;
     assert_eq!(status, StatusCode::OK);
+    let ids: Vec<i64> = list
+        .as_array()
+        .unwrap()
+        .iter()
+        .map(|c| c["bfs_id"].as_i64().unwrap())
+        .collect();
+    assert_eq!(ids, [4001, 5938, 261]); // by canton, then name; register-only communes are not listed
+    let zh = &list[2];
     assert_eq!(
-        d["source_link"],
-        "https://www.stadt-zuerich.ch/p.pdf#page=4"
+        keys(zh),
+        [
+            "bfs_id",
+            "name",
+            "canton",
+            "language",
+            "website",
+            "lat",
+            "lon",
+            "documents",
+            "register_status",
+            "register_note"
+        ]
     );
-    assert!(d.get("copy_link").is_none() && d.get("local_pdf").is_none());
-    assert_eq!(d["references"], json!(["Art. 1 GO"]));
-    assert_eq!(
-        d["commune"],
-        json!({"bfs_id": 261, "name": "Zürich", "canton": "ZH"})
-    );
-    let (_, d) = get(&f.router, "/api/decisions/dec-vd").await;
-    assert_eq!(d["references"], json!([])); // JSON null is an empty list
-    assert_eq!(d["redaction_applied"], true);
-    let (status, body) = get(&f.router, "/api/decisions/nope").await;
-    assert_eq!(status, StatusCode::NOT_FOUND);
-    assert_eq!(body, json!({"detail": "decision not found"}));
-}
-
-#[tokio::test]
-async fn communes_carry_holdings_and_the_register_status() {
-    let f = fixture(false, false).await;
-    let (_, list) = get(&f.router, "/api/communes").await;
-    let list = list.as_array().unwrap();
-    assert_eq!(list.len(), 2);
-    assert_eq!(list[0]["bfs_id"], 5938); // VD before ZH
-    let zh = &list[1];
-    assert_eq!(zh["documents"], 1);
-    assert_eq!(zh["decisions"], 1);
-    assert_eq!(zh["last_crawled"], "2026-10-02T09:00:00"); // the newest crawl of any body
+    assert_eq!(zh["documents"], 4);
     assert_eq!(zh["register_status"], "configured");
-    let assembly = &zh["holdings"][0];
-    assert_eq!(assembly["per_year_average"], 1.2); // 5 dated documents over 4 years, half to even
-    assert_eq!(assembly["last_crawl"], "2026-10-01T08:00:00.123000");
-    assert_eq!(assembly["per_year"], json!({"2018": 2}));
-    assert_eq!(zh["holdings"][1]["per_year_average"], Value::Null);
-    assert_eq!(list[0]["last_crawled"], Value::Null);
+    assert_eq!(list[1]["documents"], 2); // a document linked by two communes counts for each
+    assert_eq!(list[0]["documents"], 0);
+    assert_eq!(list[0]["language"], Value::Null);
     assert_eq!(list[0]["register_status"], Value::Null);
 }
 
 #[tokio::test]
-async fn the_map_list_is_slim_and_includes_register_only_communes() {
-    let f = fixture(false, false).await;
-    let (status, list) = get(&f.router, "/api/archive/communes").await;
+async fn a_commune_has_its_register_entry_and_access_observations() {
+    let f = fixture(false).await;
+    let (status, zh) = get(&f.router, "/api/communes/261").await;
     assert_eq!(status, StatusCode::OK);
-    let by_id = |id: i64| {
-        list.as_array()
-            .unwrap()
-            .iter()
-            .find(|c| c["bfs_id"] == id)
-            .unwrap()
-            .clone()
-    };
-    assert_eq!(list.as_array().unwrap().len(), 4);
-    let zh = by_id(261);
-    assert_eq!(zh["documents"], 3); // the catalogue's count
-    assert_eq!(by_id(5938)["documents"], 0); // a catalogue exists, this commune has none in it
-    // one access state per commune, never the observations themselves
-    assert_eq!(zh["access"], "restricted");
-    assert_eq!(by_id(5938)["access"], "earlier");
-    assert_eq!(by_id(4176)["access"], "temporary");
-    assert!(by_id(1).get("access").is_none());
-    let keys: Vec<&String> = zh.as_object().unwrap().keys().collect();
     assert_eq!(
-        keys,
+        keys(&zh),
         [
             "bfs_id",
             "name",
             "canton",
+            "language",
+            "website",
+            "vendor",
             "lat",
             "lon",
             "documents",
-            "decisions",
-            "access"
+            "register",
+            "access",
+            "holdings"
         ]
     );
-    assert_eq!(by_id(1)["lat"], Value::Null);
-}
-
-#[tokio::test]
-async fn the_commune_page_gets_its_own_detail() {
-    let f = fixture(false, false).await;
-    let (_, zh) = get(&f.router, "/api/archive/communes/261").await;
-    assert_eq!(zh["website"], "https://www.stadt-zuerich.ch");
-    assert_eq!(zh["documents"], 3);
+    assert_eq!(zh["vendor"], "custom");
+    // per year and family, newest year first; a document without a year is not counted
+    assert_eq!(
+        zh["holdings"],
+        json!([
+            {"year": 2024, "family": "deliberation", "documents": 1},
+            {"year": 2024, "family": "proposals", "documents": 1},
+            {"year": 2023, "family": "money", "documents": 1}
+        ])
+    );
+    assert_eq!(zh["documents"], 4);
+    assert_eq!(zh["register"]["status"], "configured");
+    assert_eq!(zh["register"]["publications"][1]["kind"], "decisions");
+    // newest check first; a restriction or check a week old or more is stale
     assert_eq!(
         zh["access"][0]["source_url"],
         "https://www.stadt-zuerich.ch/"
     );
+    assert_eq!(zh["access"][0]["stale"], false);
     assert_eq!(zh["access"][1]["stale"], true);
-    assert_eq!(zh["holdings"].as_array().unwrap().len(), 2);
-    let (_, only) = get(&f.router, "/api/archive/communes/4176").await;
-    let keys: Vec<&String> = only.as_object().unwrap().keys().collect();
-    assert_eq!(
-        keys,
-        [
-            "bfs_id",
-            "name",
-            "canton",
-            "website",
-            "documents",
-            "decisions",
-            "holdings",
-            "access"
-        ]
-    );
-    let (status, body) = get(&f.router, "/api/archive/communes/999").await;
-    assert_eq!(status, StatusCode::NOT_FOUND);
-    assert_eq!(body["detail"], "commune not found");
+    let (_, vd) = get(&f.router, "/api/communes/5938").await;
+    assert_eq!(vd["register"], Value::Null);
+    assert_eq!(vd["access"], json!([]));
+    for unknown in ["/api/communes/4176", "/api/communes/999"] {
+        let (status, body) = get(&f.router, unknown).await;
+        assert_eq!(status, StatusCode::NOT_FOUND, "{unknown}");
+        assert_eq!(body["detail"], "commune not found");
+    }
+    let (status, _) = get(&f.router, "/api/communes/abc").await;
+    assert_eq!(status, StatusCode::BAD_REQUEST);
 }
 
 #[tokio::test]
-async fn the_register_and_its_summary() {
-    let f = fixture(false, false).await;
+async fn the_register_lists_every_entry() {
+    let f = fixture(false).await;
     let (_, register) = get(&f.router, "/api/register").await;
     let ids: Vec<i64> = register
         .as_array()
@@ -382,122 +299,249 @@ async fn the_register_and_its_summary() {
     assert_eq!(zh["publications"][1]["kind"], "decisions");
     assert_eq!(zh["reachable"], true);
     assert_eq!(zh["checked"], "2026-09-30");
-    let (_, stats) = get(&f.router, "/api/stats").await;
-    assert_eq!(stats["communes_in_register"], 3);
-    assert_eq!(stats["register"]["blocked"], 1);
-    assert_eq!(stats["register"]["examined"], 2);
-    assert_eq!(stats["register"]["reachable"], 1);
-    assert_eq!(stats["register"]["unreachable"], 1);
-    assert_eq!(stats["register"]["by_status"]["needs_feature"], 0);
-    assert_eq!(stats["by_outcome"], json!({"None": 1, "approved": 1}));
-    assert_eq!(stats["by_health"], json!({"empty": 1, "ok": 1}));
-    assert_eq!(stats["approved_amount_chf"], 2400000.0);
-    assert_eq!(stats["decisions_dropped_for_privacy"], 2);
+    assert_eq!(register[1]["reachable"], false);
 }
 
 #[tokio::test]
-async fn catalogue_lists_link_through_this_site_only() {
-    let f = fixture(false, false).await;
-    let (_, page) = get(&f.router, "/api/archive/documents?commune=261").await;
-    assert_eq!(page["total"], 3);
-    assert_eq!(page["years"], json!([2024, 2019]));
-    let urls: Vec<&Value> = page["items"]
+async fn documents_are_listed_newest_first_with_facets() {
+    let f = fixture(false).await;
+    let (status, page) = get(&f.router, "/api/documents").await;
+    assert_eq!(status, StatusCode::OK);
+    assert_eq!(keys(&page), ["total", "offset", "limit", "facets", "items"]);
+    assert_eq!(
+        (&page["total"], &page["offset"], &page["limit"]),
+        (&json!(5), &json!(0), &json!(20))
+    );
+    // year, then date or listing date, newest first; no year last
+    assert_eq!(shas(&page), ["bbbb", "aaaa", "eeee", "cccc", "dddd"]);
+    assert_eq!(
+        page["facets"],
+        json!({
+            "years": [
+                {"value": 2025, "count": 1},
+                {"value": 2024, "count": 2},
+                {"value": 2023, "count": 1},
+                {"value": null, "count": 1}
+            ],
+            "sections": [
+                {"value": "budget", "count": 1},
+                {"value": "invitation_agenda", "count": 1},
+                {"value": "minutes", "count": 2},
+                {"value": "vote_result", "count": 1}
+            ],
+            "bodies": [
+                {"value": "citizens_assembly", "count": 1},
+                {"value": "executive", "count": 1},
+                {"value": "parliament", "count": 1},
+                {"value": null, "count": 2}
+            ]
+        })
+    );
+    let (_, page) = get(&f.router, "/api/documents?limit=2&offset=1").await;
+    assert_eq!(shas(&page), ["aaaa", "eeee"]);
+    assert_eq!(page["total"], 5);
+    let (_, page) = get(&f.router, "/api/documents?limit=0").await;
+    assert_eq!((page["total"].as_i64(), shas(&page).len()), (Some(5), 0));
+}
+
+#[tokio::test]
+async fn each_facet_is_counted_without_its_own_filter() {
+    let f = fixture(false).await;
+    let (_, page) = get(&f.router, "/api/documents?section=minutes").await;
+    assert_eq!(shas(&page), ["bbbb", "aaaa"]);
+    assert_eq!(page["total"], 2);
+    // the section facet ignores the section filter; the others apply it
+    assert_eq!(page["facets"]["sections"].as_array().unwrap().len(), 4);
+    assert_eq!(
+        page["facets"]["years"],
+        json!([{"value": 2025, "count": 1}, {"value": 2024, "count": 1}])
+    );
+    let (_, page) = get(&f.router, "/api/documents?commune=261&year=2024").await;
+    assert_eq!(shas(&page), ["aaaa", "eeee"]);
+    assert_eq!(
+        page["facets"]["years"],
+        json!([
+            {"value": 2024, "count": 2},
+            {"value": 2023, "count": 1},
+            {"value": null, "count": 1}
+        ])
+    );
+    let (_, page) = get(&f.router, "/api/documents?family=money&body=executive").await;
+    assert_eq!(shas(&page), ["cccc"]);
+    assert_eq!(page["facets"]["bodies"][0]["value"], "executive");
+    let (_, page) = get(&f.router, "/api/documents?family=deliberation").await;
+    assert_eq!(shas(&page), ["bbbb", "aaaa"]);
+    let (_, page) = get(&f.router, "/api/documents?commune=5938").await;
+    assert_eq!(shas(&page), ["bbbb", "cccc"]);
+    let (_, page) = get(&f.router, "/api/documents?family=&body=%20").await;
+    assert_eq!(page["total"], 5); // a blank filter is no filter
+}
+
+#[tokio::test]
+async fn titles_are_searched_as_plain_text() {
+    let f = fixture(false).await;
+    let (_, page) = get(&f.router, "/api/documents?q=PROTOKOLL").await;
+    assert_eq!(shas(&page), ["aaaa"]);
+    let (_, page) = get(&f.router, "/api/documents?q=%25").await;
+    assert_eq!(shas(&page), ["eeee"]); // % is a character, not a wildcard
+    let (_, page) = get(&f.router, "/api/documents?q=_").await;
+    assert_eq!(page["total"], 0);
+}
+
+#[tokio::test]
+async fn bad_pages_are_refused() {
+    let f = fixture(false).await;
+    for uri in [
+        "/api/documents?limit=101",
+        "/api/documents?limit=-1",
+        "/api/documents?offset=-1",
+        "/api/documents?year=abc",
+    ] {
+        let (status, body) = get(&f.router, uri).await;
+        assert_eq!(status, StatusCode::BAD_REQUEST, "{uri}");
+        assert!(body["detail"].is_string(), "{uri}");
+    }
+    let (status, page) = get(&f.router, "/api/documents?limit=100").await;
+    assert_eq!(
+        (status, page["limit"].as_i64()),
+        (StatusCode::OK, Some(100))
+    );
+}
+
+#[tokio::test]
+async fn a_document_has_its_sections_communes_and_run() {
+    let f = fixture(false).await;
+    let (status, d) = get(&f.router, "/api/documents/bbbb").await;
+    assert_eq!(status, StatusCode::OK);
+    assert_eq!(
+        d,
+        json!({
+            "sha256": "bbbb",
+            "title": "Procès-verbal 2025",
+            "body_name": "Conseil communal",
+            "first_seen": "2026-09-06",
+            "listing_date": null,
+            "date": "2025-09-03",
+            "year": 2025,
+            "years": [2025, 2026],
+            "page_count": 30,
+            "pages_seen": 30,
+            "run_id": "classify-aaaa",
+            "body_kind": "parliament",
+            "languages": ["fr", "de"],
+            "personal_data": true,
+            "sections": [
+                {"type": "minutes", "family": "deliberation", "first_page": 1, "last_page": 28, "partly_unseen": false},
+                {"type": "minutes", "family": "deliberation", "first_page": 29, "last_page": 30, "partly_unseen": false}
+            ],
+            "communes": [{"bfs_id": 5938, "name": "Yverdon-les-Bains", "canton": "VD"}],
+            "original_url": "/original/bbbb",
+            "run": {
+                "id": "classify-aaaa",
+                "stage": "classification",
+                "model": "model-a",
+                "note": "Pages are seen at 75 dpi; of documents over 150 pages the model sees 150."
+            }
+        })
+    );
+    let (_, d) = get(&f.router, "/api/documents/cccc").await;
+    let names: Vec<&Value> = d["communes"]
         .as_array()
         .unwrap()
         .iter()
-        .map(|i| &i["url"])
+        .map(|c| &c["name"])
         .collect();
-    assert_eq!(
-        urls,
-        [
-            &json!("/original/aaaa"),
-            &json!("/original/cccc"),
-            &Value::Null
-        ]
-    );
-    assert!(
-        !String::from_utf8_lossy(&serde_json::to_vec(&page).unwrap()).contains("stadt-zuerich")
-    );
-    let (_, page) = get(&f.router, "/api/archive/documents?commune=261&q=PROTOKOLL").await;
-    assert_eq!(page["total"], 1);
-    let (_, page) = get(&f.router, "/api/archive/documents?commune=261&q=%25").await;
-    assert_eq!(page["total"], 0); // % is a character, not a wildcard
-    let (_, page) = get(&f.router, "/api/archive/documents?commune=261&year=2019").await;
-    assert_eq!(page["items"][0]["id"], "cccc");
-    let (status, _) = get(&f.router, "/api/archive/documents?year=1700").await;
-    assert_eq!(status, StatusCode::UNPROCESSABLE_ENTITY);
-
-    let request = Request::get("/original/cccc").body(Body::empty()).unwrap();
-    let (status, headers, _) = send(&f.router, request).await;
-    assert_eq!(status, StatusCode::FOUND);
-    assert_eq!(
-        headers[header::LOCATION],
-        "https://www.stadt-zuerich.ch/Protokoll%20Mai%202019.pdf"
-    );
-    assert_eq!(headers["x-robots-tag"], "noindex, nofollow");
-    let (status, _) = get(&f.router, "/original/dddd").await; // not an http(s) URL
-    assert_eq!(status, StatusCode::NOT_FOUND);
-}
-
-#[tokio::test]
-async fn dataset_routes_answer_404_without_a_dataset() {
-    let f = fixture(false, false).await;
-    let (status, body) = get(&f.router, "/api/dataset/findings").await;
-    assert_eq!(status, StatusCode::NOT_FOUND);
-    assert_eq!(body["detail"], "dataset not configured");
-}
-
-#[tokio::test]
-async fn dataset_votes_coverage_and_findings() {
-    let f = fixture(true, false).await;
-    let (_, data) = get(&f.router, "/api/dataset/communes/1").await;
-    let titles: Vec<&Value> = data["votes"]
-        .as_array()
-        .unwrap()
-        .iter()
-        .map(|v| &v["title"])
-        .collect();
-    assert_eq!(
-        titles.iter().filter(|t| **t == "Kredit Schulhaus").count(),
-        1
-    ); // read twice: left out
-    assert!(titles.contains(&&Value::Null)); // the naturalisation keeps no title
-    assert_eq!(data["votes"][0]["formal"], true);
-    assert_eq!(data["summary"]["rejected"], 1);
-    assert_eq!(data["summary"]["counted"], 2);
-    assert!((data["summary"]["median_turnout"].as_f64().unwrap() - 0.075).abs() < 1e-9);
-    assert_eq!(data["finance"][0]["type"], "budget");
-    assert_eq!(data["finance"][1]["result_agrees"], 0);
-    assert_eq!(data["finance"][0]["operating_result"], -100000.0); // a REAL stays a float
-
-    let (_, coverage) = get(&f.router, "/api/dataset/coverage").await;
-    assert_eq!(
-        coverage["communes"],
-        json!([{"bfs_id": 1, "minutes": 2, "counted": 2, "finance_years": 1}])
-    );
-    assert!(
-        (coverage["totals"]["population_share"].as_f64().unwrap() - 800.0 / 50800.0).abs() < 1e-9
-    );
-
-    let (_, findings) = get(&f.router, "/api/dataset/findings").await;
-    let budget = findings["deficits"]
-        .as_array()
-        .unwrap()
-        .iter()
-        .find(|d| d["type"] == "budget")
-        .unwrap();
+    assert_eq!(names, [&json!("Yverdon-les-Bains"), &json!("Zürich")]); // by name
+    assert_eq!(d["sections"][0]["partly_unseen"], true);
+    let (_, d) = get(&f.router, "/api/documents/dddd").await;
     assert_eq!(
         (
-            budget["year"].as_i64(),
-            budget["deficit"].as_i64(),
-            budget["n"].as_i64()
+            &d["title"],
+            &d["run"]["id"],
+            &d["years"],
+            &d["languages"],
+            &d["personal_data"],
+            &d["sections"]
         ),
-        (Some(2024), Some(1), Some(1))
+        (
+            &Value::Null,
+            &json!("classify-aaaa"),
+            &json!([]),
+            &json!([]),
+            &json!(false),
+            &json!([])
+        )
     );
+    let (status, body) = get(&f.router, "/api/documents/nope").await;
+    assert_eq!(status, StatusCode::NOT_FOUND);
+    assert_eq!(body, json!({"detail": "document not found"}));
+    // lists never carry a commune's URL
+    let (_, page) = get(&f.router, "/api/documents?limit=100").await;
+    let text = serde_json::to_string(&page).unwrap();
+    assert!(!text.contains("stadt-zuerich.ch/") && !text.contains("yverdon.ch/"));
+}
+
+#[tokio::test]
+async fn runs_carry_their_settings_as_json() {
+    let f = fixture(false).await;
+    let (status, runs) = get(&f.router, "/api/runs").await;
+    assert_eq!(status, StatusCode::OK);
     assert_eq!(
-        findings["turnout_by_size"][0],
-        json!({"min": 0, "max": 1000, "n": 2, "median": 0.07500000000000001})
+        runs,
+        json!([{
+            "id": "classify-aaaa",
+            "stage": "classification",
+            "model": "model-a",
+            "settings": {"dpi": 75, "max_pages": 150},
+            "note": "Pages are seen at 75 dpi; of documents over 150 pages the model sees 150.",
+            "documents": 5
+        }])
     );
+}
+
+#[tokio::test]
+async fn originals_redirect_to_the_communes_url() {
+    let f = fixture(false).await;
+    let location = |uri: &'static str| {
+        let router = f.router.clone();
+        async move {
+            let request = Request::get(uri).body(Body::empty()).unwrap();
+            let (status, headers, _) = send(&router, request).await;
+            (
+                status,
+                headers
+                    .get(header::LOCATION)
+                    .map(|l| l.to_str().unwrap().to_string()),
+                headers.get("x-robots-tag").cloned(),
+            )
+        }
+    };
+    let (status, url, robots) = location("/original/cccc").await;
+    assert_eq!(status, StatusCode::FOUND);
+    // the first by BFS id, percent-encoded
+    assert_eq!(
+        url.as_deref(),
+        Some("https://www.stadt-zuerich.ch/Budget%20Mai%202024.pdf")
+    );
+    assert_eq!(robots.unwrap(), "noindex, nofollow");
+    let (_, url, _) = location("/original/cccc?commune=5938").await;
+    assert_eq!(url.as_deref(), Some("https://www.yverdon.ch/budget.pdf"));
+    let (_, url, _) = location("/original/cccc?commune=4001").await;
+    assert_eq!(
+        url.as_deref(),
+        Some("https://www.stadt-zuerich.ch/Budget%20Mai%202024.pdf")
+    ); // a commune that does not link it: the first
+    let (_, url, _) = location("/original/cccc?commune=5938&page=16").await;
+    assert_eq!(
+        url.as_deref(),
+        Some("https://www.yverdon.ch/budget.pdf#page=16")
+    );
+    let (_, url, _) = location("/original/cccc?commune=5938&page=0").await;
+    assert_eq!(url.as_deref(), Some("https://www.yverdon.ch/budget.pdf"));
+    for uri in ["/original/dddd", "/original/eeee", "/original/nope"] {
+        let (status, _, _) = location(uri).await; // no URL, not http(s), unknown
+        assert_eq!(status, StatusCode::NOT_FOUND, "{uri}");
+    }
 }
 
 async fn usage_rows(path: &Path, want: usize) -> Vec<(String, String, i64, i64, i64, i64)> {
@@ -522,12 +566,13 @@ async fn usage_rows(path: &Path, want: usize) -> Vec<(String, String, i64, i64, 
 
 #[tokio::test]
 async fn usage_counts_route_templates_without_paths_or_addresses() {
-    let f = fixture(false, true).await;
+    let f = fixture(true).await;
     let browser = "Mozilla/5.0 (X11; Linux x86_64) Firefox/140.0";
     let peer: SocketAddr = "127.0.0.1:40000".parse().unwrap();
     for (uri, dnt) in [
-        ("/api/decisions?q=Kredit", false),
-        ("/api/decisions?q=nichtsdergleichen", false),
+        ("/api/documents?q=Protokoll", false),
+        ("/api/documents?q=nichtsdergleichen", false),
+        ("/api/documents?offset=20", false), // a further page, not a search
         ("/de/gemeinden/261", false),
         ("/fr/gemeinden/5938", true),
         ("/_app/immutable/app.js", false),
@@ -544,13 +589,13 @@ async fn usage_counts_route_templates_without_paths_or_addresses() {
         request.extensions_mut().insert(ConnectInfo(peer));
         send(&f.router, request).await;
     }
-    get(&f.router, "/api/stats").await; // no user agent: a bot
-    let rows = usage_rows(&f.usage_path, 5).await;
+    get(&f.router, "/api/runs").await; // no user agent: a bot
+    let rows = usage_rows(&f.usage_path, 6).await;
     assert_eq!(
         rows,
         [
-            ("api".into(), "/api/decisions".into(), 0, 200, 2, 2),
-            ("api".into(), "/api/stats".into(), 1, 200, 1, 0),
+            ("api".into(), "/api/documents".into(), 0, 200, 3, 2),
+            ("api".into(), "/api/runs".into(), 1, 200, 1, 0),
             ("web".into(), "/gemeinden/{id}".into(), 0, 200, 2, 0),
         ]
     );
@@ -572,14 +617,20 @@ async fn usage_counts_route_templates_without_paths_or_addresses() {
     .await
     .unwrap();
     let dump = format!("{dump:?}");
-    for secret in ["Kredit", "261", "203.0.113", "127.0.0.1", "Mozilla"] {
+    for secret in [
+        "Protokoll",
+        "gemeinden/261",
+        "203.0.113",
+        "127.0.0.1",
+        "Mozilla",
+    ] {
         assert!(!dump.contains(secret), "{secret} stored");
     }
 }
 
 #[tokio::test]
 async fn the_front_end_is_served_with_a_fallback_and_api_errors_stay_json() {
-    let f = fixture(false, false).await;
+    let f = fixture(false).await;
     let request = Request::get("/gemeinden/261").body(Body::empty()).unwrap();
     let (status, headers, body) = send(&f.router, request).await;
     assert_eq!(status, StatusCode::OK);
@@ -597,14 +648,23 @@ async fn the_front_end_is_served_with_a_fallback_and_api_errors_stay_json() {
         headers[header::CACHE_CONTROL],
         "public, max-age=31536000, immutable"
     );
-    let (status, body) = get(&f.router, "/api/nothing-here").await;
-    assert_eq!(status, StatusCode::NOT_FOUND);
-    assert_eq!(body, json!({"detail": "Not Found"}));
+    // the dropped decision and dataset endpoints are unknown paths now
+    for uri in [
+        "/api/nothing-here",
+        "/api/decisions",
+        "/api/stats",
+        "/api/dataset/coverage",
+        "/api/archive/communes",
+    ] {
+        let (status, body) = get(&f.router, uri).await;
+        assert_eq!(status, StatusCode::NOT_FOUND, "{uri}");
+        assert_eq!(body, json!({"detail": "Not Found"}));
+    }
 }
 
 #[tokio::test]
 async fn mcp_lists_the_three_tools_and_answers_a_search() {
-    let f = fixture(false, false).await;
+    let f = fixture(false).await;
     let post = |body: Value| {
         Request::post("/mcp")
             .header(header::HOST, "localhost")
@@ -613,6 +673,10 @@ async fn mcp_lists_the_three_tools_and_answers_a_search() {
             .header("mcp-protocol-version", "2025-06-18")
             .body(Body::from(body.to_string()))
             .unwrap()
+    };
+    let call = |id: i64, name: &str, arguments: Value| {
+        post(json!({"jsonrpc": "2.0", "id": id, "method": "tools/call",
+            "params": {"name": name, "arguments": arguments}}))
     };
     let init = json!({"jsonrpc": "2.0", "id": 1, "method": "initialize", "params": {
         "protocolVersion": "2025-06-18", "capabilities": {}, "clientInfo": {"name": "test", "version": "1"}}});
@@ -626,30 +690,76 @@ async fn mcp_lists_the_three_tools_and_answers_a_search() {
     )
     .await;
     let body: Value = serde_json::from_slice(&body).unwrap();
-    let mut names: Vec<&str> = body["result"]["tools"]
-        .as_array()
-        .unwrap()
-        .iter()
-        .map(|t| t["name"].as_str().unwrap())
-        .collect();
+    let tools = body["result"]["tools"].as_array().unwrap();
+    let mut names: Vec<&str> = tools.iter().map(|t| t["name"].as_str().unwrap()).collect();
     names.sort();
-    assert_eq!(names, ["get_decision", "list_communes", "search_decisions"]);
-    for tool in body["result"]["tools"].as_array().unwrap() {
+    assert_eq!(names, ["get_document", "list_communes", "search_documents"]);
+    for tool in tools {
         assert!(tool["title"].is_string(), "{tool}");
         assert_eq!(tool["annotations"]["readOnlyHint"], true);
         assert_eq!(tool["annotations"]["destructiveHint"], false);
+        if tool["name"] != "list_communes" {
+            let description = tool["description"].as_str().unwrap();
+            assert!(description.contains("no person has checked yet"), "{tool}");
+        }
     }
-    let call = json!({"jsonrpc": "2.0", "id": 3, "method": "tools/call", "params": {
-        "name": "search_decisions", "arguments": {"query": "ecole", "limit": 500}}});
-    let (_, _, body) = send(&f.router, post(call)).await;
-    let body: Value = serde_json::from_slice(&body).unwrap();
-    assert_eq!(body["result"]["structuredContent"]["total"], 1);
+    let search = tools
+        .iter()
+        .find(|t| t["name"] == "search_documents")
+        .unwrap();
+    let mut parameters: Vec<&str> = keys(&search["inputSchema"]["properties"]);
+    parameters.sort();
     assert_eq!(
-        body["result"]["structuredContent"]["items"][0]["id"],
-        "dec-vd"
+        parameters,
+        [
+            "body", "commune", "family", "limit", "offset", "q", "section", "year"
+        ]
     );
+
+    let (_, _, body) = send(
+        &f.router,
+        call(3, "search_documents", json!({"q": "protokoll"})),
+    )
+    .await;
+    let body: Value = serde_json::from_slice(&body).unwrap();
+    let page = &body["result"]["structuredContent"];
+    assert_eq!(page["total"], 1);
+    assert_eq!(page["items"][0]["sha256"], "aaaa");
+    assert_eq!(
+        page["items"][0]["title"],
+        "Protokoll Gemeindeversammlung 2024"
+    );
+    // the same result as the API
+    let (_, api) = get(&f.router, "/api/documents?q=protokoll").await;
+    assert_eq!(page, &api);
+
+    let (_, _, body) = send(
+        &f.router,
+        call(4, "search_documents", json!({"limit": 500})),
+    )
+    .await;
+    let body: Value = serde_json::from_slice(&body).unwrap();
+    assert_eq!(body["result"]["isError"], true);
+
+    let (_, _, body) = send(
+        &f.router,
+        call(5, "get_document", json!({"sha256": "bbbb"})),
+    )
+    .await;
+    let body: Value = serde_json::from_slice(&body).unwrap();
+    assert_eq!(
+        body["result"]["structuredContent"]["run"]["model"],
+        "model-a"
+    );
+    let (_, _, body) = send(&f.router, call(6, "list_communes", json!({}))).await;
+    let body: Value = serde_json::from_slice(&body).unwrap();
+    assert_eq!(
+        body["result"]["structuredContent"]["result"][2]["name"],
+        "Zürich"
+    );
+
     // another Host is refused (DNS rebinding guard)
-    let mut request = post(json!({"jsonrpc": "2.0", "id": 4, "method": "tools/list"}));
+    let mut request = post(json!({"jsonrpc": "2.0", "id": 7, "method": "tools/list"}));
     request
         .headers_mut()
         .insert(header::HOST, "evil.example".parse().unwrap());
@@ -665,7 +775,7 @@ async fn page(router: &Router, uri: &str) -> (StatusCode, header::HeaderMap, Str
 
 #[tokio::test]
 async fn commune_pages_carry_their_facts_for_crawlers() {
-    let f = fixture(false, false).await;
+    let f = fixture(false).await;
     let (status, headers, html) = page(&f.router, "/fr/gemeinden/261").await;
     assert_eq!(status, StatusCode::OK);
     assert_eq!(headers["x-robots-tag"], "noindex, nofollow"); // indexing is off by default
@@ -676,11 +786,14 @@ async fn commune_pages_carry_their_facts_for_crawlers() {
     );
     assert!(html.contains("hreflang=\"de\" href=\"https://example.test/de/gemeinden/261\""));
     assert!(html.contains("\"@type\":\"AdministrativeArea\""));
-    // the fact sheet opens the body and links the commune's decisions
+    // the fact sheet opens the body: counts, years and the newest documents
     let facts = html.split("<main id=\"oc-facts\">").nth(1).unwrap();
     assert!(html.contains("data-sveltekit-preload-data=\"hover\"><main id=\"oc-facts\">"));
-    assert!(facts.starts_with("<h1>Zürich</h1>"));
-    assert!(facts.contains("<a href=\"/fr/entscheide/dec-zh\">Kredit für das Schulhaus</a>"));
+    assert!(facts.starts_with("<h1>Zürich</h1><p>Zürich (ZH) : 4 documents"));
+    assert!(facts.contains("<p>2024: 2 · 2023: 1 · sans année: 1</p>"));
+    assert!(facts.contains(
+        "<li>12.06.2024: <a href=\"/original/aaaa?commune=261\">Protokoll Gemeindeversammlung 2024</a></li>"
+    ));
     // a newly deployed front end names new script files: the next page uses its shell at once
     let deployed = SHELL.replace("<head>", "<head><script src=\"/_app/new.js\"></script>");
     std::fs::write(f.static_dir.join("index.html"), deployed).unwrap();
@@ -689,7 +802,7 @@ async fn commune_pages_carry_their_facts_for_crawlers() {
     for unknown in [
         "/de/gemeinden/999",
         "/de/gemeinden/abc",
-        "/de/entscheide/nothing",
+        "/de/gemeinden/4176", // only in the register
     ] {
         let (status, _, html) = page(&f.router, unknown).await;
         assert_eq!(status, StatusCode::NOT_FOUND, "{unknown}");
@@ -698,16 +811,14 @@ async fn commune_pages_carry_their_facts_for_crawlers() {
 }
 
 #[tokio::test]
-async fn decision_start_about_and_search_pages() {
-    let f = fixture(false, false).await;
-    let (status, _, html) = page(&f.router, "/de/entscheide/dec-zh").await;
-    assert_eq!(status, StatusCode::OK);
-    assert!(html.contains("<h1>Kredit für das Schulhaus</h1>"));
-    assert!(html.contains("<a href=\"/de/gemeinden/261\">Zürich (ZH)</a> · 12.06.2024"));
-    assert!(html.contains("https://www.stadt-zuerich.ch/p.pdf#page="));
+async fn start_about_privacy_and_search_pages() {
+    let f = fixture(false).await;
     let (_, _, html) = page(&f.router, "/it").await;
     assert!(html.contains("\"@type\":\"Dataset\""));
+    assert!(html.contains("5 documenti da 2 comuni"));
+    assert!(html.contains("Sono classificati automaticamente"));
     assert!(html.contains("<a href=\"/it/gemeinden/261\">Zürich (ZH)</a>"));
+    assert!(!html.contains("/it/gemeinden/4001")); // no documents
     let (status, _, html) = page(&f.router, "/de/ueber-uns").await;
     assert_eq!(status, StatusCode::OK);
     assert!(html.contains("<h1>Über OpenCommune</h1>"));
@@ -724,7 +835,7 @@ async fn decision_start_about_and_search_pages() {
 
 #[tokio::test]
 async fn robots_sitemap_and_llms_txt() {
-    let f = fixture(false, false).await;
+    let f = fixture(false).await;
     let (status, headers, robots) = page(&f.router, "/robots.txt").await;
     assert_eq!(status, StatusCode::OK);
     assert!(
@@ -743,8 +854,13 @@ async fn robots_sitemap_and_llms_txt() {
         "no sitemap while indexing is off"
     );
     let (_, _, xml) = page(&f.router, "/sitemap.xml").await;
-    assert!(xml.contains("<loc>https://example.test/de/gemeinden/261</loc>"));
-    assert!(xml.contains("<loc>https://example.test/it/entscheide/dec-zh</loc>"));
+    for id in [261, 5938, 4001] {
+        assert!(xml.contains(&format!(
+            "<loc>https://example.test/de/gemeinden/{id}</loc>"
+        )));
+    }
+    assert!(!xml.contains("/gemeinden/4176")); // only in the register
+    assert!(!xml.contains("entscheide"));
     assert!(xml.contains("<loc>https://example.test/fr</loc>"));
     assert!(xml.contains("<loc>https://example.test/it/datenschutz</loc>"));
     let (status, headers, llms) = page(&f.router, "/llms.txt").await;
@@ -756,11 +872,76 @@ async fn robots_sitemap_and_llms_txt() {
             .starts_with("text/markdown")
     );
     assert!(llms.starts_with("# OpenCommune\n\n> Open archive"));
+    assert!(llms.contains("The archive lists 5 documents from 2 communes, each classified"));
     assert!(llms.contains("[MCP server](https://example.test/mcp)"));
+    assert!(llms.contains("`search_documents`"));
+    assert!(!llms.contains("decisions`") && !llms.contains("huggingface"));
 
-    let indexed = build(false, false, true).await;
+    let indexed = build(false, true).await;
     let (_, headers, _) = page(&indexed.router, "/de/gemeinden/261").await;
     assert!(headers.get("x-robots-tag").is_none());
     let (_, _, robots) = page(&indexed.router, "/robots.txt").await;
     assert!(robots.ends_with("Sitemap: https://example.test/sitemap.xml\n"));
+}
+
+#[tokio::test]
+async fn openapi_describes_every_route_and_the_fields_the_api_sends() {
+    let f = fixture(false).await;
+    let (status, spec) = get(&f.router, "/api/openapi.json").await;
+    assert_eq!(status, StatusCode::OK);
+    assert_eq!(spec["openapi"], "3.1.0");
+    // every /api and /original route of the router, and nothing else
+    let mut routes: Vec<&str> = include_str!("../src/routes/mod.rs")
+        .split(".route(\"")
+        .skip(1)
+        .filter_map(|rest| rest.split('"').next())
+        .filter(|p| (p.starts_with("/api/") && *p != "/api/{*rest}") || p.starts_with("/original/"))
+        .collect();
+    routes.sort();
+    let mut described = keys(&spec["paths"]);
+    described.sort();
+    assert_eq!(routes, described);
+    // every reference resolves
+    fn refs<'a>(v: &'a Value, out: &mut Vec<&'a str>) {
+        match v {
+            Value::Object(o) => {
+                if let Some(Value::String(r)) = o.get("$ref") {
+                    out.push(r);
+                }
+                o.values().for_each(|v| refs(v, out));
+            }
+            Value::Array(a) => a.iter().for_each(|v| refs(v, out)),
+            _ => {}
+        }
+    }
+    let mut found = Vec::new();
+    refs(&spec, &mut found);
+    assert!(!found.is_empty());
+    for r in found {
+        let name = r.strip_prefix("#/components/schemas/").expect(r);
+        assert!(spec["components"]["schemas"][name].is_object(), "{r}");
+    }
+    // the described fields are the fields the API sends, in its order
+    let fields = |name: &str| keys(&spec["components"]["schemas"][name]["properties"]);
+    let (_, page) = get(&f.router, "/api/documents?limit=1").await;
+    assert_eq!(fields("DocumentPage"), keys(&page));
+    assert_eq!(fields("Document"), keys(&page["items"][0]));
+    assert_eq!(fields("Facets"), keys(&page["facets"]));
+    let (_, commune) = get(&f.router, "/api/communes/261").await;
+    assert_eq!(fields("CommuneDetail"), keys(&commune));
+    let (_, communes) = get(&f.router, "/api/communes").await;
+    assert_eq!(fields("Commune"), keys(&communes[0]));
+    // the query parameters are the ones the handler reads
+    let parameters: Vec<&str> = spec["paths"]["/api/documents"]["get"]["parameters"]
+        .as_array()
+        .unwrap()
+        .iter()
+        .map(|p| p["name"].as_str().unwrap())
+        .collect();
+    assert_eq!(
+        parameters,
+        [
+            "commune", "section", "family", "body", "year", "q", "offset", "limit"
+        ]
+    );
 }

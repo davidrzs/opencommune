@@ -1,6 +1,8 @@
+import json
 import sqlite3
 
 from opencommune import build
+from opencommune.classify.store import Store
 from opencommune.config import settings
 from opencommune.crawl import access
 from opencommune.db import _make_engine, init_db
@@ -27,25 +29,156 @@ REGISTER = [
     RegisterEntry(bfs_id=2, name="Beta", canton="ZH", website="https://shared.example/beta"),
     RegisterEntry(bfs_id=3, name="Gamma", canton="ZH", website="https://shared.example/gamma"),
 ]
+SAMPLED, UNREADABLE, EXPIRED, PENDING, BUDGET = ("a" * 64, "b" * 64, "c" * 64, "d" * 64, "e" * 64)
+ANSWER = {
+    "document_kind": "meeting_booklet",
+    "sections": [
+        {"type": "minutes", "first_page": 1, "last_page": 10},
+        {"type": "budget", "first_page": 60, "last_page": 70},
+    ],
+    "title": "Gemeindeversammlung  vom 28. November 2024,\n Antrag von [name]",
+    "body_name": "Gemeindeversammlung Alpha",
+    "body_kind": "citizens_assembly",
+    "years": [2024, 2025],
+    "date": "2024-11-28",
+    "languages": ["de"],
+    "personal_data": "yes",
+}
 
 
-def test_build_writes_serving_tables_from_scratch(tmp_path, monkeypatch):
+def corpus(tmp_path, monkeypatch):
     monkeypatch.setattr(settings, "data_dir", tmp_path)
+    settings.ensure_dirs()
     monkeypatch.setattr(build, "load_register", lambda: REGISTER)
-    db_path = tmp_path / "opencommune.db"
-    engine = _make_engine(f"sqlite:///{db_path}")
+    monkeypatch.setattr(build, "load_communes", lambda: [])
+    main = tmp_path / "opencommune.db"
+    engine = _make_engine(f"sqlite:///{main}")
     init_db(engine)
     engine.dispose()
+    with sqlite3.connect(main) as db:
+        db.execute(
+            "INSERT INTO communes (bfs_id, name, canton, language, website) "
+            "VALUES (1, 'Alpha', 'BE', 'de', 'https://www.alpha.example')"
+        )
+        for sha in (SAMPLED, UNREADABLE, EXPIRED, PENDING, BUDGET):
+            db.execute(
+                "INSERT INTO pdf_catalog (sha256, commune_bfs_id, commune_name, canton, body, "
+                "source_date, date_precision, title, source_url, provenance, indexed_at) "
+                "VALUES (?, 1, 'Alpha', 'BE', 'assembly', '2024-12-01', 'day', 'Protokoll 2024', "
+                "'https://www.alpha.example/x.pdf', 'html_links', '2026-01-01')",
+                (sha,),
+            )
+            db.execute(
+                "INSERT INTO pdf_catalog_communes VALUES (?, 1, 'https://www.alpha.example/x.pdf')",
+                (sha,),
+            )
+        # the same file linked by a register commune that is not configured
+        db.execute(
+            "INSERT INTO pdf_catalog_communes VALUES (?, 2, 'https://shared.example/beta/x.pdf')",
+            (SAMPLED,),
+        )
+    lines = [
+        {"sha256": SAMPLED, "fetched_at": "2026-02-03T10:00:00+00:00"},
+        {"sha256": SAMPLED, "fetched_at": "2026-01-05T10:00:00+00:00"},
+        *(
+            {"sha256": s, "fetched_at": "2026-01-01T00:00:00+00:00"}
+            for s in (UNREADABLE, EXPIRED, PENDING, BUDGET)
+        ),
+    ]
+    (settings.raw_dir / "urls.jsonl").write_text("".join(json.dumps(x) + "\n" for x in lines))
+    with Store(tmp_path / "process.db") as store, store.transaction():
+        version = build.CLASSIFICATION
+        store.add_answer(
+            SAMPLED, version, "cls-2", ANSWER, {}, model="m", pages=200, pages_sent=150
+        )
+        store.add_failure(UNREADABLE, version, "cls-2", "request", "unreadable")
+        budget = {
+            **ANSWER,
+            "title": None,
+            "body_name": " ",
+            "date": None,
+            "years": [2026],
+            "personal_data": "no",
+            "sections": [{"type": "budget", "first_page": 1, "last_page": 9}],
+        }
+        store.add_answer(BUDGET, version, "cls-2", budget, {}, model="m", pages=9, pages_sent=9)
+        store.add_failure(EXPIRED, version, "cls-2", "request", "batch_expired")
+    return main, tmp_path / "process.db"
+
+
+def test_build_writes_the_serving_database_from_scratch(tmp_path, monkeypatch):
+    main, process = corpus(tmp_path, monkeypatch)
     access.record("https://alpha.example/protokolle?page=2", "restricted")
     access.record("https://alpha.example/files/private-name.pdf", "rate_limited")
     access.record("https://shared.example/beta/files", "restricted")
+    serving = tmp_path / "serving.db"
 
-    counts = build.run(db_path)
-    assert counts == {"register": 3, "register_publications": 1, "access_observations": 1}
-    assert build.run(db_path) == counts  # a rebuild replaces, never appends
+    counts = build.run(serving, main, process)
+    assert counts == {
+        "communes": 2,
+        "runs": 1,
+        "documents": 2,
+        "document_communes": 3,
+        "sections": 3,
+        "register": 3,
+        "register_publications": 1,
+        "access_observations": 1,
+    }
+    assert build.run(serving, main, process) == counts  # a rebuild replaces, never appends
+    assert not (tmp_path / "serving.db.tmp").exists()
 
-    db = sqlite3.connect(db_path)
+    db = sqlite3.connect(serving)
     assert db.execute("PRAGMA journal_mode").fetchone()[0] == "delete"
+    # only classified files are listed
+    assert {r[0] for r in db.execute("SELECT sha256 FROM documents")} == {SAMPLED, BUDGET}
+    row = db.execute(
+        "SELECT title, body_name, first_seen, listing_date, page_count, run_id, kind, body_kind, "
+        "date, years, year, languages, personal_data, pages_seen FROM documents WHERE sha256 = ?",
+        (SAMPLED,),
+    ).fetchone()
+    assert row == (
+        "Gemeindeversammlung vom 28. November 2024, Antrag von [name]",
+        "Gemeindeversammlung Alpha",
+        "2026-01-05",
+        "2024-12-01",
+        200,
+        build.CLASSIFICATION,
+        "meeting_booklet",
+        "citizens_assembly",
+        "2024-11-28",
+        "2024,2025",
+        2024,
+        "de",
+        1,
+        150,
+    )
+    # no date: the one year the classifier read; no title or a blank body: NULL
+    assert db.execute(
+        "SELECT title, body_name, date, year, personal_data FROM documents WHERE sha256 = ?",
+        (BUDGET,),
+    ).fetchone() == (None, None, None, 2026, 0)
+    # the first 50 pages were all shown; pages 60 to 70 lie where only some were
+    assert db.execute(
+        "SELECT type, family, first_page, last_page, partly_unseen FROM sections "
+        "WHERE sha256 = ? ORDER BY position",
+        (SAMPLED,),
+    ).fetchall() == [("minutes", "deliberation", 1, 10, 0), ("budget", "money", 60, 70, 1)]
+    assert set(build.FAMILIES) == set(
+        json.loads((build.records.PROMPTS / build.CLASSIFICATION / "schema.json").read_text())[
+            "properties"
+        ]["sections"]["items"]["properties"]["type"]["enum"]
+    )
+    assert db.execute(
+        "SELECT c.name FROM document_communes d JOIN communes c USING (bfs_id) "
+        "WHERE d.sha256 = ? ORDER BY c.name",
+        (SAMPLED,),
+    ).fetchall() == [("Alpha",), ("Beta",)]
+    run_id, settings_json, note, documents = db.execute(
+        "SELECT id, settings, note, documents FROM runs"
+    ).fetchone()
+    assert run_id == build.CLASSIFICATION and documents == 2
+    assert json.loads(settings_json)["max_pages"] == 150
+    assert "more than 150 pages" in note and "the first 50" in note
     status, note = db.execute("SELECT status, note FROM register WHERE bfs_id = 1").fetchone()
     assert status == "blocked_robots" and "robots.txt" in note
     # one row per website: the latest check's status, the restriction kept, no document address

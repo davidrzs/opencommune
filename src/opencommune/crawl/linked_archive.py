@@ -82,6 +82,10 @@ class LinkedSource(BaseModel):
     external_listing_prefixes: list[str] = Field(default_factory=list)
     wix_file_owner: str | None = Field(default=None, pattern=r"^[0-9a-f]+$")
     finsta_exports: FinstaExports | None = None
+    # Discovery limits for this archive where the defaults (discovery.MAX_PAGES, MAX_DEPTH) left
+    # pages out (David, 2026-11-13).
+    max_pages: int | None = Field(default=None, gt=0)
+    max_depth: int | None = Field(default=None, gt=0)
 
     @property
     def selected_documents(self):
@@ -353,6 +357,9 @@ def fetch_one(
         signature.pop("crawl_prefixes")
     if not source.external_listing_prefixes:
         signature.pop("external_listing_prefixes")
+    for field in ("max_pages", "max_depth"):
+        if getattr(source, field) is None:  # older signatures have no limits
+            signature.pop(field)
     if source.wix_file_owner is None:
         signature.pop("wix_file_owner")
     state = read(source.bfs_id) or {
@@ -374,7 +381,8 @@ def fetch_one(
             "crawl_prefixes",
             "external_listing_prefixes",
         }
-        metadata = url_fields | {"attribution_note", "finsta_exports"}
+        limits = ("max_pages", "max_depth")
+        metadata = url_fields | {"attribution_note", "finsta_exports", *limits}
         same_scope = {k: v for k, v in previous.items() if k not in metadata} == {
             k: v for k, v in signature.items() if k not in metadata
         }
@@ -400,6 +408,11 @@ def fetch_one(
             for field in ("crawl_prefixes", "external_listing_prefixes")
         ):
             state.pop("discovery_version", None)
+        if any(previous.get(k) != signature.get(k) for k in limits):
+            # Read the pages again whose links the old limits left out.
+            for url, page in list(state["pages"].items()):
+                if page.get("depth_limited", 0) or page.get("capacity_limited", 0):
+                    state["pages"].pop(url)
         state["source"] = signature
         for url in source.selected_documents:
             state["documents"].setdefault(url, url)
@@ -638,9 +651,9 @@ def fetch_one(
                             state["pages"].pop(child, None)
                             queue.append(child)
                         continue
-                    if child_depth > discovery.MAX_DEPTH:
+                    if child_depth > (source.max_depth or discovery.MAX_DEPTH):
                         depth_limited += 1
-                    elif len(frontier) >= discovery.MAX_PAGES:
+                    elif len(frontier) >= (source.max_pages or discovery.MAX_PAGES):
                         capacity_limited += 1
                     else:
                         frontier[child] = {"depth": child_depth, "parent": str(response.url)}

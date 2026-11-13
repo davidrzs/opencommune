@@ -1,11 +1,12 @@
 <script lang="ts">
   import { page } from '$app/state';
   import { about } from '$lib/about';
-  import { href, type Lang } from '$lib/i18n';
+  import { documentCount, href, type Lang } from '$lib/i18n';
   import { privacy } from '$lib/privacy';
   import ReportProblem from '$lib/ReportProblem.svelte';
   let lang = $derived((page.params.lang || 'de') as Lang);
   let t = $derived(about[lang]);
+  let { data } = $props();
 </script>
 
 <svelte:head>
@@ -13,7 +14,7 @@
   <meta name="description" content={t.intro} />
 </svelte:head>
 
-<article class="about-page">
+<article class="about-page container">
   <header>
     <h1>{t.title}</h1>
     <p class="intro">{t.intro}</p>
@@ -32,12 +33,25 @@
     <p>{t.method}</p>
     <p>{t.limits}</p>
   </section>
+  <section id="klassifikation">
+    <h2>{t.classificationTitle}</h2>
+    <p>{t.classification}</p>
+    {#each data.runs ?? [] as run (run.id)}<div class="run" id={`run-${run.id}`}>
+        <h3><code>{run.id}</code></h3>
+        <p class="run-meta">
+          {[run.model && `${t.model}: ${run.model}`, documentCount(run.documents, lang)]
+            .filter(Boolean)
+            .join(' · ')}
+        </p>
+        <p>{run.note}</p>
+      </div>{/each}
+  </section>
   <section>
     <h2>{t.dataTitle}</h2>
     <p>{t.data}</p>
     <ul class="data-links">
       <li>
-        <a href="https://github.com/davidrzs/opencommune/blob/main/server/API.md">{t.api} ↗</a>
+        <a href={href('/api', lang)}>{t.api}</a>
       </li>
       <li>{t.mcp}: <code>{page.url.origin}/mcp</code></li>
       <li><a href="https://huggingface.co/datasets/davidrzs/opencommune">{t.dataset} ↗</a></li>
@@ -62,50 +76,65 @@
 </article>
 
 <style>
-  .data-links {
-    padding-left: 20px;
-    line-height: 1.9;
-  }
-  .data-links code {
-    font-size: 0.9em;
-    overflow-wrap: anywhere;
-  }
   .about-page {
-    max-width: 780px;
-    margin: 0 auto;
-    padding: 70px 24px 90px;
+    padding-block: var(--space-7xl) var(--space-8xl);
+  }
+  .about-page > * {
+    max-width: var(--measure);
   }
   h1 {
-    font-size: clamp(34px, 5vw, 54px);
-    line-height: 1.1;
-    letter-spacing: -1.5px;
+    font-size: var(--font-size-page-title);
+    line-height: var(--line-height-tight);
+    letter-spacing: var(--letter-spacing-tight);
   }
   .intro {
-    font-size: 23px;
-    line-height: 1.5;
+    font-size: var(--font-size-2xl);
+    line-height: var(--line-height-normal);
     color: var(--ink);
-    margin-top: 24px;
+    margin-top: var(--space-2xl);
   }
   section {
-    margin: 42px 0;
+    margin: var(--space-4xl) 0;
   }
   h2 {
-    font-size: 23px;
-    line-height: 1.3;
-    margin-bottom: 16px;
+    font-size: var(--font-size-2xl);
+    line-height: var(--line-height-snug);
+    margin-bottom: var(--space-lg);
   }
   p {
-    font-size: 17px;
-    line-height: 1.75;
+    font-size: var(--font-size-lg);
+    line-height: var(--line-height-loose);
     color: var(--muted);
-    margin: 14px 0;
+    margin: var(--space-md) 0;
   }
   a {
-    text-underline-offset: 4px;
+    text-underline-offset: var(--underline-offset);
+  }
+  .run {
+    border-top: var(--rule);
+    padding-top: var(--space-md);
+    margin-top: var(--space-2xl);
+  }
+  .run h3 {
+    font-size: var(--font-size-md);
+    font-weight: var(--weight-medium);
+    overflow-wrap: anywhere;
+  }
+  p.run-meta {
+    font-size: var(--font-size-md);
+    margin: var(--space-xs) 0;
+  }
+  .data-links {
+    padding-left: var(--space-xl);
+    line-height: var(--line-height-loose);
+  }
+  .data-links code {
+    font-size: var(--font-size-code);
+    overflow-wrap: anywhere;
   }
   @media (max-width: 600px) {
     .about-page {
-      padding: 40px 20px 60px;
+      padding-block: var(--space-4xl) var(--space-6xl);
     }
   }
 </style>

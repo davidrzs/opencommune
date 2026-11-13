@@ -1,5 +1,5 @@
 //! The pages search engines and AI assistants read (`site.rs`): `robots.txt`, `sitemap.xml`,
-//! `llms.txt`, and the HTML of the start, commune, decision, about and search pages.
+//! `llms.txt`, and the HTML of the start, commune, about, privacy and search pages.
 
 use axum::extract::State;
 use axum::http::{StatusCode, header};
@@ -7,9 +7,8 @@ use axum::response::{Html, IntoResponse, Redirect, Response};
 use serde_json::json;
 
 use crate::AppState;
-use crate::db::{decisions, pages};
+use crate::db::pages;
 use crate::error::ApiError;
-use crate::models::ArchiveCommune;
 use crate::site::{Lang, Page, date, escape};
 
 /// Crawlers that collect training data. They may read nothing; search engines and the assistants'
@@ -26,7 +25,6 @@ const TRAINING_CRAWLERS: [&str; 9] = [
     "cohere-ai",
 ];
 
-const DATASET: &str = "https://huggingface.co/datasets/davidrzs/opencommune";
 const SOURCE: &str = "https://github.com/davidrzs/opencommune";
 
 pub async fn robots(State(state): State<AppState>) -> Response {
@@ -54,17 +52,16 @@ pub async fn robots(State(state): State<AppState>) -> Response {
     text("text/plain; charset=utf-8", body)
 }
 
-/// Every page in every language. One file holds at most 50,000 addresses; past that the sitemap
-/// needs an index.
+/// Every page in every language: the start, about and privacy pages and every commune. One file
+/// holds at most 50,000 addresses; past that the sitemap needs an index.
 pub async fn sitemap(State(state): State<AppState>) -> Result<Response, ApiError> {
-    let (communes, decisions) = pages::sitemap(&state.db).await?;
+    let communes = pages::sitemap(&state.db).await?;
     let mut paths = vec![
         String::new(),
         "/ueber-uns".to_string(),
         "/datenschutz".to_string(),
     ];
     paths.extend(communes.iter().map(|id| format!("/gemeinden/{id}")));
-    paths.extend(decisions.iter().map(|id| format!("/entscheide/{id}")));
     let mut xml = String::from(
         "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n\
          <urlset xmlns=\"http://www.sitemaps.org/schemas/sitemap/0.9\">\n",
@@ -88,34 +85,32 @@ pub async fn llms(State(state): State<AppState>) -> Result<Response, ApiError> {
     let n = |v| Lang::De.number(v);
     let body = format!(
         "# OpenCommune\n\n\
-         > Open archive of the decisions of Swiss municipalities: minutes and decisions of communal \
-         assemblies, parliaments and councils in German, French and Italian, collected from the \
-         communes' own websites, structured with a language model and anonymised. Free to use \
-         under CC0 1.0; a citation (\"OpenCommune, {base}\") is appreciated.\n\n\
-         The archive holds {} decisions from {} communes and lists {} documents from {} communes \
-         with links to the originals. It is growing: a missing document does not mean that a \
-         meeting did not take place. Decisions are extracted by a language model and not checked \
-         one by one; each links to its source PDF and page.\n\n\
+         > Open archive of the documents Swiss municipalities publish on their websites: minutes, \
+         decisions, budgets, accounts, vote results and other papers of communal assemblies, \
+         parliaments and councils. Each file is listed once, with its title and a link to the \
+         original on the commune's website. Free to use under CC0 1.0; a citation \
+         (\"OpenCommune, {base}\") is appreciated.\n\n\
+         The archive lists {} documents from {} communes, each classified by a language model: \
+         its title and body as printed, the kind of body, its date and years, its languages and \
+         its sections (minutes, decisions, vote results, budget, accounts and others) with their \
+         pages. No person has checked this classification yet. The archive is growing: a missing \
+         document does not mean that a meeting did not take place.\n\n\
          ## Query it\n\n\
-         - [MCP server]({base}/mcp): streamable HTTP, no key. Tools: `search_decisions` (full text, \
-         filters by commune, canton, category, outcome, date and amount), `get_decision`, \
-         `list_communes`.\n\
+         - [MCP server]({base}/mcp): streamable HTTP, no key. Tools: `search_documents` (filters by \
+         commune, section type, section family, body, year and title, with counts per value), \
+         `get_document`, `list_communes`.\n\
          - [JSON API]({SOURCE}/blob/main/server/API.md): for example \
-         `{base}/api/decisions?q=Schulhaus`, `{base}/api/decisions/{{id}}`, \
-         `{base}/api/archive/communes`.\n\n\
+         `{base}/api/documents?commune=261&section=budget`, `{base}/api/documents/{{sha256}}`, \
+         `{base}/api/communes`.\n\n\
          ## Pages\n\n\
          - A commune: `{base}/de/gemeinden/{{BFS number}}`, also in French (`/fr/`) and Italian \
          (`/it/`).\n\
-         - A decision: `{base}/de/entscheide/{{id}}`.\n\
          - [Sitemap]({base}/sitemap.xml), [about]({base}/de/ueber-uns).\n\n\
-         ## Data and code\n\n\
-         - [Dataset on Hugging Face]({DATASET})\n\
+         ## Code\n\n\
          - [Source code]({SOURCE}) (MIT)\n\
          - Contact: zdavid@ethz.ch\n",
-        n(t.decisions),
-        n(t.decision_communes),
         n(t.documents),
-        n(t.document_communes),
+        n(t.communes),
     );
     Ok(text("text/markdown; charset=utf-8", body))
 }
@@ -131,19 +126,17 @@ pub async fn home(state: AppState, lang: Lang) -> Result<Response, ApiError> {
     let totals = fill(
         w.totals,
         &[
-            ("decisions", lang.number(t.decisions)),
-            ("decision_communes", lang.number(t.decision_communes)),
             ("documents", lang.number(t.documents)),
-            ("document_communes", lang.number(t.document_communes)),
+            ("communes", lang.number(t.communes)),
         ],
     );
     let mut facts = format!(
         "<h1>OpenCommune</h1><p>{}</p><p>{}</p><h2>{}</h2><ul>",
         escape(w.site),
         escape(&totals),
-        escape(w.with_decisions)
+        escape(w.with_documents)
     );
-    for c in pages::communes_with_decisions(&state.db).await? {
+    for c in pages::communes_with_documents(&state.db).await? {
         facts.push_str(&format!(
             "<li><a href=\"/{}/gemeinden/{}\">{} ({})</a></li>",
             lang.code(),
@@ -153,8 +146,7 @@ pub async fn home(state: AppState, lang: Lang) -> Result<Response, ApiError> {
         ));
     }
     facts.push_str(&format!(
-        "</ul><p><a href=\"/{}/ueber-uns\">{}</a> · <a href=\"/llms.txt\">llms.txt</a> · \
-         <a href=\"{DATASET}\">Hugging Face</a></p>",
+        "</ul><p><a href=\"/{}/ueber-uns\">{}</a> · <a href=\"/llms.txt\">llms.txt</a></p>",
         lang.code(),
         escape(w.about)
     ));
@@ -174,7 +166,7 @@ pub async fn home(state: AppState, lang: Lang) -> Result<Response, ApiError> {
             "inLanguage": ["de", "fr", "it"],
             "spatialCoverage": {"@type": "Place", "name": "Switzerland"},
             "creator": {"@type": "Person", "name": "David Zollikofer"},
-            "sameAs": [DATASET, SOURCE],
+            "sameAs": [SOURCE],
         })),
         facts,
         noindex: false,
@@ -188,46 +180,20 @@ pub async fn commune(state: AppState, lang: Lang, id: String) -> Result<Response
         Ok(bfs_id) if bfs_id > 0 => pages::commune(&state.db, bfs_id).await?,
         _ => None,
     };
-    let Some((commune, recent)) = found else {
+    let Some((c, documents)) = found else {
         return Ok(not_found(&state, lang, path).await);
-    };
-    let (bfs_id, name, canton, website, documents, decisions) = match &commune {
-        ArchiveCommune::Covered { commune: c, .. } => (
-            c.bfs_id,
-            c.name.as_str(),
-            c.canton.as_str(),
-            Some(c.website.as_str()).filter(|w| !w.is_empty()),
-            c.documents,
-            c.decisions,
-        ),
-        ArchiveCommune::RegisterOnly {
-            bfs_id,
-            name,
-            canton,
-            website,
-            documents,
-            decisions,
-            ..
-        } => (
-            *bfs_id,
-            name.as_str(),
-            canton.as_str(),
-            website.as_deref(),
-            *documents,
-            *decisions,
-        ),
     };
     let w = lang.words();
     let line = fill(
         w.commune_line,
         &[
-            ("name", name.to_string()),
-            ("canton", canton.to_string()),
-            ("documents", lang.number(documents)),
-            ("decisions", lang.number(decisions)),
+            ("name", c.name.clone()),
+            ("canton", c.canton.clone()),
+            ("documents", lang.number(c.documents)),
         ],
     );
-    let mut facts = format!("<h1>{}</h1><p>{}</p>", escape(name), escape(&line));
+    let website = c.website.as_deref().filter(|w| !w.is_empty());
+    let mut facts = format!("<h1>{}</h1><p>{}</p>", escape(&c.name), escape(&line));
     if let Some(site) = website {
         facts.push_str(&format!(
             "<p><a href=\"{}\">{}</a></p>",
@@ -235,18 +201,33 @@ pub async fn commune(state: AppState, lang: Lang, id: String) -> Result<Response
             escape(w.website)
         ));
     }
-    if !recent.is_empty() {
+    if !documents.facets.years.is_empty() {
+        let years: Vec<String> = documents
+            .facets
+            .years
+            .iter()
+            .map(|y| {
+                let year = y.value.map_or(w.no_year.to_string(), |v| v.to_string());
+                format!("{year}: {}", lang.number(y.count))
+            })
+            .collect();
+        facts.push_str(&format!(
+            "<h2>{}</h2><p>{}</p>",
+            escape(w.by_year),
+            escape(&years.join(" · "))
+        ));
+    }
+    if !documents.items.is_empty() {
         facts.push_str(&format!("<h2>{}</h2><ul>", escape(w.recent)));
-        for d in &recent {
+        for d in &documents.items {
+            let day = d.date.as_deref().or(d.listing_date.as_deref());
             facts.push_str(&format!(
-                "<li>{}<a href=\"/{}/entscheide/{}\">{}</a></li>",
-                d.meeting_date
-                    .as_deref()
-                    .map(|day| format!("{}: ", date(day)))
+                "<li>{}<a href=\"{}?commune={}\">{}</a></li>",
+                day.map(|day| format!("{}: ", date(day)))
                     .unwrap_or_default(),
-                lang.code(),
-                escape(&d.id),
-                escape(&d.title)
+                escape(&d.original_url),
+                c.bfs_id,
+                escape(d.title.as_deref().unwrap_or(w.untitled))
             ));
         }
         facts.push_str("</ul>");
@@ -254,9 +235,9 @@ pub async fn commune(state: AppState, lang: Lang, id: String) -> Result<Response
     let mut place = json!({
         "@context": "https://schema.org",
         "@type": "AdministrativeArea",
-        "name": name,
-        "identifier": {"@type": "PropertyValue", "propertyID": "BFS", "value": bfs_id},
-        "containedInPlace": {"@type": "AdministrativeArea", "name": canton},
+        "name": c.name,
+        "identifier": {"@type": "PropertyValue", "propertyID": "BFS", "value": c.bfs_id},
+        "containedInPlace": {"@type": "AdministrativeArea", "name": c.canton},
         "url": state.site.url(lang, &path),
     });
     if let Some(site) = website {
@@ -264,52 +245,10 @@ pub async fn commune(state: AppState, lang: Lang, id: String) -> Result<Response
     }
     let page = Page {
         lang,
-        title: format!("{name} — OpenCommune"),
+        title: format!("{} — OpenCommune", c.name),
         description: line,
         path,
         json_ld: Some(place),
-        facts,
-        noindex: false,
-    };
-    Ok(html(&state, StatusCode::OK, &page).await)
-}
-
-pub async fn decision(state: AppState, lang: Lang, id: String) -> Result<Response, ApiError> {
-    let path = format!("/entscheide/{id}");
-    let Some(d) = decisions::get(&state.db, &id).await? else {
-        return Ok(not_found(&state, lang, path).await);
-    };
-    let w = lang.words();
-    let mut meta = vec![format!(
-        "<a href=\"/{}/gemeinden/{}\">{} ({})</a>",
-        lang.code(),
-        d.commune.bfs_id,
-        escape(&d.commune.name),
-        escape(&d.commune.canton)
-    )];
-    if let Some(day) = &d.meeting_date {
-        meta.push(date(day));
-    }
-    if let Some(outcome) = d.outcome.as_deref().and_then(|o| w.outcome(o)) {
-        meta.push(outcome.to_string());
-    }
-    if let Some(amount) = d.amount_chf {
-        meta.push(format!("CHF {}", lang.number(amount.round() as i64)));
-    }
-    let facts = format!(
-        "<h1>{}</h1><p>{}</p><p>{}</p><p><a href=\"{}\">{}</a></p>",
-        escape(&d.title),
-        meta.join(" · "),
-        escape(&d.summary),
-        escape(&d.source_link),
-        escape(&fill(w.source, &[("page", d.page_start.to_string())]))
-    );
-    let page = Page {
-        lang,
-        title: format!("{} — {} — OpenCommune", d.title, d.commune.name),
-        description: shorten(&d.summary, 300),
-        path,
-        json_ld: None,
         facts,
         noindex: false,
     };
@@ -325,8 +264,7 @@ pub async fn about(state: AppState, lang: Lang) -> Response {
         description: w.about_text.to_string(),
         json_ld: None,
         facts: format!(
-            "<h1>{}</h1><p>{}</p><p>{}</p><p><a href=\"{SOURCE}\">GitHub</a> · \
-             <a href=\"{DATASET}\">Hugging Face</a></p>",
+            "<h1>{}</h1><p>{}</p><p>{}</p><p><a href=\"{SOURCE}\">GitHub</a></p>",
             escape(w.about),
             escape(w.about_text),
             escape(w.site)
@@ -400,16 +338,6 @@ fn fill(template: &str, values: &[(&str, String)]) -> String {
         })
 }
 
-/// At most `max` characters, cut at a word and marked with an ellipsis.
-fn shorten(text: &str, max: usize) -> String {
-    if text.chars().count() <= max {
-        return text.to_string();
-    }
-    let cut: String = text.chars().take(max).collect();
-    let cut = cut.rsplit_once(' ').map_or(cut.as_str(), |(head, _)| head);
-    format!("{}…", cut.trim_end_matches([',', ';', ':', '.']))
-}
-
 /// The text before the first colon: the start page's title.
 fn first_clause(text: &str) -> &str {
     text.split([':', '：']).next().unwrap_or(text).trim()
@@ -417,7 +345,7 @@ fn first_clause(text: &str) -> &str {
 
 #[cfg(test)]
 mod tests {
-    use super::{fill, first_clause, shorten};
+    use super::{fill, first_clause};
 
     #[test]
     fn helpers() {
@@ -425,8 +353,6 @@ mod tests {
             fill("{a} und {b}", &[("a", "1".into()), ("b", "2".into())]),
             "1 und 2"
         );
-        assert_eq!(shorten("eins zwei drei", 9), "eins…");
-        assert_eq!(shorten("kurz", 9), "kurz");
         assert_eq!(first_clause("Offenes Archiv: Protokolle"), "Offenes Archiv");
     }
 }

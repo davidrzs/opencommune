@@ -1,29 +1,20 @@
-"""Index PDF availability without requiring or inventing a decision record."""
+"""The internal catalogue of files: every listed file with its communes, rebuilt from the
+sidecars and the URL index. Classification reads it; `build.py` turns it into the serving database."""
 
 import datetime as dt
 import json
 import logging
 import re
 import unicodedata
-from pathlib import Path
 from urllib.parse import unquote, urlsplit
 
-from sqlalchemy import delete, func, select
+from sqlalchemy import delete, insert, inspect, select
 
 from .config import settings
-from .models import CatalogPDF, Commune, Decision, Document
+from .models import CatalogCommune, CatalogPDF, Commune
 from .schemas import RawSidecar
 
 log = logging.getLogger(__name__)
-STATUSES = {
-    "pending_parse": "PDF vorhanden · noch nicht ausgelesen",
-    "pending_extract": "Noch nicht in Beschlüsse aufgeteilt",
-    "pending_publication": "Beschlüsse noch nicht veröffentlicht",
-    "published": "Beschlüsse verfügbar",
-    "no_decisions": "Keine relevanten Beschlüsse erkannt",
-    "withheld": "Keine Beschlüsse veröffentlicht",
-    "unavailable": "Verarbeitungsstand unklar",
-}
 SHA = re.compile(r"^[0-9a-f]{64}$")
 BATCH_SIZE = 500
 LATEST_AFTER_FETCH = dt.timedelta(days=366)
@@ -144,16 +135,17 @@ def upsert_communes(session, communes) -> None:
         session.add(row)
 
 
-def extracted_decisions(path: Path) -> int:
-    """The number of decisions in an extraction output (`data/extracted/<sha>.json`). Raises
-    ValueError for a file that is not one."""
-    try:
-        decisions = json.loads(path.read_text())["result"]["decisions"]
-    except (KeyError, TypeError) as exc:
-        raise ValueError(f"not an extraction output: {path.name}") from exc
-    if not isinstance(decisions, list):
-        raise ValueError(f"not an extraction output: {path.name}")
-    return len(decisions)
+def rebuild_if_outdated(engine) -> bool:
+    """Drop `pdf_catalog` when its columns differ from the model; `refresh` lists every sidecar, so
+    the table comes back complete."""
+    if not inspect(engine).has_table("pdf_catalog"):
+        return False
+    columns = {c["name"] for c in inspect(engine).get_columns("pdf_catalog")}
+    if columns == set(CatalogPDF.__table__.columns.keys()):
+        return False
+    CatalogPDF.__table__.drop(engine)
+    CatalogPDF.__table__.create(engine)
+    return True
 
 
 def refresh(session, communes):
@@ -173,15 +165,10 @@ def refresh(session, communes):
 
     linked_sources = {c.bfs_id: c for c in linked_archive.load_sources()}
 
-    counts = dict(
-        session.execute(
-            select(Decision.document_id, func.count()).group_by(Decision.document_id)
-        ).all()
-    )
-    published = {d.sha256: d for d in session.scalars(select(Document))}
     # Only retain keys. Loading the entire catalogue as ORM rows keeps hundreds of
     # thousands of objects alive until commit and makes each refresh memory-heavy.
     stale = set(session.scalars(select(CatalogPDF.sha256)))
+    listed: dict[str, int] = {}  # sha256 -> the commune that fetched it first
     batch = []
     count = 0
     indexed_at = dt.datetime.now(dt.UTC).replace(tzinfo=None)
@@ -240,25 +227,11 @@ def refresh(session, communes):
             session.add(c)
             known[c.bfs_id] = c
         stale.discard(sha)
+        listed[sha] = c.bfs_id
         count += 1
-        doc = published.get(sha)
-        status = "pending_parse"
-        n = 0
-        if (settings.parsed_dir / f"{sha}.json").exists():
-            status = "pending_extract"
-        ex_path = settings.extracted_dir / f"{sha}.json"
-        if ex_path.exists():
-            try:
-                n = extracted_decisions(ex_path)
-                status = "pending_publication" if n else "no_decisions"
-            except (OSError, ValueError):
-                status = "unavailable"
-        if doc:
-            n = counts.get(doc.id, 0)
-            status = "published" if n else "withheld" if doc.dropped_decisions else "no_decisions"
         # a date more than a year after the download is a misreading (a file number, a year-first
         # file name read day-first) and is recorded as unknown
-        date = doc.meeting_date if doc else sidecar.listing_date
+        date = sidecar.listing_date
         if date is not None and date > sidecar.fetched_at.date() + LATEST_AFTER_FETCH:
             date = None
         batch.append(
@@ -268,14 +241,12 @@ def refresh(session, communes):
                     "commune_bfs_id": c.bfs_id,
                     "commune_name": c.name,
                     "canton": c.canton,
-                    "body": doc.body if doc else sidecar.body,
+                    "body": sidecar.body,
                     "source_date": date,
-                    "date_precision": "day" if doc and doc.meeting_date else sidecar.date_precision,
-                    "title": doc.title if doc else document_label(sidecar),
+                    "date_precision": sidecar.date_precision,
+                    "title": document_label(sidecar),
                     "source_url": safe_url(sidecar.source_url),
                     "provenance": sidecar.adapter or "html_links",
-                    "status": status,
-                    "decision_count": n if status == "published" else 0,
                 },
             )
         )
@@ -291,8 +262,37 @@ def refresh(session, communes):
             delete(CatalogPDF).where(CatalogPDF.sha256.in_(keys)),
             execution_options={"synchronize_session": "fetch"},
         )
+    commune_links(session, listed, set(known) | set(registered))
     session.flush()
     return count
+
+
+def commune_links(session, listed: dict[str, int], accepted: set[int]) -> int:
+    """Rebuild `pdf_catalog_communes` from the URL index: every known commune that linked a listed
+    file, with the first URL it used. A URL that names a naturalisation is not kept."""
+    from .crawl.store import index_path
+
+    links: dict[tuple[str, int], str | None] = {(sha, bfs): None for sha, bfs in listed.items()}
+    path = index_path()
+    if path.exists():
+        with path.open(encoding="utf-8") as lines:
+            for line in lines:
+                try:
+                    entry = json.loads(line)
+                except ValueError:
+                    continue
+                sha, bfs, url = entry.get("sha256"), entry.get("commune_bfs_id"), entry.get("url")
+                if sha not in listed or bfs not in accepted:
+                    continue
+                if url and NATURALISATION.search(unicodedata.normalize("NFC", unquote(url))):
+                    continue
+                if links.get((sha, bfs)) is None:
+                    links[(sha, bfs)] = safe_url(url)
+    session.execute(delete(CatalogCommune))
+    rows = [{"sha256": s, "commune_bfs_id": b, "source_url": u} for (s, b), u in links.items()]
+    for start in range(0, len(rows), BATCH_SIZE):
+        session.execute(insert(CatalogCommune), rows[start : start + BATCH_SIZE])
+    return len(rows)
 
 
 def html_documents() -> int:

@@ -1,9 +1,8 @@
 <script lang="ts">
-  import { copy, href, fmt, type Lang } from '$lib/i18n';
+  import { copy, documentCount, href, type Lang } from '$lib/i18n';
   import { page } from '$app/state';
   let lang = $derived((page.params.lang || 'de') as Lang);
   let t = $derived(copy[lang]);
-  const number = (n: number) => fmt(n, lang);
   import type { Commune } from './types';
   import { normalize } from './types';
   let { communes }: { communes: Commune[] } = $props();
@@ -31,13 +30,7 @@
       <p id="search-hint" class="sr-only" aria-live="polite">{matches.length} {t.communes}</p>
       {#each matches as c}<a href={href(`/gemeinden/${c.bfs_id}`, lang)}
           ><span>{c.name} <small>{c.canton}</small></span><span
-            >{c.minutes
-              ? `${number(c.minutes)} ${t.minutesUnit}`
-              : c.finance_years
-                ? `${number(c.finance_years)} ${t.financeYears}`
-                : c.decisions
-                  ? `${number(c.decisions)} ${t.decisions}`
-                  : ''} ↗</span
+            >{c.documents ? documentCount(c.documents, lang) : ''} ↗</span
           ></a
         >{:else}<p>{t.noMatch}</p>{/each}
     </div>{:else}<span id="search-hint" class="sr-only">{t.find}.</span>{/if}

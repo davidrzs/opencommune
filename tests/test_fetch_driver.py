@@ -34,7 +34,7 @@ def commune(
         body="assembly",
         listing_urls=[cfg.pop("listing_url", f"{HOST}/protokolle")],
         adapter=adapter,
-        adapter_config=AdapterConfig(steps=steps, max_documents=cfg.pop("max_documents", 5), **cfg),
+        adapter_config=AdapterConfig(steps=steps, **cfg),
     )
 
 
@@ -125,18 +125,40 @@ def test_follow_cap_limits_initial_fetch_without_changing_archive_config(site):
     assert config.adapter_config.steps[0].max_follow == 20
 
 
-def test_public_archive_can_keep_published_future_dated_documents(site):
+def test_future_dated_documents_are_kept(site):
     site.add(f"{HOST}/robots.txt", body="User-agent: *\nAllow: /\n")
     site.add(f"{HOST}/protokolle", body=listing("2099-01-01"))
     site.add(f"{HOST}/docs/2099-01-01.pdf", body=PDF)
-    config = commune()
+    result = fetch.run([commune()], transport=httpx.MockTransport(site.handler))
+    assert len(result[0].downloaded) == 1
+    assert str(result[0].discovered[0].date) == "2099-01-01"
+
+
+def test_backfill_follows_past_max_follow_without_changing_the_config(site):
+    site.add(f"{HOST}/robots.txt", body="User-agent: *\nAllow: /\n")
+    site.add(
+        f"{HOST}/protokolle",
+        body='<a href="/session/2026-01-01">1. Januar 2026</a>'
+        '<a href="/session/2026-02-01">1. Februar 2026</a>',
+    )
+    for date in ("2026-01-01", "2026-02-01"):
+        site.add(f"{HOST}/session/{date}", body=listing(date))
+        site.add(f"{HOST}/docs/{date}.pdf", body=PDF + date.encode())
+    config = commune(
+        steps=[
+            AdapterStep(selector="a[href*='/session/']", max_follow=1),
+            AdapterStep(selector="a[href$='.pdf']"),
+        ],
+    )
     transport = httpx.MockTransport(site.handler)
-    ordinary = fetch.run([config], transport=transport)
-    assert not ordinary[0].downloaded
-    config.adapter_config.include_future_documents = True
-    archive = fetch.run([config], transport=transport)
-    assert len(archive[0].downloaded) == 1
-    assert str(archive[0].discovered[0].date) == "2099-01-01"
+    weekly = fetch.run([config], transport=transport)
+    assert len(weekly[0].downloaded) == 1 and weekly[0].runs[0].unfollowed == 1
+    assert not site.calls_to(f"{HOST}/session/2026-01-01")
+    backfill = fetch.run([config], backfill=True, transport=transport)
+    assert len(backfill[0].downloaded) == 1 and backfill[0].runs[0].unfollowed == 0
+    assert len(site.calls_to(f"{HOST}/session/2026-01-01")) == 1
+    assert config.adapter_config.steps[0].max_follow == 1
+    assert next(iter(runlog.read_runs()))["unfollowed"] == 1
 
 
 def fetch_one(site: Site, c: CommuneConfig | None = None, **kw) -> fetch.SourceRun:
@@ -415,6 +437,19 @@ def test_same_pdf_under_a_second_url_is_remembered_but_stored_once(site):
     assert {v["sha256"] for v in index.values()} == {run.downloaded[0]} and len(index) == 2
 
 
+def test_a_second_commune_linking_a_known_file_is_recorded_without_a_download(site):
+    site.add(f"{HOST}/protokolle", 200, listing("2026-03-01"))
+    site.add(DOC, 200, PDF, {"content-type": "application/pdf"})
+    index: dict = {}
+    fetch_one(site, index=index)
+    neighbour = commune(bfs_id=2, name="Nachbarwil")
+    second = fetch_one(site, neighbour, index=index)
+    assert second.skipped == [DOC] and len(site.calls_to(DOC)) == 1
+    assert store.load_index()[store.canonical_url(DOC)]["communes"] == [1, 2]
+    fetch_one(site, neighbour, index=index)
+    assert len(store.index_path().read_text().splitlines()) == 2
+
+
 def test_known_documents_are_not_requested_again(site):
     site.add(f"{HOST}/protokolle", 200, listing("2026-03-01"))
     site.add(DOC, 200, PDF, {"content-type": "application/pdf"})
@@ -536,10 +571,10 @@ def test_a_redirect_loop_ends_as_an_http_error(site):
 
 
 def test_every_source_run_writes_a_log_line_with_every_listed_link(site):
-    site.add(f"{HOST}/protokolle", 200, listing("2025-12-05", "2026-03-01", "2026-01-15"))
+    site.add(f"{HOST}/protokolle", 200, listing("2026-03-01", "2026-01-15"))
     site.add(DOC, 200, PDF, {"content-type": "application/pdf"})
     site.add(f"{HOST}/docs/2026-01-15.pdf", 500, b"")
-    run = fetch_one(site, commune(max_documents=2))
+    run = fetch_one(site, commune())
     (line,) = list(runlog.read_runs())
     assert line == run.line()
     assert (line["commune_bfs_id"], line["commune"], line["adapter"], line["body"]) == (
@@ -553,13 +588,9 @@ def test_every_source_run_writes_a_log_line_with_every_listed_link(site):
         and line["listing_status"] == "ok"
         and line["dry_run"] is False
     )
-    assert (line["listed"], line["discovered"], line["new"], line["known"]) == (3, 2, 1, 0)
-    assert (line["date_min"], line["date_max"]) == ("2025-12-05", "2026-03-01")
-    assert [link["date"] for link in line["links"]] == [
-        "2026-03-01",
-        "2026-01-15",
-        "2025-12-05",
-    ]  # beyond max_documents too
+    assert (line["listed"], line["discovered"], line["new"], line["known"]) == (2, 2, 1, 0)
+    assert (line["date_min"], line["date_max"]) == ("2026-01-15", "2026-03-01")
+    assert [link["date"] for link in line["links"]] == ["2026-03-01", "2026-01-15"]
     assert line["links"][0] == {"url": DOC, "date": "2026-03-01", "title": "Protokoll 2026-03-01"}
     assert line["errors"] == [
         {"kind": "http", "url": f"{HOST}/docs/2026-01-15.pdf", "message": "HTTP 500"}
@@ -637,9 +668,7 @@ def test_form_step_posts_the_hidden_inputs_with_each_configured_value(site):
             values=[{"fric_11761_cat0": "569"}, {"fric_11761_cat0": "570"}],
         ),
     )
-    run = fetch_one(
-        site, commune(listing_url=f"{HOST}/Sedute", steps=[step], max_documents=10), dry_run=True
-    )
+    run = fetch_one(site, commune(listing_url=f"{HOST}/Sedute", steps=[step]), dry_run=True)
     assert [d.url for d in run.discovered] == [
         f"{HOST}/Seduta-straordinaria-del-19022024-f8de8100",
         f"{HOST}/Seduta-straordinaria-del-29012024-13973e00",

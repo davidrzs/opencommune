@@ -14,7 +14,7 @@ def test_raw_override_leaves_database_and_processed_data_unchanged(tmp_path):
     )
     config.ensure_dirs()
     assert config.raw_dir == raw
-    assert config.parsed_dir == tmp_path / "local" / "parsed"
+    assert config.serving_db == tmp_path / "local" / "serving.db"
     assert config.database_url == "sqlite:///local.db"
     assert not (tmp_path / "local" / "raw").exists()
 

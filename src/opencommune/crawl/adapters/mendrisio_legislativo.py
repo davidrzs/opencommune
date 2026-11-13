@@ -21,7 +21,7 @@ from collections.abc import Mapping
 from urllib.parse import parse_qs, urlencode, urljoin, urlsplit
 
 from ...schemas import AdapterStep
-from .base import Link, ListingAdapter
+from .base import Link, ListingAdapter, excluded
 from .html_links import parse_date
 
 PAGE_SIZE = 100  # sessions per page; a legislature has 15 to 30
@@ -63,7 +63,7 @@ class MendrisioLegislativoAdapter(ListingAdapter):
                 if not endpoint or (keep and not keep.search(label)):
                     continue
                 text = f"{label} - {title}" if title else label
-                if drop and drop.search(f"{text} {doc.get('filename') or ''} {endpoint}"):
+                if excluded(drop, f"{text} {doc.get('filename') or ''} {endpoint}"):
                     continue
                 links.append(Link(url=urljoin(base_url, endpoint), text=text, date=date))
         return links

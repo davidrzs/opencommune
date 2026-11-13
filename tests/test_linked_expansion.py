@@ -51,6 +51,8 @@ def test_additive_configuration_resumes_without_redownloading(tmp_path, monkeypa
                     "external_listing_prefixes",
                     "wix_file_owner",
                     "finsta_exports",
+                    "max_pages",
+                    "max_depth",
                 }
             )
         )

@@ -12,8 +12,6 @@ Environment=MCP_ALLOWED_HOSTS=opencommune.ch,www.opencommune.ch,localhost,127.0.
 Environment=PUBLIC_URL=https://www.opencommune.ch
 # Search engines may index the pages only once this is true.
 Environment=SEARCH_INDEXING=false
-# Optional: the votes and finance dataset.
-Environment=DATASET_PATH=/opt/opencommune/data/dataset.sqlite
 DynamicUser=yes
 StateDirectory=opencommune
 ProtectSystem=strict

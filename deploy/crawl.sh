@@ -2,7 +2,7 @@
 # Crawl jobs: document discovery and download only. One process at a time owns
 # all download stages, through a lock in DATA_DIR shared with any manual run; workers share the
 # per-host and per-network limits. Runs from the repository it lives in, on any machine.
-# Usage: deploy/crawl.sh backlog|refresh|fetch
+# Usage: deploy/crawl.sh backlog|refresh|fetch|backfill
 set -euo pipefail
 cd "$(dirname "$0")/.."
 py=.venv/bin/python
@@ -48,6 +48,11 @@ case "$mode" in
     run_stage $oc fetch
     run_stage $oc catalog
     ;;
-  *) echo "Expected backlog, refresh or fetch" >&2; exit 2 ;;
+  backfill)
+    # The curated sources once without the weekly max_follow, for their older documents.
+    run_stage $oc fetch --backfill
+    run_stage $oc catalog
+    ;;
+  *) echo "Expected backlog, refresh, fetch or backfill" >&2; exit 2 ;;
 esac
 echo "$(date -Is) Done: $mode"

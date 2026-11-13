@@ -8,7 +8,7 @@ from sqlalchemy.orm import Session
 from opencommune import catalog
 from opencommune.config import settings
 from opencommune.db import _make_engine, init_db
-from opencommune.models import CatalogPDF, Commune, Document
+from opencommune.models import CatalogCommune, CatalogPDF, Commune
 from opencommune.schemas import RawSidecar
 
 
@@ -16,8 +16,6 @@ from opencommune.schemas import RawSidecar
 def corpus(tmp_path, monkeypatch):
     monkeypatch.setattr(settings, "data_dir", tmp_path)
     settings.ensure_dirs()
-    settings.parsed_dir.mkdir()
-    settings.extracted_dir.mkdir()
     engine = _make_engine(f"sqlite:///{tmp_path}/test.db")
     init_db(engine)
     with Session(engine) as session:
@@ -62,9 +60,7 @@ def test_unparsed_document_is_visible_untagged_and_removed_with_its_sidecar(corp
     raw(sha)
     assert catalog.refresh(session, [commune]) == 1
     row = session.get(CatalogPDF, sha)
-    assert row.status == "pending_parse"
-    assert row.title == "Gemeindedokument" and row.decision_count == 0
-    assert session.scalar(select(func.count()).select_from(Document)) == 0
+    assert row.title == "Gemeindedokument"
     assert catalog.refresh(session, [commune]) == 1
     assert row.commune_name == "Testgemeinde" and "Private Person" not in row.title
     (settings.raw_dir / f"{sha}.json").unlink()
@@ -164,10 +160,6 @@ def test_refresh_batches_rows_and_preserves_unchanged_index_time(corpus, monkeyp
 
     assert catalog.refresh(session, [commune]) == 5
     assert session.get(CatalogPDF, shas[0]).indexed_at == initial_index_time
-    (settings.parsed_dir / f"{shas[0]}.json").write_text("{}")
-    assert catalog.refresh(session, [commune]) == 5
-    assert not any(isinstance(obj, CatalogPDF) for obj in session.identity_map.values())
-    assert session.get(CatalogPDF, shas[0]).status == "pending_extract"
 
 
 def test_batched_refresh_is_atomic_and_stale_deletion_rolls_back(corpus, monkeypatch):
@@ -193,22 +185,6 @@ def test_batched_refresh_is_atomic_and_stale_deletion_rolls_back(corpus, monkeyp
     assert session.scalar(select(func.count()).select_from(CatalogPDF)) == 1
 
 
-def test_pending_empty_and_invalid_extraction_are_distinct(corpus):
-    session, commune = corpus
-    sha = "b" * 64
-    raw(sha)
-    (settings.parsed_dir / f"{sha}.json").write_text("{}")
-    catalog.refresh(session, [commune])
-    assert session.get(CatalogPDF, sha).status == "pending_extract"
-    path = settings.extracted_dir / f"{sha}.json"
-    path.write_text("broken")
-    catalog.refresh(session, [commune])
-    assert session.get(CatalogPDF, sha).status == "unavailable"
-    path.write_text(json.dumps({"meta": {"model": "test"}, "result": {"decisions": []}}))
-    catalog.refresh(session, [commune])
-    assert session.get(CatalogPDF, sha).status == "no_decisions"
-
-
 def test_month_precision_is_kept(corpus):
     session, commune = corpus
     raw("c" * 64, date_precision="month")
@@ -220,31 +196,6 @@ def test_month_precision_is_kept(corpus):
 def test_unsafe_urls_are_dropped():
     for value in ["javascript:alert(1)", "data:text/html,test", "//example.org", "https://["]:
         assert catalog.safe_url(value) is None
-
-
-def test_withheld_records_do_not_claim_no_decisions(corpus):
-    session, commune = corpus
-    sha = "d" * 64
-    raw(sha)
-    session.add(
-        Document(
-            id="doc",
-            sha256=sha,
-            commune_bfs_id=1,
-            body="assembly",
-            source_url="https://example.org",
-            fetched_at=dt.datetime(2026, 1, 1),
-            meeting_date=dt.date(2025, 11, 1),
-            language="de",
-            pages=1,
-            title="Öffentliches Protokoll",
-            dropped_decisions=2,
-        )
-    )
-    session.flush()
-    catalog.refresh(session, [commune])
-    assert session.get(CatalogPDF, sha).status == "withheld"
-    assert session.get(CatalogPDF, sha).title == "Öffentliches Protokoll"
 
 
 def test_machine_archive_commune_appears_without_manual_config(corpus, monkeypatch):
@@ -295,4 +246,44 @@ def test_wordpress_archive_requires_batch_configuration(corpus, monkeypatch):
     )
     assert catalog.refresh(session, []) == 1
     assert session.get(Commune, 2).vendor == "wordpress"
-    assert session.get(CatalogPDF, sha).status == "pending_parse"
+    assert session.get(CatalogPDF, sha).commune_bfs_id == 2
+
+
+def test_a_file_linked_by_two_communes_is_listed_once_with_both(corpus):
+    session, commune = corpus
+    session.add(
+        Commune(
+            bfs_id=2,
+            name="Nachbargemeinde",
+            canton="BE",
+            language="de",
+            website="https://example.net",
+        )
+    )
+    session.flush()
+    sha = "a" * 64
+    raw(sha, source_url="https://example.org/a.pdf")
+    lines = [
+        {"url": "https://example.org/a.pdf", "sha256": sha, "commune_bfs_id": 1},
+        {"url": "https://example.net/a.pdf", "sha256": sha, "commune_bfs_id": 2},
+        {"url": "https://example.net/b.pdf", "sha256": sha, "commune_bfs_id": 2},
+        {"url": "https://example.net/c.pdf", "sha256": "b" * 64, "commune_bfs_id": 2},
+    ]
+    (settings.raw_dir / "urls.jsonl").write_text("".join(json.dumps(x) + "\n" for x in lines))
+    assert catalog.refresh(session, [commune]) == 1
+    links = session.execute(
+        select(CatalogCommune.commune_bfs_id, CatalogCommune.source_url).order_by(
+            CatalogCommune.commune_bfs_id
+        )
+    ).all()
+    assert links == [(1, "https://example.org/a.pdf"), (2, "https://example.net/a.pdf")]
+    assert session.get(CatalogPDF, sha).commune_bfs_id == 1
+
+
+def test_a_catalogue_in_an_older_layout_is_dropped_and_created_again(tmp_path):
+    engine = _make_engine(f"sqlite:///{tmp_path}/old.db")
+    with engine.begin() as conn:
+        conn.exec_driver_sql("CREATE TABLE pdf_catalog (sha256 TEXT PRIMARY KEY, status TEXT)")
+    assert catalog.rebuild_if_outdated(engine)
+    assert not catalog.rebuild_if_outdated(engine)
+    engine.dispose()

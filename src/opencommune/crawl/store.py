@@ -55,7 +55,7 @@ def index_path() -> Path:
 
 def load_index() -> dict[str, dict]:
     """canonical_url -> newest entry (url, canonical_url, sha256, etag, last_modified, fetched_at,
-    commune_bfs_id, adapter)."""
+    commune_bfs_id, adapter), with `communes`: every commune that linked the URL."""
     path = index_path()
     if not path.exists():
         return {}
@@ -69,8 +69,19 @@ def load_index() -> dict[str, dict]:
             except ValueError:  # a line cut short by a crash
                 log.warning("%s line %d is not JSON and was skipped", path, n)
                 continue
-            index[entry["canonical_url"]] = entry
+            _remember(index, entry)
     return index
+
+
+def _communes(entry: dict) -> list[int]:
+    return entry.get("communes") or [entry.get("commune_bfs_id")]
+
+
+def _remember(index: dict[str, dict], entry: dict) -> None:
+    """The newest entry per URL, carrying every commune seen for it."""
+    prior = index.get(entry["canonical_url"])
+    communes = {*(_communes(prior) if prior else ()), entry["commune_bfs_id"]}
+    index[entry["canonical_url"]] = {**entry, "communes": sorted(communes)}
 
 
 def rebuild_index(volatile: dict[int, Iterable[str]] | None = None) -> dict[str, dict]:
@@ -145,7 +156,7 @@ def _index_add(index: dict[str, dict], entry: dict) -> None:
     """Append one entry to urls.jsonl and to the loaded index."""
     with index_path().open("a", encoding="utf-8") as f:
         f.write(json.dumps(entry, ensure_ascii=False) + "\n")
-    index[entry["canonical_url"]] = entry
+    _remember(index, entry)
 
 
 # Bounded locks prevent duplicate URL streams and serialize hash/sidecar/index publication.
@@ -182,6 +193,16 @@ def _download_locked(
     key = canonical_url(link.url, volatile)
     known = index.get(key)
     if known and held(known["sha256"]):
+        if commune is not None and commune.bfs_id not in _communes(known):
+            # Another commune links the same file: one file can belong to several communes
+            # (David, 2026-11-13). Recorded in the index; nothing is downloaded.
+            headers = {"etag": known.get("etag"), "last-modified": known.get("last_modified")}
+            now = dt.datetime.now(dt.UTC)
+            entry = _index_entry(
+                link.url, key, known["sha256"], headers, now, commune.bfs_id, link.adapter
+            )
+            with _PUBLISH_LOCK:
+                _index_add(index, entry)
         return None  # never re-download a known document
     storage.require_space(MAX_PDF_BYTES)
     r, fetched_url = _open_document(link, client, polite)

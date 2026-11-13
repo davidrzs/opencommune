@@ -12,4 +12,4 @@ def test_configuration_defaults_to_data_dir():
 def test_config_dir_separates_configuration_from_crawl_state():
     s = Settings(_env_file=None, data_dir=Path("/state"), config_dir=Path("/repo/data"))
     assert s.communes_file == Path("/repo/data/communes.yaml")
-    assert s.parsed_dir == Path("/state/parsed")
+    assert s.serving_db == Path("/state/serving.db")

@@ -15,7 +15,7 @@ import re
 from ...schemas import AdapterStep
 from ..html_parse import parse_html
 from ..sites.skr_file import widget_entries
-from .base import Link, ListingAdapter
+from .base import Link, ListingAdapter, excluded
 
 
 def _date(value) -> dt.date | None:
@@ -47,7 +47,7 @@ class SkrFilesAdapter(ListingAdapter):
             category = str(entry.get("category") or "")
             if keep and not keep.search(name):
                 continue
-            if drop and drop.search(f"{name} {category} {entry['url']}"):
+            if excluded(drop, f"{name} {category} {entry['url']}"):
                 continue
             links.append(Link(url=entry["url"], text=name, date=_date(entry.get("date"))))
         return links

@@ -11,7 +11,7 @@
   <meta name="description" content={t.intro} />
 </svelte:head>
 
-<article class="privacy-page">
+<article class="privacy-page container">
   <header>
     <h1>{t.title}</h1>
     <p class="updated">{t.updated}</p>
@@ -28,33 +28,38 @@
 
 <style>
   .privacy-page {
-    max-width: 780px;
-    margin: 0 auto;
-    padding: 70px 24px 90px;
+    padding-block: var(--space-7xl) var(--space-8xl);
+  }
+  .privacy-page > * {
+    max-width: var(--measure);
   }
   h1 {
-    font-size: clamp(34px, 5vw, 54px);
-    line-height: 1.1;
-    letter-spacing: -1.5px;
-    margin-bottom: 6px;
+    font-size: var(--font-size-page-title);
+    line-height: var(--line-height-tight);
+    letter-spacing: var(--letter-spacing-tight);
+    margin-bottom: var(--space-xs);
   }
   .updated {
     color: var(--muted);
-    margin-top: 0;
   }
   .intro {
-    font-size: 21px;
-    line-height: 1.5;
-    margin-top: 18px;
+    font-size: var(--font-size-2xl);
+    line-height: var(--line-height-normal);
+    margin-top: var(--space-xl);
   }
   section {
-    margin-top: 36px;
+    margin-top: var(--space-4xl);
   }
   section h2 {
-    margin-bottom: 10px;
+    margin-bottom: var(--space-md);
   }
   section p {
-    line-height: 1.65;
-    margin: 0 0 14px;
+    line-height: var(--line-height-relaxed);
+    margin-bottom: var(--space-md);
+  }
+  @media (max-width: 600px) {
+    .privacy-page {
+      padding-block: var(--space-4xl) var(--space-6xl);
+    }
   }
 </style>

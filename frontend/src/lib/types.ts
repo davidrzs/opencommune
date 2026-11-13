@@ -1,18 +1,16 @@
+// one row of /api/communes: the map, the commune search and the start page's list
 export type Commune = {
   bfs_id: number;
   name: string;
   canton: string;
+  language: string | null;
+  website: string | null;
+  lat: number | null;
+  lon: number | null;
   documents: number;
-  decisions: number;
-  // from the dataset (/api/dataset/coverage), merged in on the start page
-  minutes?: number;
-  counted?: number;
-  finance_years?: number;
-  lat?: number | null;
-  lon?: number | null;
-  // the list's access state: a website refuses the crawler, did so over a week ago, or failed
-  // otherwise (rate limit, robots.txt, technical error)
-  access?: 'restricted' | 'earlier' | 'temporary';
+  // the coverage register's headline status (docs/REGISTER.md) and its note
+  register_status: string | null;
+  register_note: string | null;
 };
 // one entry per website, newest check first; source_url is the website, never a document
 export type Access = {
@@ -23,83 +21,147 @@ export type Access = {
   robots_url: string;
   source_url: string;
 };
-// the commune page (/api/archive/communes/{bfs_id})
-export type CommuneDetail = Omit<Commune, 'access'> & {
-  website?: string;
+// a row of /api/register
+export type RegisterEntry = {
+  bfs_id: number;
+  name: string;
+  canton: string;
+  status: string;
+  website: string | null;
+  vendor: string | null;
+  reachable: boolean | null;
+  checked: string | null;
+  checked_by: string | null;
+  notes: string | null;
+  publications: {
+    body: string;
+    kind: string;
+    status: string;
+    listing_url: string | null;
+    from: string | null;
+    to: string | null;
+    cadence: string | null;
+    obstacle: string | null;
+    how: string | null;
+  }[];
+};
+// the commune page (/api/communes/{bfs_id})
+export type CommuneDetail = {
+  bfs_id: number;
+  name: string;
+  canton: string;
+  language: string | null;
+  website: string | null;
+  vendor: string | null;
+  lat: number | null;
+  lon: number | null;
+  documents: number;
+  register: RegisterEntry | null;
   access: Access[];
-  holdings?: { last_crawl?: string; first_date?: string; last_date?: string }[];
+  // documents with at least one section of the family, per year; newest year first
+  holdings: { year: number; family: string; documents: number }[];
 };
 export const normalize = (s: string) =>
   s
     .normalize('NFD')
     .replace(/[\u0300-\u036f]/g, '')
     .toLowerCase();
-export type Findings = {
-  deficits: { year: number; type: 'budget' | 'accounts'; deficit: number; n: number }[];
-  turnout_by_size: { min: number; max: number | null; median: number | null; n: number }[];
-};
-// one decision (/api/decisions/{id}); source_link opens the original PDF at its page
-export type Decision = {
-  id: string;
-  title: string;
-  summary: string;
-  category: string;
-  outcome: string | null;
-  meeting_date: string | null;
-  amount_chf: number | null;
-  page_start: number;
-  commune: { bfs_id: number; name: string; canton: string };
-  source_link: string;
-};
-export type DatasetVote = {
-  meeting_date: string | null;
-  body: string;
-  motion: number;
-  motion_kind: string | null;
-  title: string | null;
-  title_withheld: number;
-  outcome: string | null;
-  vote_method: string | null;
-  votes_yes: number | null;
-  votes_no: number | null;
-  counts_agree: number | null;
-  formal: boolean;
-  sha256: string;
-};
-export type DatasetFinance = {
-  fiscal_year: number;
-  type: 'budget' | 'accounts';
-  operating_result: number | null;
-  tax_rate_percent: number | null;
-  result_agrees: number | null;
-  source_url: string | null;
-};
-export type CommuneDataset = {
-  meetings: { meeting_date: string | null; body: string; turnout: number | null }[];
-  votes: DatasetVote[];
-  finance: DatasetFinance[];
-  summary: {
-    meetings: number;
-    median_turnout: number | null;
-    counted: number;
-    decided: number;
-    rejected: number;
-  };
-};
-
-export type Coverage = {
-  communes: { bfs_id: number; minutes: number; counted: number; finance_years: number }[];
-  totals: {
-    communes: number;
-    communes_with_minutes: number;
-    communes_with_finance: number;
-    population_share: number | null;
-    minutes: number;
-    counted: number;
-  };
-};
-
-// votes or finances captured, from the archive or the dataset
-export const hasData = (c: Commune) =>
-  c.decisions > 0 || (c.minutes ?? 0) > 0 || (c.finance_years ?? 0) > 0;
 export const hasDocuments = (c: Commune) => c.documents > 0;
+// the register's status for a commune whose robots.txt refuses the crawler: hatched on the map
+export const restricted = (c: Commune) => c.register_status === 'blocked_robots';
+
+// The classifier's vocabularies (src/opencommune/serving.sql), in the order the selectors list them.
+export const SECTION_TYPES = [
+  'minutes',
+  'decisions',
+  'vote_result',
+  'budget',
+  'accounts',
+  'invitation_agenda',
+  'proposal',
+  'member_request',
+  'regulation',
+  'report',
+  'notice',
+  'plan_or_map',
+  'news',
+  'other',
+  'unclear'
+] as const;
+export const BODY_KINDS = [
+  'parliament',
+  'citizens_assembly',
+  'executive',
+  'commission',
+  'commune',
+  'other_public_body',
+  'private',
+  'unknown'
+] as const;
+// the six colour families the section types fall into, in display order
+export const FAMILIES = [
+  'deliberation',
+  'money',
+  'proposals',
+  'rules',
+  'information',
+  'other'
+] as const;
+export const LANGUAGES = ['de', 'fr', 'it', 'rm', 'en', 'other'] as const;
+export type SectionType = (typeof SECTION_TYPES)[number];
+export type BodyKind = (typeof BODY_KINDS)[number];
+export type Family = (typeof FAMILIES)[number];
+export type Language = (typeof LANGUAGES)[number];
+
+export type Section = {
+  type: string;
+  family: string;
+  first_page: number;
+  last_page: number;
+  partly_unseen: boolean;
+};
+// one file of /api/documents; every listed file is classified. `personal_data` is part of the
+// API but never shown.
+export type Document = {
+  sha256: string;
+  // the title as printed, read by the classifier; private names appear as "[name]"
+  title: string | null;
+  // the body as printed
+  body_name: string | null;
+  first_seen: string;
+  listing_date: string | null;
+  date: string | null;
+  year: number | null;
+  years: number[];
+  page_count: number | null;
+  pages_seen: number | null;
+  run_id: string | null;
+  body_kind: string | null;
+  languages: string[];
+  personal_data: boolean | null;
+  sections: Section[];
+  communes: { bfs_id: number; name: string; canton: string }[];
+  original_url: string | null;
+};
+export type Facet = { value: string | number | null; count: number };
+export type DocumentPage = {
+  total: number;
+  offset: number;
+  limit: number;
+  // each facet is counted with every filter except its own
+  facets: {
+    years: Facet[];
+    sections: Facet[];
+    bodies: Facet[];
+  };
+  items: Document[];
+};
+// one row of /api/runs
+export type Run = {
+  id: string;
+  stage: string;
+  model: string | null;
+  settings: unknown;
+  note: string;
+  documents: number;
+};

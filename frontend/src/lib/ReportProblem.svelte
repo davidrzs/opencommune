@@ -51,20 +51,16 @@
 
 <style>
   .report-action {
-    display: inline-block;
-    font-size: 13px;
-    color: var(--muted, #626872);
+    font-size: var(--font-size-sm);
+    color: var(--muted);
   }
+  /* inline, so that the line it sits in (the band, the footer list) keeps its layout */
   .report-address {
-    display: block;
+    margin-left: var(--space-sm);
     overflow-wrap: anywhere;
     user-select: all;
-    margin-top: 6px;
   }
   a {
-    text-underline-offset: 3px;
-  }
-  :global(.document-row) .report-action {
-    margin-left: 18px;
+    text-underline-offset: var(--underline-offset);
   }
 </style>

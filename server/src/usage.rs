@@ -177,17 +177,10 @@ pub fn page_template(path: &str) -> Option<&'static str> {
         "/suche" => Some("/suche"),
         "/ueber-uns" => Some("/ueber-uns"),
         "/datenschutz" => Some("/datenschutz"),
-        _ => {
-            if let Some(id) = rest.strip_prefix("/gemeinden/") {
-                (!id.is_empty() && id.bytes().all(|b| b.is_ascii_digit()))
-                    .then_some("/gemeinden/{id}")
-            } else if let Some(id) = rest.strip_prefix("/entscheide/") {
-                (!id.is_empty() && id.bytes().all(|b| b.is_ascii_alphanumeric() || b == b'-'))
-                    .then_some("/entscheide/{id}")
-            } else {
-                None
-            }
-        }
+        _ => rest
+            .strip_prefix("/gemeinden/")
+            .filter(|id| !id.is_empty() && id.bytes().all(|b| b.is_ascii_digit()))
+            .map(|_| "/gemeinden/{id}"),
     }
 }
 
@@ -284,10 +277,7 @@ mod tests {
         assert_eq!(page_template("/_app/immutable/x.js"), None);
         assert_eq!(page_template("/dex"), None);
         assert_eq!(page_template("/de/gemeinden/x"), None);
-        assert_eq!(
-            page_template("/fr/entscheide/dec-1a"),
-            Some("/entscheide/{id}")
-        );
+        assert_eq!(page_template("/fr/entscheide/dec-1a"), None);
         assert_eq!(page_template("/llms.txt"), Some("/llms.txt"));
     }
 

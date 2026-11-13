@@ -7,10 +7,9 @@ Layout:
 
 1. `/opt/opencommune/opencommune-server`: the release binary (`make server`).
 2. `/opt/opencommune/site/`: the static front end (`make frontend`, the contents of `frontend/build`).
-3. `/opt/opencommune/data/opencommune.db`: the database after processing and
-   `opencommune build` (out of WAL mode, so the read-only server needs no `-shm` file).
-4. `/opt/opencommune/data/dataset.sqlite`: optional, the votes and finance dataset.
-5. `/var/lib/opencommune/usage.sqlite3`: usage statistics, written by the server.
+3. `/opt/opencommune/data/opencommune.db`: a copy of the serving database that `opencommune build`
+   writes to `DATA_DIR/serving.db` (out of WAL mode, so the read-only server needs no `-shm` file).
+4. `/var/lib/opencommune/usage.sqlite3`: usage statistics, written by the server.
 
 Install:
 

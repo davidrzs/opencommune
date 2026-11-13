@@ -24,7 +24,7 @@ impl ApiError {
 
     pub fn invalid(detail: impl Into<String>) -> Self {
         Self {
-            status: StatusCode::UNPROCESSABLE_ENTITY,
+            status: StatusCode::BAD_REQUEST,
             detail: detail.into(),
         }
     }
@@ -48,7 +48,7 @@ impl IntoResponse for ApiError {
 
 pub type ApiResult<T> = Result<axum::Json<T>, ApiError>;
 
-/// `axum::extract::Query` with a JSON 422 on a bad parameter.
+/// `axum::extract::Query` with a JSON 400 on a bad parameter.
 pub struct Query<T>(pub T);
 
 impl<T: DeserializeOwned, S: Send + Sync> FromRequestParts<S> for Query<T> {
@@ -62,7 +62,7 @@ impl<T: DeserializeOwned, S: Send + Sync> FromRequestParts<S> for Query<T> {
     }
 }
 
-/// `axum::extract::Path` with a JSON 422 on a bad segment.
+/// `axum::extract::Path` with a JSON 400 on a bad segment.
 pub struct Path<T>(pub T);
 
 impl<T: DeserializeOwned + Send, S: Send + Sync> FromRequestParts<S> for Path<T> {

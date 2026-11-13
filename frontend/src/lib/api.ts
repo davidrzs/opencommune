@@ -11,7 +11,7 @@ export async function api(fetch: Fetch, path: string) {
   if (!response.ok) error(response.status, 'archive request failed');
   return await response.json();
 }
-// Data that only some installations have (the dataset): null when the API lacks it.
+// Data a page can do without: null when the request fails.
 export async function apiOptional(fetch: Fetch, path: string) {
   try {
     const response = await fetch(`/api${path}`, { signal: AbortSignal.timeout(15000) });

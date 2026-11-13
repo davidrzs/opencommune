@@ -35,7 +35,6 @@ ENTRY = {
             }
         ],
         "date_regex": r"(\d{2})\.(\d{2})\.(\d{4})",
-        "max_documents": 20,
     },
 }
 BFS = {363: ("Ostermundigen", "BE"), 351: ("Bern", "BE"), 5586: ("Lausanne", "VD")}
@@ -110,3 +109,12 @@ def test_lint_command_exits_non_zero_with_the_list(tmp_path):
     assert res.exit_code == 1 and "lat 0.0 outside" in res.output and "1 problems" in res.output
     res = CliRunner().invoke(app, ["lint-communes", "--path", str(write(tmp_path, [ENTRY]))])
     assert res.exit_code == 0, res.output
+
+
+def test_an_exclusion_needs_an_approval(tmp_path):
+    entry = copy.deepcopy(ENTRY)
+    entry["adapter_config"]["steps"][0]["exclude_regex"] = "Auszug"
+    path = write(tmp_path, [entry])
+    assert any("exclude_approved" in p for p in lint_communes(path, BFS))
+    entry["adapter_config"]["steps"][0]["exclude_approved"] = "David 2026-11-13"
+    assert lint_communes(write(tmp_path, [entry]), BFS) == []

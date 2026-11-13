@@ -18,7 +18,6 @@ publication date. Filters apply to the text of each hop. Configuration:
       steps:
         - {selector: buttons, text_regex: Protokoll, max_follow: 8}
         - {selector: file, text_regex: Protokoll, kind: minutes}
-      max_documents: 4
 
 `listing_urls()` also accepts the page URL (`/CMS/Webseite/<site>/<title>-<id>-DE.html`) and turns
 it into the JSON endpoint. No robots.txt on these hosts as of September 2026; the endpoint is a
@@ -53,7 +52,7 @@ import httpx
 from ...schemas import AdapterStep, SourceConfig
 from ..html_parse import parse_html
 from ..sites.sh_cms import button_groups
-from .base import Link, ListingAdapter
+from .base import Link, ListingAdapter, excluded
 from .html_links import _first_date, clean_text
 
 FILE_TYPE = "101"  # contenttypeid of a file node
@@ -164,7 +163,7 @@ class ShCmsAdapter(ListingAdapter):
             subject = link.text + " " + (parent.text if parent else "")
             if keep and not keep.search(subject):
                 return []
-            if drop and drop.search(subject + " " + link.url):
+            if excluded(drop, subject + " " + link.url):
                 return []
             return [link]
         return self._button_links(data, base_url, step, keep, drop, date_regex, date_order)
@@ -201,7 +200,7 @@ class ShCmsAdapter(ListingAdapter):
                 text = f"{label} ({title})" if label and title else label or title
                 if keep and not keep.search(text):
                     continue
-                if drop and drop.search(text):
+                if excluded(drop, text):
                     continue
                 url = f"{origin}/CMS/content?contentid={cid}&language={language}"
                 if url_re and not url_re.search(url):
@@ -243,7 +242,7 @@ class ShCmsAdapter(ListingAdapter):
             url = urljoin(base_url, str(meta["url"]))
             if url in seen or (keep and not keep.search(title)):
                 continue
-            if drop and drop.search(f"{title} {original} {url}"):
+            if excluded(drop, f"{title} {original} {url}"):
                 continue
             seen.add(url)
             anchor = item.select_one("[contentid]")

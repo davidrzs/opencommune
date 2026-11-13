@@ -22,6 +22,8 @@ page URL.
 from __future__ import annotations
 
 import datetime as dt
+import logging
+import re
 from collections.abc import Mapping
 from dataclasses import dataclass
 from typing import Literal
@@ -29,6 +31,17 @@ from typing import Literal
 import httpx
 
 from ...schemas import AdapterStep, SourceConfig
+
+log = logging.getLogger(__name__)
+
+
+def excluded(drop: re.Pattern[str] | None, text: str) -> bool:
+    """Whether a step's exclude_regex drops this link. Exclusions need David's approval
+    (`exclude_approved`, 2026-11-13), and every dropped link is logged so the loss stays visible."""
+    if drop is None or not drop.search(text):
+        return False
+    log.info("excluded by %r: %s", drop.pattern, text[:300])
+    return True
 
 
 @dataclass(frozen=True)

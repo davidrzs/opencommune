@@ -1,11 +1,10 @@
 <script lang="ts">
-  import { copy, href, fmt, type Lang } from '$lib/i18n';
+  import { copy, documentCount, href, type Lang } from '$lib/i18n';
   import { page } from '$app/state';
   let lang = $derived((page.params.lang || 'de') as Lang);
   let t = $derived(copy[lang]);
-  const number = (n: number) => fmt(n, lang);
   import map from './ch-map.json';
-  import { type Commune, hasData, hasDocuments } from './types';
+  import { type Commune, hasDocuments, restricted } from './types';
   let { communes, compact = false }: { communes: Commune[]; compact?: boolean } = $props();
   let hovered = $state<Commune | null>(null);
   const cantons = [
@@ -37,23 +36,8 @@
     'JU'
   ];
   const patternId = $props.id();
-  const restricted = (c: Commune) => c.access === 'restricted';
-  const accessLabel = (c: Commune) =>
-    c.access === 'restricted'
-      ? t.accessRestricted
-      : c.access === 'earlier'
-        ? t.accessEarlier
-        : c.access === 'temporary'
-          ? t.accessTemporary
-          : '';
-  const summary = (c: Commune) =>
-    [
-      c.minutes ? `${number(c.minutes)} ${t.minutesUnit}` : '',
-      c.finance_years ? `${number(c.finance_years)} ${t.financeYears}` : '',
-      c.decisions ? `${number(c.decisions)} ${t.decisions}` : ''
-    ]
-      .filter(Boolean)
-      .join(' · ');
+  const accessLabel = (c: Commune) => (restricted(c) ? t.accessRestricted : '');
+  const summary = (c: Commune) => (c.documents ? documentCount(c.documents, lang) : '');
   const shapes = map.municipalities as Record<string, string>;
   function xy(c: Commune) {
     const p = map.projection;
@@ -85,7 +69,7 @@
         height="7"
         patternUnits="userSpaceOnUse"
         patternTransform="rotate(35)"
-        ><line x1="0" y1="0" x2="0" y2="7" stroke="#596574" stroke-width="1.4" /></pattern
+        ><line class="hatch-line" x1="0" y1="0" x2="0" y2="7" /></pattern
       ></defs
     >
     {#each map.cantons as c}<path class="canton" d={c.d} />{/each}
@@ -100,21 +84,14 @@
       >
         {#if shapes[String(c.bfs_id)]}<path
             class="municipality"
-            class:has-decisions={hasData(c)}
-            class:has-documents={!hasData(c) && hasDocuments(c)}
-            class:no-documents={!hasData(c) && !hasDocuments(c)}
+            class:has-documents={hasDocuments(c)}
+            class:no-documents={!hasDocuments(c)}
             d={shapes[String(c.bfs_id)]}
           />{#if restricted(c)}<path
               d={shapes[String(c.bfs_id)]}
               fill={`url(#${patternId})`}
               pointer-events="none"
-            />{/if}{/if}
-        {#if hasData(c) && c.lat && c.lon}<circle
-            class="municipality-point"
-            cx={xy(c)[0]}
-            cy={xy(c)[1]}
-            r={compact ? 3 : 2.5}
-          />{/if}<title>{[c.name, summary(c)].filter(Boolean).join(' · ')}</title>
+            />{/if}{/if}<title>{[c.name, summary(c)].filter(Boolean).join(' · ')}</title>
       </a>{/each}
     {#each map.cantons as c}<text class="canton-name" x={center(c.d)[0]} y={center(c.d)[1]}
         >{cantons[c.id - 1]}</text

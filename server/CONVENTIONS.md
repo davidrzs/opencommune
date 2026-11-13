@@ -1,7 +1,8 @@
 # Conventions
 
 One binary crate (a library for the tests, a thin `main.rs`). It serves the JSON API, MCP and the
-built front end from the SQLite database the Python package builds. Endpoints: `API.md`.
+built front end from the serving database the Python package builds (`serving.sql`). Endpoints:
+`API.md`.
 
 ## Where things go
 
@@ -17,11 +18,11 @@ built front end from the SQLite database the Python package builds. Endpoints: `
 | Usage statistics | `src/usage.rs` |
 | Errors | `src/error.rs` |
 | Tables the Python build must write | `../src/opencommune/serving.sql` |
-| Integration tests | `tests/api.rs`, fixture databases created in the test |
+| Integration tests | `tests/api.rs`, the database created in the test from `serving.sql` |
 
 ## Rules
 
-1. Read-only. The archive database is opened read-only; the only file the server writes is the
+1. Read-only. The serving database is opened read-only; the only file the server writes is the
    usage database.
 2. No caches. Anything slow becomes a table or an index in the Python build, not memory here.
    Every list query is backed by an index; a new list query names its index in `API.md`.

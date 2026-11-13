@@ -31,7 +31,7 @@ from urllib.parse import parse_qsl, unquote, urlencode, urljoin, urlsplit, urlun
 import httpx
 
 from ...schemas import AdapterStep, SourceConfig
-from .base import Link, ListingAdapter
+from .base import Link, ListingAdapter, excluded
 from .html_links import _first_date, clean_text, parse_month_year
 
 ENDPOINT = "/wp-json/wp/v2/media"
@@ -101,7 +101,7 @@ class WpMediaAdapter(ListingAdapter):
                 continue
             if url_re and not url_re.search(url):
                 continue
-            if drop and drop.search(title + " " + url):
+            if excluded(drop, title + " " + url):
                 continue
             if url in seen:
                 continue

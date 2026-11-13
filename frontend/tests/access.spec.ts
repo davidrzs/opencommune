@@ -4,7 +4,8 @@ test('coverage counts, hatching, keyboard access and empty commune pages', async
   const errors: string[] = [];
   page.on('pageerror', (error) => errors.push(error.message));
   await page.goto('/de');
-  await expect(page.locator('.coverage-count strong')).toHaveText('1');
+  // Hinwil and Wetzikon have files; the hatching is the register's blocked_robots
+  await expect(page.locator('.coverage-count strong')).toHaveText('2');
   const empty = page.locator('.atlas-map a[href="/de/gemeinden/1"]');
   await expect(empty.locator('path[fill^="url"]')).toHaveCount(1);
   await expect(
@@ -51,7 +52,13 @@ test('about page keeps language, explains limits and offers email contact', asyn
   await page.goto('/de/ueber-uns');
   await expect(page.locator('h1')).toHaveText('Über OpenCommune');
   await expect(page.locator('.about-page')).toContainText('ein Projekt von David Zollikofer');
-  await expect(page.locator('.about-page')).toContainText('Die meisten Dokumente');
+  await expect(page.locator('#klassifikation')).toContainText(
+    'Wie die Dokumente eingeordnet werden'
+  );
+  await expect(page.locator('#run-classify-65e415a748e2')).toContainText('at most 150 pages');
+  await expect(page.locator('#run-classify-65e415a748e2 .run-meta')).toHaveText(
+    'Modell: model-x · 25 Dokumente'
+  );
   const contact = page.locator('.about-page [data-report-email]');
   await expect(contact).toHaveAttribute('href', '#report');
   await page.evaluate(() =>

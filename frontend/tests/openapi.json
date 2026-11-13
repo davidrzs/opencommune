@@ -1,0 +1,1038 @@
+{
+  "openapi": "3.1.0",
+  "info": {
+    "title": "OpenCommune API",
+    "version": "0.1.0",
+    "description": "Read-only JSON API of OpenCommune, the open archive of the documents Swiss communes publish on their websites. No key, no account. The data is free to use under CC0 1.0; a citation is appreciated.\n\nTitles, bodies, dates and sections come from an automatic classification by a language model that no person has checked yet. Private people's names appear as [name].\n\nAI agents can use the same data over MCP: `http://127.0.0.1:8013/mcp` (streamable HTTP, tools `search_documents`, `get_document`, `list_communes`).",
+    "license": {
+      "name": "CC0 1.0 (the data)",
+      "identifier": "CC0-1.0"
+    },
+    "contact": {
+      "url": "http://127.0.0.1:8013"
+    }
+  },
+  "servers": [
+    {
+      "url": "http://127.0.0.1:8013"
+    }
+  ],
+  "tags": [
+    {
+      "name": "Documents",
+      "description": "Files, their sections and where they are."
+    },
+    {
+      "name": "Communes",
+      "description": "The communes and the coverage register."
+    },
+    {
+      "name": "API",
+      "description": "This description."
+    }
+  ],
+  "paths": {
+    "/api/communes": {
+      "get": {
+        "operationId": "listCommunes",
+        "tags": ["Communes"],
+        "summary": "Every commune of the archive, by canton and name, with its number of documents",
+        "description": "Every commune of the archive, by canton and name, with its number of documents.",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "The communes.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/Commune"
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/communes/{bfs_id}": {
+      "get": {
+        "operationId": "getCommune",
+        "tags": ["Communes"],
+        "summary": "One commune: its register entry, access problems of its website, and its documents per year and section family",
+        "description": "One commune: its register entry, access problems of its website, and its documents per year and section family.",
+        "parameters": [
+          {
+            "name": "bfs_id",
+            "in": "path",
+            "required": true,
+            "description": "The commune's BFS number.",
+            "schema": {
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "The commune.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CommuneDetail"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not in the archive.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/register": {
+      "get": {
+        "operationId": "listRegister",
+        "tags": ["Communes"],
+        "summary": "The coverage register: for every Swiss commune, what it publishes and whether the archive collects it",
+        "description": "The coverage register: for every Swiss commune, what it publishes and whether the archive collects it.",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "The register entries.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/RegisterEntry"
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/documents": {
+      "get": {
+        "operationId": "searchDocuments",
+        "tags": ["Documents"],
+        "summary": "The documents that match, newest first, with counts per year, section type and body",
+        "description": "The documents that match, newest first, with counts per year, section type and body. Each count applies every filter except its own.",
+        "parameters": [
+          {
+            "name": "commune",
+            "in": "query",
+            "required": false,
+            "description": "A commune's BFS number (from list_communes): the documents it links.",
+            "schema": {
+              "type": ["integer", "null"],
+              "format": "int64",
+              "default": null
+            }
+          },
+          {
+            "name": "section",
+            "in": "query",
+            "required": false,
+            "description": "A section type: documents with at least one section of this type. One of minutes,\ndecisions, vote_result, budget, accounts, invitation_agenda, proposal, member_request,\nregulation, report, notice, plan_or_map, news, other, unclear.",
+            "schema": {
+              "type": ["string", "null"],
+              "default": null
+            }
+          },
+          {
+            "name": "family",
+            "in": "query",
+            "required": false,
+            "description": "A section family (deliberation, money, proposals, rules, information, other): documents\nwith at least one section of it.",
+            "schema": {
+              "type": ["string", "null"],
+              "default": null
+            }
+          },
+          {
+            "name": "body",
+            "in": "query",
+            "required": false,
+            "description": "The kind of body behind the document. One of parliament, citizens_assembly, executive,\ncommission, commune, other_public_body, private, unknown.",
+            "schema": {
+              "type": ["string", "null"],
+              "default": null
+            }
+          },
+          {
+            "name": "year",
+            "in": "query",
+            "required": false,
+            "description": "The document's year: of its date, else the one year the classifier read, else of the\ncommune's listing date.",
+            "schema": {
+              "type": ["integer", "null"],
+              "format": "int64",
+              "default": null
+            }
+          },
+          {
+            "name": "q",
+            "in": "query",
+            "required": false,
+            "description": "Text the document's title contains, case-insensitive.",
+            "schema": {
+              "type": ["string", "null"],
+              "default": null
+            }
+          },
+          {
+            "name": "offset",
+            "in": "query",
+            "required": false,
+            "description": "Documents to skip.",
+            "schema": {
+              "type": "integer",
+              "format": "int64",
+              "default": 0
+            }
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "required": false,
+            "description": "Documents to return, 0 to 100.",
+            "schema": {
+              "type": "integer",
+              "format": "int64",
+              "default": 20
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "One page of documents.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DocumentPage"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "An invalid parameter.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/documents/{sha256}": {
+      "get": {
+        "operationId": "getDocument",
+        "tags": ["Documents"],
+        "summary": "One document with the classification run behind its fields",
+        "description": "One document with the classification run behind its fields.",
+        "parameters": [
+          {
+            "name": "sha256",
+            "in": "path",
+            "required": true,
+            "description": "The file's SHA-256, from a document list.",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "The document.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DocumentDetail"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not in the archive.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/runs": {
+      "get": {
+        "operationId": "listRuns",
+        "tags": ["Documents"],
+        "summary": "The classification runs, with every setting that changes what they saw and a note on what those settings do to the data",
+        "description": "The classification runs, with every setting that changes what they saw and a note on what those settings do to the data.",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "The runs.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/Run"
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/openapi.json": {
+      "get": {
+        "operationId": "getOpenApi",
+        "tags": ["API"],
+        "summary": "This description",
+        "description": "This description.",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "The OpenAPI document.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/original/{sha256}": {
+      "get": {
+        "operationId": "openOriginal",
+        "tags": ["Documents"],
+        "summary": "Redirects to the file on the commune's website",
+        "description": "Redirects to the file on the commune's website.",
+        "parameters": [
+          {
+            "name": "sha256",
+            "in": "path",
+            "required": true,
+            "description": "The file's SHA-256, from a document list.",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "commune",
+            "in": "query",
+            "required": false,
+            "description": "A commune's BFS number: that commune's link, when it has one.",
+            "schema": {
+              "type": ["integer", "null"],
+              "format": "int64"
+            }
+          },
+          {
+            "name": "page",
+            "in": "query",
+            "required": false,
+            "description": "Open the file at this page (`#page=`, which PDF viewers follow).",
+            "schema": {
+              "type": ["integer", "null"],
+              "format": "uint32",
+              "minimum": 0
+            }
+          }
+        ],
+        "responses": {
+          "302": {
+            "description": "The file's address on the commune's website.",
+            "headers": {
+              "Location": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not in the archive.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "Commune": {
+        "type": "object",
+        "properties": {
+          "bfs_id": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "name": {
+            "type": "string"
+          },
+          "canton": {
+            "type": "string"
+          },
+          "language": {
+            "type": ["string", "null"]
+          },
+          "website": {
+            "type": ["string", "null"]
+          },
+          "lat": {
+            "type": ["number", "null"],
+            "format": "double"
+          },
+          "lon": {
+            "type": ["number", "null"],
+            "format": "double"
+          },
+          "documents": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "register_status": {
+            "type": ["string", "null"]
+          },
+          "register_note": {
+            "type": ["string", "null"]
+          }
+        },
+        "required": [
+          "bfs_id",
+          "name",
+          "canton",
+          "language",
+          "website",
+          "lat",
+          "lon",
+          "documents",
+          "register_status",
+          "register_note"
+        ],
+        "description": "One row of `GET /api/communes`."
+      },
+      "CommuneDetail": {
+        "type": "object",
+        "properties": {
+          "bfs_id": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "name": {
+            "type": "string"
+          },
+          "canton": {
+            "type": "string"
+          },
+          "language": {
+            "type": ["string", "null"]
+          },
+          "website": {
+            "type": ["string", "null"]
+          },
+          "vendor": {
+            "type": ["string", "null"]
+          },
+          "lat": {
+            "type": ["number", "null"],
+            "format": "double"
+          },
+          "lon": {
+            "type": ["number", "null"],
+            "format": "double"
+          },
+          "documents": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "register": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/RegisterEntry"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "access": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Access"
+            }
+          },
+          "holdings": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Holding"
+            },
+            "description": "Documents per year and section family, newest year first."
+          }
+        },
+        "required": [
+          "bfs_id",
+          "name",
+          "canton",
+          "language",
+          "website",
+          "vendor",
+          "lat",
+          "lon",
+          "documents",
+          "register",
+          "access",
+          "holdings"
+        ],
+        "description": "`GET /api/communes/{bfs_id}`: the commune with its register entry and access observations."
+      },
+      "RegisterEntry": {
+        "type": "object",
+        "properties": {
+          "bfs_id": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "name": {
+            "type": "string"
+          },
+          "canton": {
+            "type": "string"
+          },
+          "status": {
+            "type": "string"
+          },
+          "website": {
+            "type": ["string", "null"]
+          },
+          "vendor": {
+            "type": ["string", "null"]
+          },
+          "reachable": {
+            "type": ["boolean", "null"]
+          },
+          "checked": {
+            "type": ["string", "null"]
+          },
+          "checked_by": {
+            "type": ["string", "null"]
+          },
+          "notes": {
+            "type": ["string", "null"]
+          },
+          "publications": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Publication"
+            }
+          }
+        },
+        "required": [
+          "bfs_id",
+          "name",
+          "canton",
+          "status",
+          "website",
+          "vendor",
+          "reachable",
+          "checked",
+          "checked_by",
+          "notes",
+          "publications"
+        ]
+      },
+      "Publication": {
+        "type": "object",
+        "properties": {
+          "body": {
+            "type": "string"
+          },
+          "kind": {
+            "type": "string"
+          },
+          "status": {
+            "type": "string"
+          },
+          "listing_url": {
+            "type": ["string", "null"]
+          },
+          "from": {
+            "type": ["string", "null"]
+          },
+          "to": {
+            "type": ["string", "null"]
+          },
+          "cadence": {
+            "type": ["string", "null"]
+          },
+          "obstacle": {
+            "type": ["string", "null"]
+          },
+          "how": {
+            "type": ["string", "null"]
+          }
+        },
+        "required": [
+          "body",
+          "kind",
+          "status",
+          "listing_url",
+          "from",
+          "to",
+          "cadence",
+          "obstacle",
+          "how"
+        ]
+      },
+      "Access": {
+        "type": "object",
+        "properties": {
+          "status": {
+            "type": "string"
+          },
+          "checked_at": {
+            "type": "string"
+          },
+          "robots_url": {
+            "type": "string"
+          },
+          "restricted_at": {
+            "type": ["string", "null"]
+          },
+          "source_url": {
+            "type": "string"
+          },
+          "stale": {
+            "type": "boolean"
+          }
+        },
+        "required": ["status", "checked_at", "robots_url", "restricted_at", "source_url", "stale"]
+      },
+      "Holding": {
+        "type": "object",
+        "properties": {
+          "year": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "family": {
+            "type": "string"
+          },
+          "documents": {
+            "type": "integer",
+            "format": "int64"
+          }
+        },
+        "required": ["year", "family", "documents"],
+        "description": "How many of a commune's documents of a year have a section of a family."
+      },
+      "DocumentPage": {
+        "type": "object",
+        "properties": {
+          "total": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "offset": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "limit": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "facets": {
+            "$ref": "#/components/schemas/Facets"
+          },
+          "items": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Document"
+            }
+          }
+        },
+        "required": ["total", "offset", "limit", "facets", "items"],
+        "description": "`GET /api/documents` and the MCP tool `search_documents`."
+      },
+      "Facets": {
+        "type": "object",
+        "properties": {
+          "years": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Count_int64"
+            }
+          },
+          "sections": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Count_string"
+            }
+          },
+          "bodies": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Count_string"
+            }
+          }
+        },
+        "required": ["years", "sections", "bodies"]
+      },
+      "Count_int64": {
+        "type": "object",
+        "properties": {
+          "value": {
+            "type": ["integer", "null"],
+            "format": "int64"
+          },
+          "count": {
+            "type": "integer",
+            "format": "int64"
+          }
+        },
+        "required": ["value", "count"],
+        "description": "How many documents have a value."
+      },
+      "Count_string": {
+        "type": "object",
+        "properties": {
+          "value": {
+            "type": ["string", "null"]
+          },
+          "count": {
+            "type": "integer",
+            "format": "int64"
+          }
+        },
+        "required": ["value", "count"],
+        "description": "How many documents have a value."
+      },
+      "Document": {
+        "type": "object",
+        "properties": {
+          "sha256": {
+            "type": "string"
+          },
+          "title": {
+            "type": ["string", "null"],
+            "description": "As printed, as the classifier read it; private names appear as [name]."
+          },
+          "body_name": {
+            "type": ["string", "null"],
+            "description": "The body as printed, as the classifier read it."
+          },
+          "first_seen": {
+            "type": "string"
+          },
+          "listing_date": {
+            "type": ["string", "null"]
+          },
+          "date": {
+            "type": ["string", "null"]
+          },
+          "year": {
+            "type": ["integer", "null"],
+            "format": "int64"
+          },
+          "years": {
+            "type": "array",
+            "items": {
+              "type": "integer",
+              "format": "int64"
+            }
+          },
+          "page_count": {
+            "type": ["integer", "null"],
+            "format": "int64"
+          },
+          "pages_seen": {
+            "type": ["integer", "null"],
+            "format": "int64"
+          },
+          "run_id": {
+            "type": "string"
+          },
+          "body_kind": {
+            "type": ["string", "null"]
+          },
+          "languages": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "personal_data": {
+            "type": "boolean"
+          },
+          "sections": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Section"
+            },
+            "description": "In the order the classifier gave them."
+          },
+          "communes": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/CommuneRef"
+            },
+            "description": "The communes that link the document, by name."
+          },
+          "original_url": {
+            "type": "string",
+            "description": "`/original/<sha256>`, never a commune's URL."
+          }
+        },
+        "required": [
+          "sha256",
+          "title",
+          "body_name",
+          "first_seen",
+          "listing_date",
+          "date",
+          "year",
+          "years",
+          "page_count",
+          "pages_seen",
+          "run_id",
+          "body_kind",
+          "languages",
+          "personal_data",
+          "sections",
+          "communes",
+          "original_url"
+        ],
+        "description": "A document in `GET /api/documents` and the MCP tools."
+      },
+      "Section": {
+        "type": "object",
+        "properties": {
+          "type": {
+            "type": "string"
+          },
+          "family": {
+            "type": "string",
+            "description": "deliberation, money, proposals, rules, information or other."
+          },
+          "first_page": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "last_page": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "partly_unseen": {
+            "type": "boolean"
+          }
+        },
+        "required": ["type", "family", "first_page", "last_page", "partly_unseen"]
+      },
+      "CommuneRef": {
+        "type": "object",
+        "properties": {
+          "bfs_id": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "name": {
+            "type": "string"
+          },
+          "canton": {
+            "type": "string"
+          }
+        },
+        "required": ["bfs_id", "name", "canton"],
+        "description": "A commune named by a document or a page."
+      },
+      "DocumentDetail": {
+        "type": "object",
+        "properties": {
+          "sha256": {
+            "type": "string"
+          },
+          "title": {
+            "type": ["string", "null"],
+            "description": "As printed, as the classifier read it; private names appear as [name]."
+          },
+          "body_name": {
+            "type": ["string", "null"],
+            "description": "The body as printed, as the classifier read it."
+          },
+          "first_seen": {
+            "type": "string"
+          },
+          "listing_date": {
+            "type": ["string", "null"]
+          },
+          "date": {
+            "type": ["string", "null"]
+          },
+          "year": {
+            "type": ["integer", "null"],
+            "format": "int64"
+          },
+          "years": {
+            "type": "array",
+            "items": {
+              "type": "integer",
+              "format": "int64"
+            }
+          },
+          "page_count": {
+            "type": ["integer", "null"],
+            "format": "int64"
+          },
+          "pages_seen": {
+            "type": ["integer", "null"],
+            "format": "int64"
+          },
+          "run_id": {
+            "type": "string"
+          },
+          "body_kind": {
+            "type": ["string", "null"]
+          },
+          "languages": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "personal_data": {
+            "type": "boolean"
+          },
+          "sections": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Section"
+            },
+            "description": "In the order the classifier gave them."
+          },
+          "communes": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/CommuneRef"
+            },
+            "description": "The communes that link the document, by name."
+          },
+          "original_url": {
+            "type": "string",
+            "description": "`/original/<sha256>`, never a commune's URL."
+          },
+          "run": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/RunRef"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          }
+        },
+        "required": [
+          "sha256",
+          "title",
+          "body_name",
+          "first_seen",
+          "listing_date",
+          "date",
+          "year",
+          "years",
+          "page_count",
+          "pages_seen",
+          "run_id",
+          "body_kind",
+          "languages",
+          "personal_data",
+          "sections",
+          "communes",
+          "original_url",
+          "run"
+        ],
+        "description": "`GET /api/documents/{sha256}`: the document and the run that classified it."
+      },
+      "RunRef": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "stage": {
+            "type": "string"
+          },
+          "model": {
+            "type": ["string", "null"]
+          },
+          "note": {
+            "type": "string"
+          }
+        },
+        "required": ["id", "stage", "model", "note"],
+        "description": "The run named by a document."
+      },
+      "Run": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "stage": {
+            "type": "string"
+          },
+          "model": {
+            "type": ["string", "null"]
+          },
+          "settings": true,
+          "note": {
+            "type": "string"
+          },
+          "documents": {
+            "type": "integer",
+            "format": "int64"
+          }
+        },
+        "required": ["id", "stage", "model", "settings", "note", "documents"],
+        "description": "One row of `GET /api/runs`."
+      },
+      "Error": {
+        "type": "object",
+        "properties": {
+          "detail": {
+            "type": "string"
+          }
+        },
+        "required": ["detail"]
+      }
+    }
+  }
+}

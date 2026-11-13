@@ -11,7 +11,11 @@ export const about = {
       'Die Dokumente stammen aus öffentlich zugänglichen Veröffentlichungen der Gemeinden und ihrer Parlamente. Die jeweiligen Quellen sind bei den Dokumenten verlinkt.',
     methodTitle: 'Was ist bereits möglich?',
     method:
-      'Das Archiv verzeichnet Dokumente der Gemeinden mit einem Link auf das Original sowie daraus erfasste, durchsuchbare Beschlüsse. Die meisten Dokumente sind noch nicht inhaltlich erschlossen. Die Beschlüsse werden mit Sprachmodellen aufbereitet und sind nicht einzeln geprüft. Sie dienen als Einstieg in die Originalquellen, nicht als abschliessend geprüfter Forschungsdatensatz.',
+      'Das Archiv verzeichnet die Dokumente der Gemeinden mit einem Link auf das Original. Ein Sprachmodell ordnet jedes Dokument ein: welche Art Dokument es ist, aus welchen Teilen es besteht und von welchem Gremium es stammt. Diese Einordnung ist nicht einzeln geprüft. Sie dient als Einstieg in die Originalquellen, nicht als abschliessend geprüfter Forschungsdatensatz.',
+    classificationTitle: 'Wie die Dokumente eingeordnet werden',
+    classification:
+      'Ein Sprachmodell sieht die Seiten jedes Dokuments als Bilder. Es bestimmt die Dokumentart, die Teile mit ihren Seiten, das Gremium und das Jahr. Niemand prüft diese Angaben einzeln. Jeder Lauf hat einen festen Prompt und feste Einstellungen; was sie für die Daten bedeuten, steht beim Lauf.',
+    model: 'Modell',
     limits:
       'OpenCommune ist im Aufbau. Eine Gemeinde zählt zum Archiv, sobald mindestens ein Dokument vorliegt. Umfang und Zeiträume unterscheiden sich entsprechend. Fehlende Dokumente bedeuten nicht, dass es keine entsprechenden Sitzungen oder Entscheidungen gab. Vergleiche müssen diese Lücken berücksichtigen.',
     teamTitle: 'Wer steht dahinter?',
@@ -43,7 +47,11 @@ export const about = {
       'Les documents proviennent des publications accessibles au public des communes et de leurs parlements. Les sources sont indiquées par des liens associés aux documents.',
     methodTitle: 'Que peut-on déjà consulter ?',
     method:
-      'Les archives recensent des documents communaux, avec un lien vers l’original, ainsi que des décisions extraites de ces documents, dans lesquelles il est possible de rechercher. Le contenu de la plupart des documents n’a pas encore été traité. Les décisions sont traitées à l’aide de modèles de langage et ne sont pas vérifiées individuellement. Elles permettent de retrouver les sources originales ; elles ne constituent pas encore un jeu de données de recherche entièrement validé.',
+      'Les archives recensent les documents des communes, avec un lien vers l’original. Un modèle de langage classe chaque document : de quel type de document il s’agit, de quelles parties il se compose et de quel organe il émane. Ce classement n’est pas vérifié individuellement. Il permet de retrouver les sources originales ; il ne constitue pas un jeu de données de recherche entièrement validé.',
+    classificationTitle: 'Comment les documents sont classés',
+    classification:
+      'Un modèle de langage voit les pages de chaque document sous forme d’images. Il détermine le type de document, les parties avec leurs pages, l’organe et l’année. Personne ne vérifie ces indications une à une. Chaque exécution utilise un prompt et des réglages fixes ; ce qu’ils impliquent pour les données est indiqué pour chaque exécution.',
+    model: 'Modèle',
     limits:
       'OpenCommune est en cours de développement. Une commune est comptée dans les archives dès qu’au moins un document est disponible. Le nombre de documents et les périodes couvertes varient donc. L’absence de documents ne signifie pas qu’aucune séance ou décision n’a eu lieu. Toute comparaison doit tenir compte de ces lacunes.',
     teamTitle: 'Qui porte le projet ?',
@@ -75,7 +83,11 @@ export const about = {
       'I documenti provengono dalle pubblicazioni accessibili al pubblico dei comuni e dei loro parlamenti. Le fonti sono indicate nei collegamenti associati ai documenti.',
     methodTitle: 'Che cosa è già disponibile?',
     method:
-      'L’archivio elenca documenti comunali, con un collegamento all’originale, e decisioni estratte dai documenti, nelle quali è possibile effettuare ricerche. Il contenuto della maggior parte dei documenti non è ancora stato elaborato. Le decisioni sono elaborate con modelli linguistici e non sono verificate singolarmente. Servono a orientarsi tra le fonti originali; non costituiscono ancora un insieme di dati di ricerca interamente validato.',
+      'L’archivio elenca i documenti dei comuni, con un collegamento all’originale. Un modello linguistico classifica ogni documento: di che tipo di documento si tratta, di quali parti è composto e da quale organo proviene. Questa classificazione non è verificata singolarmente. Serve a orientarsi tra le fonti originali; non costituisce un insieme di dati di ricerca interamente validato.',
+    classificationTitle: 'Come vengono classificati i documenti',
+    classification:
+      'Un modello linguistico vede le pagine di ogni documento come immagini. Determina il tipo di documento, le parti con le loro pagine, l’organo e l’anno. Nessuno verifica queste indicazioni una per una. Ogni esecuzione usa un prompt e impostazioni fissi; che cosa significano per i dati è indicato per ogni esecuzione.',
+    model: 'Modello',
     limits:
       'OpenCommune è in fase di sviluppo. Un comune viene conteggiato nell’archivio non appena è disponibile almeno un documento. La quantità di documenti e i periodi coperti variano quindi. L’assenza di documenti non significa che non si siano tenute sedute o prese decisioni. I confronti devono tenere conto di queste lacune.',
     teamTitle: 'Chi c’è dietro il progetto?',
