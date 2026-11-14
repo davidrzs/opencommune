@@ -1,0 +1,313 @@
+import base64
+import hashlib
+import json
+import os
+import sqlite3
+import struct
+import threading
+import time
+from contextlib import closing, contextmanager
+from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
+
+import pymupdf
+from typer.testing import CliRunner
+
+from opencommune.cli import app
+from opencommune.config import settings
+from opencommune.text import layer, ocr, store
+from opencommune.text.queue import MAX_TRIES, STALE_SECONDS, Queue, select
+
+
+def stored_pdf(raw, texts):
+    """A PDF with one page per text (empty: no text layer), named by its SHA-256 as in raw/."""
+    doc = pymupdf.open()
+    for text in texts:
+        page = doc.new_page(width=595, height=842)
+        if text:
+            page.insert_text((72, 72), text, fontsize=12)
+    data = doc.tobytes()
+    sha = hashlib.sha256(data).hexdigest()
+    (raw / f"{sha}.pdf").write_bytes(data)
+    return sha
+
+
+def make_queue(tmp_path, pages, chunk_pages=2):
+    chosen = {
+        **ocr.reading_settings(),
+        "longest_edge": 200,
+        "pages": len(pages),
+        "created": "2026-11-14T16:00:00+00:00",
+    }
+    return Queue.create(tmp_path / "queue", pages, chunk_pages, chosen)
+
+
+@contextmanager
+def vllm(mode="ok"):
+    """A stand-in for vLLM's OpenAI API on loopback. Yields its URL and the request bodies."""
+    seen = []
+
+    class Handler(BaseHTTPRequestHandler):
+        def log_message(self, *args):
+            pass
+
+        def _send(self, code, body):
+            data = json.dumps(body).encode()
+            self.send_response(code)
+            self.send_header("Content-Type", "application/json")
+            self.send_header("Content-Length", str(len(data)))
+            self.end_headers()
+            self.wfile.write(data)
+
+        def do_GET(self):
+            self._send(200, {"data": [{"id": ocr.MODEL}]})
+
+        def do_POST(self):
+            seen.append(json.loads(self.rfile.read(int(self.headers["Content-Length"]))))
+            if mode == "reject":
+                self._send(400, {"error": "too long"})
+            elif mode == "fail":
+                self._send(500, {"error": "engine dead"})
+            else:
+                if mode == "slow":
+                    time.sleep(3)
+                answer = {"message": {"content": "Gemeinde"}, "finish_reason": "stop"}
+                self._send(
+                    200,
+                    {"choices": [answer], "usage": {"prompt_tokens": 9, "completion_tokens": 2}},
+                )
+
+    server = ThreadingHTTPServer(("127.0.0.1", 0), Handler)
+    threading.Thread(target=server.serve_forever, daemon=True).start()
+    try:
+        yield f"http://127.0.0.1:{server.server_port}/v1", seen
+    finally:
+        server.shutdown()
+
+
+def serving_db(path, page_counts, sections):
+    """The two tables of the serving database that `layer.section_pages` reads."""
+    with closing(sqlite3.connect(path)) as conn:
+        conn.execute("create table documents (sha256 text, page_count int)")
+        conn.execute(
+            "create table sections (sha256 text, type text, first_page int, last_page int)"
+        )
+        conn.executemany("insert into documents values (?, ?)", page_counts.items())
+        conn.executemany("insert into sections values (?, ?, ?, ?)", sections)
+        conn.commit()
+    return path
+
+
+def test_section_pages_widen_sections_within_the_document(tmp_path):
+    sections = [
+        ("a", "budget", 1, 3),
+        ("a", "vote_result", 5, 5),
+        ("a", "minutes", 8, 8),
+        ("b", "accounts", 3, 3),
+    ]
+    db = serving_db(tmp_path / "serving.db", {"a": 10, "b": 3}, sections)
+    pages = layer.section_pages(db, ["budget", "vote_result", "accounts"], 1)
+    budget, vote = ["budget"], ["vote_result"]
+    assert pages == {
+        "a": {1: budget, 2: budget, 3: budget, 4: ["budget", "vote_result"], 5: vote, 6: vote},
+        "b": {2: ["accounts"], 3: ["accounts"]},
+    }
+
+
+def test_measure_reads_the_text_layer_and_goes_on_where_it_stopped(tmp_path):
+    raw = tmp_path / "raw"
+    raw.mkdir()
+    sha = stored_pdf(raw, ["Budget 2027 Gemeinde", "", "12"])
+    out = tmp_path / "pages.jsonl"
+    pages = {sha: {1: ["budget"], 2: ["budget"], 3: ["budget"]}}
+    assert layer.measure(pages, raw, out, 1) == {"documents": 1, "pages": 3, "unreadable": 0}
+    records = {r["page"]: r for r in map(json.loads, out.read_text().splitlines())}
+    assert [records[p]["chars"] for p in (1, 2, 3)] == [len("Budget2027Gemeinde"), 0, 2]
+    assert records[1]["sections"] == ["budget"] and records[1]["text"].startswith("Budget 2027")
+    assert layer.measure(pages, raw, out, 1)["documents"] == 0
+    assert layer.measure({"f" * 64: {1: ["budget"]}}, raw, out, 1)["unreadable"] == 1
+
+
+def test_select_takes_the_pages_below_the_cutoff_first_types_first():
+    records = [
+        {"sha256": "b", "page": 1, "sections": ["budget"], "chars": 0},
+        {"sha256": "a", "page": 2, "sections": ["budget"], "chars": 19},
+        {"sha256": "a", "page": 1, "sections": ["budget"], "chars": 20},
+        {"sha256": "c", "page": 4, "sections": ["accounts", "vote_result"], "chars": 3},
+        {"sha256": "c", "page": 4, "sections": ["accounts", "vote_result"], "chars": 3},
+        {"sha256": "d", "error": "FileDataError: broken"},
+    ]
+    pages, counts = select(map(json.dumps, records), 20, ["vote_result", "decisions"])
+    assert pages == [("c", 4), ("a", 2), ("b", 1)]
+    assert counts == {
+        "pages_measured": 4,
+        "pages": 3,
+        "pages_first": 1,
+        "documents": 3,
+        "unreadable_documents": 1,
+    }
+
+
+def test_claims_are_exclusive_and_a_stale_claim_is_taken_over(tmp_path):
+    queue = make_queue(tmp_path, [("a", 1), ("a", 2), ("b", 1)])
+    assert queue.chunks() == ["00000", "00001"]
+    first, second = queue.claim("w1"), queue.claim("w2")
+    assert (first.chunk, second.chunk) == ("00000", "00001")
+    assert queue.claim("w3") is None
+    old = time.time() - STALE_SECONDS - 1
+    os.utime(first.path, (old, old))
+    taken = queue.claim("w3")
+    assert (taken.chunk, taken.path.name) == ("00000", "00000.2")
+    assert not queue.touch(first) and queue.touch(taken)
+    queue.release(second)
+    assert queue.claim("w4").chunk == "00001"
+    queue.finish(taken)
+    assert queue.is_done("00000") and queue.claim("w5") is None
+    assert queue.status()["chunks"] == {"total": 2, "done": 1, "held": 1}
+
+
+def test_a_page_counts_as_answered_after_the_last_request_error(tmp_path):
+    queue = make_queue(tmp_path, [("a", 1), ("a", 2)])
+    out = queue.root / "out" / "00000.jsonl"
+    records = [{"sha256": "a", "page": 1, "status": "request_error"}] * (MAX_TRIES - 1)
+    records.append({"sha256": "a", "page": 2, "status": "rejected"})
+    out.write_text("".join(json.dumps(r) + "\n" for r in records) + '{"cut off')
+    assert queue.finished("00000") == {("a", 2)}
+    with out.open("a") as file:
+        file.write("\n" + json.dumps({"sha256": "a", "page": 1, "status": "request_error"}) + "\n")
+    assert queue.finished("00000") == {("a", 1), ("a", 2)}
+
+
+def test_a_worker_answers_every_page_and_finishes_every_chunk(tmp_path):
+    raw = tmp_path / "raw"
+    raw.mkdir()
+    a = stored_pdf(raw, ["", "x", ""])
+    b = stored_pdf(raw, [""])
+    (raw / f"{'e' * 64}.pdf").write_bytes((raw / f"{b}.pdf").read_bytes())  # wrong name
+    pages = [(a, 1), (a, 2), (a, 3), (b, 1), ("e" * 64, 1), ("f" * 64, 1)]
+    queue = make_queue(tmp_path, pages)
+    with vllm() as (url, seen):
+        result = ocr.run(queue, raw, url, "one", 4, 2, None)
+        again = ocr.run(queue, raw, url, "two", 4, 2, None)
+    assert result["stopped"] == "no chunk left"
+    assert (result["ok"], result["render_error"], result["chunks_finished"]) == (4, 2, 3)
+    assert all(queue.is_done(chunk) for chunk in queue.chunks())
+    assert again["stopped"] == "no chunk left" and "ok" not in again and len(seen) == 4
+    body = seen[0]
+    assert (body["model"], body["temperature"], body["top_p"]) == (ocr.MODEL, 0.2, 1.0)
+    assert body["chat_template_kwargs"] == {"enable_thinking": False} and "max_tokens" not in body
+    image, prompt = body["messages"][0]["content"]
+    assert prompt == {"type": "text", "text": "grounding"}
+    png = base64.b64decode(image["image_url"]["url"].removeprefix("data:image/png;base64,"))
+    assert max(struct.unpack(">II", png[16:24])) == 200
+    errors = {r["sha256"]: r["error"] for r in queue.answers("00002")}
+    assert errors == {"e" * 64: "the file's SHA-256 is not its name", "f" * 64: "no such file"}
+    assert queue.status()["pages"] == {"total": 6, "answered": 6, "ok": 4, "render_error": 2}
+    assert json.loads((queue.root / "workers" / "one" / "worker.json").read_text())["ok"] == 4
+
+
+def test_rejected_pages_are_answered_and_a_failing_server_stops_the_worker(tmp_path, monkeypatch):
+    monkeypatch.setattr(ocr, "RETRY_SECONDS", 0)
+    monkeypatch.setattr(ocr, "MAX_FAILURES_IN_A_ROW", 2)
+    raw = tmp_path / "raw"
+    raw.mkdir()
+    sha = stored_pdf(raw, ["", "", ""])
+    queue = make_queue(tmp_path, [(sha, 1), (sha, 2), (sha, 3)], chunk_pages=3)
+    with vllm("fail") as (url, seen):
+        failed = ocr.run(queue, raw, url, "one", 1, 1, None)
+    assert failed["stopped"] == ocr.SERVER_FAILED and len(seen) == 6
+    assert not queue.is_done("00000") and not list((queue.root / "claims").iterdir())
+    with vllm("reject") as (url, _):
+        rejected = ocr.run(queue, raw, url, "two", 2, 1, None)
+    assert (rejected["stopped"], rejected["rejected"]) == ("no chunk left", 3)
+    assert queue.is_done("00000")
+
+
+def test_a_worker_stops_at_its_time_and_releases_its_chunks(tmp_path):
+    raw = tmp_path / "raw"
+    raw.mkdir()
+    sha = stored_pdf(raw, ["", ""])
+    queue = make_queue(tmp_path, [(sha, 1), (sha, 2)])
+    with vllm("slow") as (url, _):
+        result = ocr.run(queue, raw, url, "one", 2, 1, time.time() + 1)
+    assert result["stopped"] == "time is up" and "ok" not in result
+    assert not queue.is_done("00000") and not list((queue.root / "claims").iterdir())
+
+
+def test_the_text_commands_name_their_passes_and_queues(tmp_path, monkeypatch):
+    monkeypatch.setattr(settings, "data_dir", tmp_path)
+    raw = tmp_path / "raw"
+    raw.mkdir()
+    sha = stored_pdf(raw, ["", "Budget 2027", "3"])
+    serving_db(tmp_path / "serving.db", {sha: 3}, [(sha, "budget", 1, 3)])
+    runner = CliRunner()
+
+    def run(*args):
+        return runner.invoke(app, ["text", *args])
+
+    made = run("layer", "d", "--sections", "budget", "--margin", "0", "--workers", "1")
+    assert made.exit_code == 0, made.output
+    assert json.loads(made.stdout.splitlines()[-1]) == {"documents": 1, "pages": 3, "unreadable": 0}
+    assert run("layer", "d", "--sections", "accounts", "--margin", "0").exit_code != 0
+    made = run("queue", "q", "--layer", "d", "--chars-below", "5")
+    assert made.exit_code == 0, made.output
+    queue = Queue(tmp_path / "text" / "queues" / "q")
+    assert queue.pages("00000") == [(sha, 1), (sha, 3)]
+    assert queue.settings["layer_settings"]["sections"] == ["budget"]
+    assert queue.settings["revision"] == ocr.REVISION
+    assert run("queue", "q", "--layer", "d", "--chars-below", "5").exit_code != 0
+    shown = run("status", "q")
+    assert json.loads(shown.stdout)["pages"] == {"total": 2, "answered": 0}
+    assert run("status", "../q").exit_code != 0
+    assert run("import", "--layer", "d").exit_code == 0
+    imported = run("import", "--queue", "q")
+    assert imported.exit_code == 0, imported.output
+    assert json.loads(imported.stdout)["run"] == "ocr:q"
+    assert run("import").exit_code != 0
+    assert (tmp_path / "text.db").exists()
+
+
+def test_text_db_keeps_every_run_and_prefers_an_ocr_answer(tmp_path):
+    passed = tmp_path / "layer"
+    passed.mkdir()
+    settings_ = {"sections": ["budget"], "margin": 1, "started": "2026-11-14T15:00:00+00:00"}
+    (passed / "settings.json").write_text(json.dumps(settings_))
+    common = {"sections": ["budget"], "odd": 0, "image_cover": 0.0}
+    records = [
+        {"sha256": "a", "page": 1, "chars": 0, "alnum": 0, "text": "", **common},
+        {"sha256": "a", "page": 2, "chars": 6, "alnum": 6, "text": "Budget", **common},
+        {"sha256": "a", "page": 2, "chars": 6, "alnum": 6, "text": "Budget", **common},
+        {"sha256": "b", "error": "FileDataError: broken"},
+    ]
+    lines = "".join(json.dumps(r) + "\n" for r in records)
+    (passed / "pages.jsonl").write_text(lines + '{"cut off')
+    queue = make_queue(tmp_path, [("a", 1), ("a", 2)])
+    out = queue.root / "out" / "00000.jsonl"
+    answers = [
+        {"sha256": "a", "page": 1, "status": "ok", "finish_reason": "stop", "text": "Gemeinde X"},
+        {"sha256": "a", "page": 2, "status": "request_error", "error": "HTTP 500"},
+    ]
+    out.write_text("".join(json.dumps(r) + "\n" for r in answers))
+    db = store.connect(tmp_path / "text.db")
+    assert store.import_layer(db, "d", passed) == {
+        "run": "layer:d",
+        "pages": {"ok": 2},
+        "unreadable_documents": 1,
+    }
+    assert store.import_queue(db, "q", queue)["pages"] == {"ok": 1, "request_error": 1}
+
+    def chosen():
+        rows = db.execute("SELECT sha256, page, source, text FROM page_text ORDER BY page")
+        return [tuple(row) for row in rows]
+
+    assert chosen() == [("a", 1, "ocr", "Gemeinde X"), ("a", 2, "layer", "Budget")]
+    ocr_row = db.execute(
+        "SELECT chars, detail FROM pages WHERE run = 'ocr:q' AND page = 1"
+    ).fetchone()
+    assert ocr_row[0] == 9 and "error" not in json.loads(ocr_row[1])
+    with out.open("a") as file:
+        file.write(
+            json.dumps({"sha256": "a", "page": 2, "status": "ok", "text": "Budget 2027"}) + "\n"
+        )
+    assert store.import_queue(db, "q", queue)["pages"] == {"ok": 2}
+    assert chosen() == [("a", 1, "ocr", "Gemeinde X"), ("a", 2, "ocr", "Budget 2027")]
+    assert db.execute("SELECT count(*) FROM pages").fetchone()[0] == 4

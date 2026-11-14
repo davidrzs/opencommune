@@ -58,6 +58,17 @@ class Settings(BaseSettings):
     def serving_db(self) -> Path:
         return self.data_dir / "serving.db"
 
+    # Page text: text layer passes in layers/<name>, OCR queues and their answers in
+    # queues/<name>. Private, as page text names people.
+    @property
+    def text_dir(self) -> Path:
+        return self.data_dir / "text"
+
+    # The text of every page from every imported pass and queue (`opencommune text import`).
+    @property
+    def text_db(self) -> Path:
+        return self.data_dir / "text.db"
+
     # Model answers and job state; private, as answers can name people.
     @property
     def process_db(self) -> Path:
