@@ -1,7 +1,8 @@
-//! In-house usage statistics: daily aggregates per channel, route template, bot
-//! flag and status in a separate SQLite file, in the format `opencommune usage` reads. No raw
-//! paths, query strings, search terms, headers or IP addresses are stored. A daily visitor
-//! estimate keeps only an HMAC of address and browser under a key that is replaced every day.
+//! In-house usage statistics in a separate SQLite file: daily aggregates per channel, route
+//! template, bot flag and status, kept for good. No raw paths, query strings, search terms,
+//! headers or IP addresses are stored. The daily visitor estimate keeps an HMAC of address and
+//! browser under a key that is replaced every day; once the day is over its key and its HMACs are
+//! deleted and only their number stays.
 
 use std::net::SocketAddr;
 use std::path::Path;
@@ -18,9 +19,6 @@ use sqlx::sqlite::{SqliteConnectOptions, SqlitePoolOptions};
 
 use crate::AppState;
 
-/// Days of statistics kept.
-const RETENTION_DAYS: i64 = 30;
-
 const SCHEMA: &str = "
 CREATE TABLE IF NOT EXISTS totals (
     day TEXT, channel TEXT, route TEXT, bot INTEGER, status INTEGER,
@@ -30,6 +28,7 @@ CREATE TABLE IF NOT EXISTS totals (
 );
 CREATE TABLE IF NOT EXISTS visitors (day TEXT, token TEXT, PRIMARY KEY (day, token));
 CREATE TABLE IF NOT EXISTS daily_keys (day TEXT PRIMARY KEY, secret BLOB);
+CREATE TABLE IF NOT EXISTS daily_visitors (day TEXT PRIMARY KEY, visitors INTEGER NOT NULL);
 ";
 
 /// Set as a response extension by a handler that ran a search: the number of results.
@@ -86,17 +85,16 @@ impl Usage {
 
 async fn write(pool: &SqlitePool, hit: Hit) -> sqlx::Result<()> {
     let mut tx = pool.begin().await?;
-    // the first statement writes, so the transaction holds the write lock from the start
-    let keep = format!("-{} days", RETENTION_DAYS - 1);
-    for delete in [
-        "DELETE FROM totals WHERE day < date('now', ?)",
-        "DELETE FROM visitors WHERE day < date('now', ?)",
+    // the first statement writes, so the transaction holds the write lock from the start; a past
+    // day's visitors become a number, and its HMACs and key go
+    for statement in [
+        "INSERT OR IGNORE INTO daily_visitors \
+         SELECT day, count(*) FROM visitors WHERE day < date('now') GROUP BY day",
+        "DELETE FROM visitors WHERE day < date('now')",
+        "DELETE FROM daily_keys WHERE day != date('now')",
     ] {
-        sqlx::query(delete).bind(&keep).execute(&mut *tx).await?;
+        sqlx::query(statement).execute(&mut *tx).await?;
     }
-    sqlx::query("DELETE FROM daily_keys WHERE day != date('now')")
-        .execute(&mut *tx)
-        .await?;
     sqlx::query(
         "INSERT INTO totals VALUES (date('now'), ?, ?, ?, ?, 1, ?, ?, ?) \
          ON CONFLICT (day, channel, route, bot, status) DO UPDATE SET \

@@ -7,7 +7,7 @@ export const privacy: Record<
 > = {
   de: {
     title: 'Datenschutz',
-    updated: 'Stand: 12. November 2026',
+    updated: 'Stand: 15. November 2026',
     intro:
       'Diese Seite erklärt, welche Daten OpenCommune beim Besuch der Website, bei der Nutzung der API und des MCP-Servers verarbeitet, und wie mit Personen umgegangen wird, die in den Dokumenten der Gemeinden vorkommen.',
     sections: [
@@ -21,7 +21,7 @@ export const privacy: Record<
         title: 'Besuch der Website',
         paragraphs: [
           'Die Website setzt keine Cookies, verwendet keine Analyse- oder Werbedienste und lädt nichts von Dritten nach; auch die Schrift wird von unserem eigenen Server geladen.',
-          'Für die Nutzungsstatistik zählt der Server Aufrufe pro Tag, Seitentyp und Antwortstatus. IP-Adressen, vollständige Adressen der aufgerufenen Seiten und Suchbegriffe werden nicht gespeichert. Die Zahl der Besuchenden pro Tag wird aus einem Prüfwert von IP-Adresse und Browserkennung geschätzt, der mit einem täglich wechselnden Schlüssel gebildet wird; der Schlüssel wird am Folgetag gelöscht, sodass niemand über Tage hinweg wiedererkannt werden kann. Wer «Do Not Track» oder «Global Privacy Control» sendet, fliesst nicht in diese Schätzung ein. Die Statistik wird nach 30 Tagen gelöscht.',
+          'Für die Nutzungsstatistik zählt der Server Aufrufe pro Tag, Seitentyp und Antwortstatus. IP-Adressen, vollständige Adressen der aufgerufenen Seiten und Suchbegriffe werden nicht gespeichert. Die Zahl der Besuchenden pro Tag wird aus einem Prüfwert von IP-Adresse und Browserkennung geschätzt, der mit einem täglich wechselnden Schlüssel gebildet wird; der Schlüssel wird am Folgetag gelöscht, sodass niemand über Tage hinweg wiedererkannt werden kann. Wer «Do Not Track» oder «Global Privacy Control» sendet, fliesst nicht in diese Schätzung ein. Die Zählungen pro Tag werden dauerhaft aufbewahrt; sie enthalten keine Angaben zu Personen. Die Prüfwerte eines Tages werden am Folgetag gelöscht, nur ihre Anzahl bleibt.',
           'Die Protokolle des Servers enthalten nur den Seitentyp einer Anfrage, keine Adressen und keine Suchbegriffe.'
         ]
       },
@@ -57,7 +57,7 @@ export const privacy: Record<
   },
   fr: {
     title: 'Protection des données',
-    updated: 'État au 12 novembre 2026',
+    updated: 'État au 15 novembre 2026',
     intro:
       'Cette page explique quelles données OpenCommune traite lors de la visite du site, de l’utilisation de l’API et du serveur MCP, et comment sont traitées les personnes mentionnées dans les documents des communes.',
     sections: [
@@ -71,7 +71,7 @@ export const privacy: Record<
         title: 'Visite du site',
         paragraphs: [
           'Le site n’utilise pas de cookies, aucun service d’analyse ou de publicité, et ne charge rien de tiers ; la police de caractères est elle aussi servie par notre propre serveur.',
-          'Pour les statistiques d’utilisation, le serveur compte les accès par jour, par type de page et par statut de réponse. Les adresses IP, les adresses complètes des pages consultées et les termes de recherche ne sont pas enregistrés. Le nombre de visiteurs par jour est estimé à partir d’une empreinte de l’adresse IP et de l’identifiant du navigateur, calculée avec une clé qui change chaque jour ; la clé est effacée le lendemain, de sorte que personne ne peut être reconnu d’un jour à l’autre. Les navigateurs qui envoient « Do Not Track » ou « Global Privacy Control » ne sont pas pris en compte dans cette estimation. Les statistiques sont effacées après 30 jours.',
+          'Pour les statistiques d’utilisation, le serveur compte les accès par jour, par type de page et par statut de réponse. Les adresses IP, les adresses complètes des pages consultées et les termes de recherche ne sont pas enregistrés. Le nombre de visiteurs par jour est estimé à partir d’une empreinte de l’adresse IP et de l’identifiant du navigateur, calculée avec une clé qui change chaque jour ; la clé est effacée le lendemain, de sorte que personne ne peut être reconnu d’un jour à l’autre. Les navigateurs qui envoient « Do Not Track » ou « Global Privacy Control » ne sont pas pris en compte dans cette estimation. Les décomptes par jour sont conservés sans limite de durée ; ils ne contiennent aucune donnée personnelle. Les empreintes d’un jour sont effacées le lendemain ; seul leur nombre est conservé.',
           'Les journaux du serveur ne contiennent que le type de page d’une requête, ni adresses ni termes de recherche.'
         ]
       },
@@ -107,7 +107,7 @@ export const privacy: Record<
   },
   it: {
     title: 'Protezione dei dati',
-    updated: 'Stato: 12 novembre 2026',
+    updated: 'Stato: 15 novembre 2026',
     intro:
       'Questa pagina spiega quali dati OpenCommune tratta durante la visita del sito e l’uso dell’API e del server MCP, e come vengono trattate le persone menzionate nei documenti dei comuni.',
     sections: [
@@ -121,7 +121,7 @@ export const privacy: Record<
         title: 'Visita del sito',
         paragraphs: [
           'Il sito non usa cookie, nessun servizio di analisi o di pubblicità e non carica nulla da terzi; anche il carattere tipografico viene servito dal nostro server.',
-          'Per le statistiche d’uso il server conta gli accessi per giorno, per tipo di pagina e per stato della risposta. Indirizzi IP, indirizzi completi delle pagine visitate e termini di ricerca non vengono registrati. Il numero di visitatori al giorno è stimato da un’impronta dell’indirizzo IP e dell’identificativo del browser, calcolata con una chiave che cambia ogni giorno; la chiave viene cancellata il giorno seguente, così nessuno può essere riconosciuto da un giorno all’altro. Chi invia «Do Not Track» o «Global Privacy Control» non viene considerato in questa stima. Le statistiche vengono cancellate dopo 30 giorni.',
+          'Per le statistiche d’uso il server conta gli accessi per giorno, per tipo di pagina e per stato della risposta. Indirizzi IP, indirizzi completi delle pagine visitate e termini di ricerca non vengono registrati. Il numero di visitatori al giorno è stimato da un’impronta dell’indirizzo IP e dell’identificativo del browser, calcolata con una chiave che cambia ogni giorno; la chiave viene cancellata il giorno seguente, così nessuno può essere riconosciuto da un giorno all’altro. Chi invia «Do Not Track» o «Global Privacy Control» non viene considerato in questa stima. I conteggi giornalieri vengono conservati senza limiti di tempo e non contengono dati personali. Le impronte di un giorno vengono cancellate il giorno seguente; ne resta solo il numero.',
           'I log del server contengono solo il tipo di pagina di una richiesta, né indirizzi né termini di ricerca.'
         ]
       },

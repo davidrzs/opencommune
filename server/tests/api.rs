@@ -711,6 +711,49 @@ async fn usage_counts_route_templates_without_paths_or_addresses() {
 }
 
 #[tokio::test]
+async fn usage_keeps_daily_counts_and_turns_past_visitors_into_a_number() {
+    let f = fixture(true).await;
+    let pool = SqlitePool::connect_with(SqliteConnectOptions::new().filename(&f.usage_path))
+        .await
+        .unwrap();
+    sqlx::raw_sql(
+        "INSERT INTO totals VALUES ('2020-01-01', 'web', '/', 0, 200, 5, 0, 0, 10.0); \
+         INSERT INTO visitors VALUES ('2020-01-01', 'a'), ('2020-01-01', 'b'); \
+         INSERT INTO daily_keys VALUES ('2020-01-01', x'00');",
+    )
+    .execute(&pool)
+    .await
+    .unwrap();
+    send(
+        &f.router,
+        Request::get("/api/communes").body(Body::empty()).unwrap(),
+    )
+    .await;
+    for _ in 0..50 {
+        let counted: Option<i64> =
+            sqlx::query_scalar("SELECT visitors FROM daily_visitors WHERE day = '2020-01-01'")
+                .fetch_optional(&pool)
+                .await
+                .unwrap();
+        if counted.is_some() {
+            assert_eq!(counted, Some(2));
+            let left: (i64, i64, i64) = sqlx::query_as(
+                "SELECT (SELECT count(*) FROM visitors WHERE day < date('now')), \
+                 (SELECT count(*) FROM daily_keys WHERE day < date('now')), \
+                 (SELECT requests FROM totals WHERE day = '2020-01-01')",
+            )
+            .fetch_one(&pool)
+            .await
+            .unwrap();
+            assert_eq!(left, (0, 0, 5)); // no HMAC and no key of a past day; its counts stay
+            return;
+        }
+        tokio::time::sleep(Duration::from_millis(40)).await;
+    }
+    panic!("the past day's visitors were not counted");
+}
+
+#[tokio::test]
 async fn the_front_end_is_served_with_a_fallback_and_api_errors_stay_json() {
     let f = fixture(false).await;
     let request = Request::get("/gemeinden/261").body(Body::empty()).unwrap();
