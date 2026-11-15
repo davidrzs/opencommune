@@ -128,7 +128,9 @@ Full-text search in the text of the pages. It needs the full-text index; without
 503. The index holds the pages that lie inside a section of the types `minutes`, `decisions`,
 `vote_result`, `budget`, `accounts`, `proposal`, `invitation_agenda` and `member_request` and have
 at least 20 characters of text. It leaves out bulletins and the documents of private bodies. Pages
-without a text layer come in as OCR reaches them.
+without a text layer come in as OCR reaches them. The text is redacted: names, street addresses and
+e-mail addresses are replaced by the marks `［name］`, `［address］` and `［email］` (`［secret］` for
+passwords and keys), in snippets and in `/api/documents/{sha256}/pages` alike.
 
 Parameters; the filters are optional and combine with AND, and a blank text filter is no filter:
 
@@ -153,7 +155,11 @@ Parameters; the filters are optional and combine with AND, and a blank text filt
    is set, documents with neither are left out.
 5. `section`, `family`: only pages inside a section of this type or family match. In
    `/api/documents` these filters select documents; here they select pages.
-6. `limit`: 0 to 50, default 10. `offset`: 0 or more, default 0.
+6. `document`: a document's `sha256`: only its pages match, to find where in a long document
+   something is.
+7. `limit`: 0 to 50, default 10. `offset`: 0 or more, default 0.
+8. `pages_per_document`: 1 to 20, default 3: how many of each document's matching pages the
+   answer shows.
 
 ```json
 {"total": 0, "capped": false, "offset": 0, "limit": 10,
@@ -165,12 +171,15 @@ Parameters; the filters are optional and combine with AND, and a blank text filt
 1. `items` are the documents with a matching page, best first: by the relevance of their best page
    (FTS5 `bm25`), then by `sha256`.
 2. `TextDocument` is the `Document` of `/api/documents` with `matching_pages` (how many of its pages
-   match) and `pages`, its three best matching pages, best first:
+   match) and `pages`, its best matching pages (`pages_per_document`), best first:
    `{page, section_types, snippet, highlights, original_url}`.
 3. `section_types`: the types of the sections that hold the page, in the classifier's order.
-4. `snippet`: plain text, never HTML, about 300 characters around the matches: FTS5 `snippet()`
-   with 40 words, runs of white space and control characters as one space, at most 360
-   characters. `…` marks a cut.
+4. `snippet`: plain text, never HTML, with runs of white space and control characters as one
+   space. A page of up to 360 characters is shown whole. Of a longer page the server shows the
+   passage of 360 characters with the most different matched words (FTS5 `highlight()` marks the
+   matches), or two passages of 180 characters when together they show more, as for words far
+   apart on the page. A passage grows by up to 10 characters at each end so as not to cut a word.
+   `…` marks left-out text, ` … ` the gap between two passages.
 5. `highlights`: `[[start, end], ...]`, the matched words in `snippet`, as offsets in characters
    (Unicode code points; in JavaScript, index `Array.from(snippet)`), `end` exclusive.
 6. `original_url`: `/original/<sha256>?page=<n>`, which opens the file at that page.
@@ -323,13 +332,16 @@ One statement gives everything but the snippets, so that the index is searched o
 1. `hit`: the pages that match (`page_fts MATCH`), joined to `pages`, with the filters: documents
    as an `IN` list on sha256, `section` and `family` as `EXISTS` on `sections`. They are ordered
    by `+rank` and cut at 20,000. The `+` keeps FTS5 from ranking every match itself; SQLite then
-   ranks only the pages that pass the filters.
+   ranks only the pages that pass the filters. `document` also limits the match to the rowid range
+   of that document's pages, which `fulltext.py` writes one after the other, so FTS5 skips the
+   other documents' matches.
 2. `doc`: per document the best score and the number of pages. The total, the facets, the
-   requested documents and their three best pages come from `hit` and `doc`. `CROSS JOIN` makes
-   SQLite start from them; it would otherwise scan the serving tables.
-3. A second statement writes the snippets of those pages (at most 150) with FTS5 `snippet()`. It
-   names them as `+rowid IN (...)`, so that FTS5 reads the matches in order. Looked up one by one,
-   a prefix query searches the whole vocabulary for each page: 60 snippets of `gem*` took 6 s.
+   requested documents and their best pages come from `hit` and `doc`. `CROSS JOIN` makes SQLite
+   start from them; it would otherwise scan the serving tables.
+3. A second statement marks the matches in the whole text of those pages (at most 50 times
+   `pages_per_document`) with FTS5 `highlight()`, and the server picks the passages. It names the
+   pages as `+rowid IN (...)`, so that FTS5 reads the matches in order. Looked up one by one, a
+   prefix query searches the whole vocabulary for each page: 60 snippets of `gem*` took 6 s.
 
 Measured on the archive's data (an index of 1,229,565 pages of 58,123 documents, 4.5 GB; 349,986
 documents in the serving database), with a release build, a warm cache and the default `limit`,

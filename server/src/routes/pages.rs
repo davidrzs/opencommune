@@ -83,6 +83,11 @@ pub async fn llms(State(state): State<AppState>) -> Result<Response, ApiError> {
     let t = pages::totals(&state.db).await?;
     let base = &state.site.public_url;
     let n = |v| Lang::De.number(v);
+    let (text_tools, search) = if state.fulltext {
+        (", `search_text`, `read_pages`", llms_search(base))
+    } else {
+        ("", String::new())
+    };
     let body = format!(
         "# OpenCommune\n\n\
          > Open archive of the documents Swiss municipalities publish on their websites: minutes, \
@@ -98,10 +103,11 @@ pub async fn llms(State(state): State<AppState>) -> Result<Response, ApiError> {
          ## Query it\n\n\
          - [MCP server]({base}/mcp): streamable HTTP, no key. Tools: `search_documents` (filters by \
          commune, section type, section family, body, year and title, with counts per value), \
-         `get_document`, `list_communes`.\n\
+         `get_document`, `list_communes`{text_tools}.\n\
          - [JSON API]({SOURCE}/blob/main/server/API.md): for example \
          `{base}/api/documents?commune=261&section=budget`, `{base}/api/documents/{{sha256}}`, \
-         `{base}/api/communes`.\n\n\
+         `{base}/api/communes`; described in `{base}/api/openapi.json`.\n\n\
+         {search}\
          ## Pages\n\n\
          - A commune: `{base}/de/gemeinden/{{BFS number}}`, also in French (`/fr/`) and Italian \
          (`/it/`).\n\
@@ -113,6 +119,34 @@ pub async fn llms(State(state): State<AppState>) -> Result<Response, ApiError> {
         n(t.communes),
     );
     Ok(text("text/markdown; charset=utf-8", body))
+}
+
+/// The part of `llms.txt` on the full-text search, for a server with the index.
+fn llms_search(base: &str) -> String {
+    format!(
+        "## Search the text of the pages\n\n\
+         - `{base}/api/pages?q=Kunstrasen*%20Kredit&canton=ZH` (MCP: `search_text`): the documents \
+         whose pages hold every word, best first, each with its best pages as plain-text snippets \
+         and a link to the file at that page. `\"a phrase\"` must occur as written; `word*` matches \
+         the words that begin with it (at least 3 letters before the `*`), which German compounds \
+         need: `Kunstrasen*` also finds `Kunstrasenplatz`. Case and accents do not matter; there \
+         are no operators. Filters: `commune` (BFS number), `canton`, `year`, `from` and `to` \
+         (YYYY-MM-DD), `section`, `family`, `body`, and `document` (a sha256: search inside one \
+         document). `limit` up to 50, `offset`, and `pages_per_document` 1 to 20 (default 3).\n\
+         - The search ranks at most the 20,000 best matching pages. When more match, `capped` is \
+         true and `total` and the facets count only those pages' documents: add a word or a \
+         filter.\n\
+         - `{base}/api/documents/{{sha256}}/pages?from=1&to=10` (MCP: `read_pages`): the text of up \
+         to 10 pages at a time. An `original_url` is relative to {base} and redirects to the \
+         commune's file at that page.\n\
+         - The search covers the pages inside sections of these types: minutes, decisions, \
+         vote_result, budget, accounts, proposal, invitation_agenda and member_request. It leaves \
+         out bulletins and the documents of private bodies; pages without a text layer come in as \
+         OCR reaches them.\n\
+         - The text is machine-extracted (the PDF's text layer, or OCR) and no person has checked \
+         it. Names, street addresses and e-mail addresses are replaced by `［name］`, `［address］` \
+         and `［email］`. Cite the document and the page.\n\n"
+    )
 }
 
 /// The front end chooses the language; the start page without one is the German one.

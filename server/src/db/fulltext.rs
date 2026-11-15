@@ -33,10 +33,13 @@ const MAX_TERMS: usize = 10;
 const MAX_QUERY_CHARS: usize = 500;
 /// The fewest letters or digits before `*`. A shorter prefix stands for too many words.
 const MIN_PREFIX: usize = 3;
-/// A snippet: the words FTS5 picks around the matches (about 300 characters), and the most
-/// characters kept.
-const SNIPPET_WORDS: i64 = 40;
+/// The matching pages shown per document, by default and at most.
+pub const DEFAULT_PAGES_PER_DOCUMENT: i64 = 3;
+pub const MAX_PAGES_PER_DOCUMENT: i64 = 20;
+/// A snippet's length in characters: one passage of this length, or two of half of it. A passage
+/// grows by up to `WORD_EDGE` characters at each end so as not to cut a word.
 const SNIPPET_CHARS: usize = 360;
+const WORD_EDGE: usize = 10;
 /// The marks FTS5 puts around a match in a snippet. Page text does not contain these sequences.
 const OPEN: &str = "\u{1}\u{2}";
 const CLOSE: &str = "\u{2}\u{1}";
@@ -74,16 +77,26 @@ pub struct TextSearch {
     /// The kind of body behind the document.
     #[serde(default)]
     pub body: Option<String>,
+    /// A document's sha256: search inside this document only.
+    #[serde(default)]
+    pub document: Option<String>,
     /// Documents to skip.
     #[serde(default)]
     pub offset: i64,
     /// Documents to return, 0 to 50.
     #[serde(default = "default_limit")]
     pub limit: i64,
+    /// The matching pages to show per document, best first: 1 to 20, default 3.
+    #[serde(default = "default_pages_per_document")]
+    pub pages_per_document: i64,
 }
 
 fn default_limit() -> i64 {
     DEFAULT_LIMIT
+}
+
+fn default_pages_per_document() -> i64 {
+    DEFAULT_PAGES_PER_DOCUMENT
 }
 
 impl TextSearch {
@@ -94,6 +107,11 @@ impl TextSearch {
         }
         if !(0..=MAX_LIMIT).contains(&self.limit) {
             return Err(format!("limit must be between 0 and {MAX_LIMIT}"));
+        }
+        if !(1..=MAX_PAGES_PER_DOCUMENT).contains(&self.pages_per_document) {
+            return Err(format!(
+                "pages_per_document must be between 1 and {MAX_PAGES_PER_DOCUMENT}"
+            ));
         }
         for (name, value) in [("from", &self.from), ("to", &self.to)] {
             if text(value).is_some_and(|v| !is_date(v)) {
@@ -197,6 +215,16 @@ fn push_hits(qb: &mut QueryBuilder<Sqlite>, s: &TextSearch, query: &Query) {
          WHERE f.page_fts MATCH ",
     )
     .push_bind(query.0.clone());
+    if let Some(document) = text(&s.document) {
+        // a document's pages have neighbouring ids (fulltext.py writes them in order), so the
+        // range lets FTS5 skip the other documents' matches; the sha256 test decides
+        qb.push(" AND f.rowid BETWEEN (SELECT min(id) FROM fulltext.pages WHERE sha256 = ")
+            .push_bind(document.to_string())
+            .push(") AND (SELECT max(id) FROM fulltext.pages WHERE sha256 = ")
+            .push_bind(document.to_string())
+            .push(") AND p.sha256 = ")
+            .push_bind(document.to_string());
+    }
     let (canton, body) = (text(&s.canton), text(&s.body));
     let (from, to) = (text(&s.from), text(&s.to));
     let on_document = s.commune.is_some()
@@ -266,7 +294,7 @@ fn push_hits(qb: &mut QueryBuilder<Sqlite>, s: &TextSearch, query: &Query) {
 
 /// Everything but the snippets in one statement, so that the index is searched once. The joins
 /// start from the matches (CROSS JOIN fixes the order): SQLite would otherwise scan the serving
-/// tables.
+/// tables. It ends with the number of pages to show per document.
 const SUMMARY: &str = "\
 SELECT 'hits' AS kind, NULL AS number, NULL AS text, NULL AS name, count(*) AS n, NULL AS score \
 FROM hit \
@@ -286,7 +314,7 @@ ORDER BY n DESC, c.name, c.bfs_id LIMIT 20) \
 UNION ALL SELECT 'item', NULL, sha256, NULL, pages, score FROM item \
 UNION ALL SELECT 'page', page, sha256, NULL, id, score FROM (SELECT h.*, row_number() OVER \
 (PARTITION BY h.sha256 ORDER BY h.score, h.page) AS position FROM hit h \
-WHERE h.sha256 IN (SELECT sha256 FROM item)) WHERE position <= 3";
+WHERE h.sha256 IN (SELECT sha256 FROM item)) WHERE position <= ";
 
 /// A matching page before its snippet: its number, its id in the index and its score.
 struct Best {
@@ -296,11 +324,11 @@ struct Best {
 }
 
 /// `GET /api/pages`: one page of the documents whose pages match, best first, with their best
-/// three pages and the facets. The parameters are checked (`TextSearch::check`).
+/// pages and the facets. The parameters are checked (`TextSearch::check`).
 pub async fn search(pool: &SqlitePool, s: &TextSearch, query: &Query) -> sqlx::Result<TextPage> {
     let mut qb = QueryBuilder::new("");
     push_hits(&mut qb, s, query);
-    qb.push(SUMMARY);
+    qb.push(SUMMARY).push_bind(s.pages_per_document);
     let rows: Vec<Summary> = qb.build_query_as().fetch_all(pool).await?;
 
     let (mut hits, mut total) = (0, 0);
@@ -419,8 +447,9 @@ fn section_types(sections: &[Section], page: i64) -> Vec<String> {
 type Snippet = (String, Vec<[u32; 2]>);
 
 /// The snippet of each page id, with its highlights. FTS5 reads each matching page in turn and
-/// writes snippets for the ids asked for; `+` keeps it from looking each id up on its own, which
-/// for a prefix costs a search of the whole vocabulary per page.
+/// marks the matches in the whole text of the ids asked for (`highlight()`); `snippet` picks the
+/// passages. `+` keeps FTS5 from looking each id up on its own, which for a prefix costs a search
+/// of the whole vocabulary per page.
 async fn snippets(
     pool: &SqlitePool,
     query: &Query,
@@ -429,12 +458,10 @@ async fn snippets(
     if ids.is_empty() {
         return Ok(HashMap::new());
     }
-    let mut qb = QueryBuilder::new("SELECT rowid, snippet(page_fts, 0, ");
+    let mut qb = QueryBuilder::new("SELECT rowid, highlight(page_fts, 0, ");
     qb.push_bind(OPEN)
         .push(", ")
         .push_bind(CLOSE)
-        .push(", '…', ")
-        .push_bind(SNIPPET_WORDS)
         .push(") FROM fulltext.page_fts WHERE page_fts MATCH ")
         .push_bind(query.0.clone())
         .push(" AND +rowid IN (");
@@ -450,10 +477,52 @@ async fn snippets(
         .collect())
 }
 
-/// A snippet as plain text and the character ranges of its matches. Runs of white space and
-/// control characters become one space; a snippet over `SNIPPET_CHARS` characters is cut around
-/// its first match.
+/// A page's snippet, from its text with FTS5's marks around the matches: the whole text when it is
+/// short, else the passage of `SNIPPET_CHARS` characters that shows the most different matched
+/// words, or two passages of half that length when together they show more. Plain text: runs of
+/// white space and control characters become one space; `…` marks a cut.
 fn snippet(marked: &str) -> Snippet {
+    let (chars, highlights) = unmark(marked);
+    if chars.len() <= SNIPPET_CHARS {
+        return join(&chars, &highlights, &[(0, chars.len())]);
+    }
+    // a matched word as a key: its letters and digits in lower case
+    let keys: Vec<String> = highlights
+        .iter()
+        .map(|[a, b]| {
+            chars[*a..*b]
+                .iter()
+                .filter(|c| c.is_alphanumeric())
+                .flat_map(|c| c.to_lowercase())
+                .collect()
+        })
+        .collect();
+    let different = keys.iter().collect::<HashSet<_>>().len();
+    let none = HashSet::new();
+    let one = passage(&chars, &highlights, &keys, SNIPPET_CHARS, &none, None);
+    let mut passages = vec![(one.0, one.1)];
+    if one.2.len() < different {
+        let first = passage(&chars, &highlights, &keys, SNIPPET_CHARS / 2, &none, None);
+        let around = Some((first.0, first.1));
+        let second = passage(
+            &chars,
+            &highlights,
+            &keys,
+            SNIPPET_CHARS / 2,
+            &first.2,
+            around,
+        );
+        if !second.2.is_empty() && first.2.len() + second.2.len() > one.2.len() {
+            passages = vec![(first.0, first.1), (second.0, second.1)];
+            passages.sort();
+        }
+    }
+    join(&chars, &highlights, &passages)
+}
+
+/// FTS5's marked text as characters, with runs of white space and control characters as one
+/// space, and the character ranges of the matches.
+fn unmark(marked: &str) -> (Vec<char>, Vec<[usize; 2]>) {
     let mut chars: Vec<char> = Vec::new();
     let mut highlights: Vec<[usize; 2]> = Vec::new();
     let (mut start, mut space) = (None, false);
@@ -486,32 +555,85 @@ fn snippet(marked: &str) -> Snippet {
             chars.push(c);
         }
     }
-    if chars.len() > SNIPPET_CHARS {
-        // keep the first match, with some text before it
-        let first = highlights.first().map_or(0, |h| h[0]);
-        let from = first.saturating_sub(SNIPPET_CHARS / 4);
-        let to = (from + SNIPPET_CHARS).min(chars.len());
-        let lead = usize::from(from > 0);
-        let mut cut: Vec<char> = Vec::with_capacity(to - from + 2);
-        if from > 0 {
-            cut.push('…');
+    (chars, highlights)
+}
+
+/// The passage of about `len` characters around a match that shows the most matched words not in
+/// `seen`, then the most matches, then comes first; it does not overlap `avoid`. Its start, its
+/// end and the new words it shows.
+fn passage<'k>(
+    chars: &[char],
+    highlights: &[[usize; 2]],
+    keys: &'k [String],
+    len: usize,
+    seen: &HashSet<&'k str>,
+    avoid: Option<(usize, usize)>,
+) -> (usize, usize, HashSet<&'k str>) {
+    let mut best: Option<(usize, usize, HashSet<&'k str>, usize)> = None;
+    for h in highlights {
+        let start = h[0]
+            .saturating_sub(len / 4)
+            .min(chars.len().saturating_sub(len));
+        let (start, end) = whole_words(chars, start, (start + len).min(chars.len()));
+        if avoid.is_some_and(|(a, b)| start < b && a < end) {
+            continue;
         }
-        cut.extend(&chars[from..to]);
-        if to < chars.len() {
-            cut.push('…');
-        }
-        highlights = highlights
-            .into_iter()
-            .filter(|h| h[0] >= from && h[1] <= to)
-            .map(|h| [h[0] - from + lead, h[1] - from + lead])
+        let inside: Vec<usize> = (0..highlights.len())
+            .filter(|&i| highlights[i][0] >= start && highlights[i][1] <= end)
             .collect();
-        chars = cut;
+        let new: HashSet<&'k str> = inside
+            .iter()
+            .map(|&i| keys[i].as_str())
+            .filter(|k| !seen.contains(k))
+            .collect();
+        if best
+            .as_ref()
+            .is_none_or(|b| (new.len(), inside.len()) > (b.2.len(), b.3))
+        {
+            best = Some((start, end, new, inside.len()));
+        }
     }
-    let highlights = highlights
-        .into_iter()
-        .map(|[a, b]| [a as u32, b as u32])
-        .collect();
-    (chars.into_iter().collect(), highlights)
+    best.map_or((0, len.min(chars.len()), HashSet::new()), |b| {
+        (b.0, b.1, b.2)
+    })
+}
+
+/// `start` and `end` moved out to the nearest space, by at most `WORD_EDGE` characters each.
+fn whole_words(chars: &[char], start: usize, end: usize) -> (usize, usize) {
+    let start = (start.saturating_sub(WORD_EDGE)..=start)
+        .rev()
+        .find(|&i| i == 0 || chars[i - 1] == ' ')
+        .unwrap_or(start);
+    let end = (end..=(end + WORD_EDGE).min(chars.len()))
+        .find(|&i| i == chars.len() || chars[i] == ' ')
+        .unwrap_or(end);
+    (start, end)
+}
+
+/// The passages as one snippet, `…` where text is left out, and the matches inside the passages
+/// as character ranges of the snippet.
+fn join(chars: &[char], highlights: &[[usize; 2]], passages: &[(usize, usize)]) -> Snippet {
+    let mut out: Vec<char> = Vec::new();
+    let mut ranges: Vec<[u32; 2]> = Vec::new();
+    for (n, &(start, end)) in passages.iter().enumerate() {
+        if n > 0 {
+            out.extend([' ', '…', ' ']);
+        } else if start > 0 {
+            out.push('…');
+        }
+        let offset = out.len();
+        out.extend(&chars[start..end]);
+        for h in highlights.iter().filter(|h| h[0] >= start && h[1] <= end) {
+            ranges.push([
+                (h[0] - start + offset) as u32,
+                (h[1] - start + offset) as u32,
+            ]);
+        }
+    }
+    if passages.last().is_some_and(|&(_, end)| end < chars.len()) {
+        out.push('…');
+    }
+    (out.into_iter().collect(), ranges)
 }
 
 /// The parameters of `GET /api/documents/{sha256}/pages` and of the MCP tool `read_pages`.
@@ -709,6 +831,14 @@ mod tests {
         assert!(range(Some(1), Some(11)).is_err());
     }
 
+    fn marked_words(text: &str, highlights: &[[u32; 2]]) -> Vec<String> {
+        let chars: Vec<char> = text.chars().collect();
+        highlights
+            .iter()
+            .map(|[a, b]| chars[*a as usize..*b as usize].iter().collect())
+            .collect()
+    }
+
     #[test]
     fn snippets_are_plain_text_with_ranges() {
         let marked =
@@ -733,5 +863,37 @@ mod tests {
             "Treffer"
         );
         assert!(text.starts_with('…') && text.ends_with('…'));
+    }
+
+    #[test]
+    fn a_snippet_shows_the_different_words_even_when_they_are_far_apart() {
+        let filler = "wort ".repeat(120);
+        let marked = format!(
+            "{OPEN}Kunstrasen{CLOSE} beim Schulhaus. {filler}Der {OPEN}Kredit{CLOSE} von Fr. \
+             1,9 Mio. {filler}Noch einmal {OPEN}Kunstrasen{CLOSE}. {filler}"
+        );
+        let (text, highlights) = snippet(&marked);
+        assert_eq!(marked_words(&text, &highlights), ["Kunstrasen", "Kredit"]);
+        assert!(text.starts_with("Kunstrasen beim Schulhaus."), "{text}");
+        assert!(text.contains(" … ") && text.ends_with('…'), "{text}");
+        assert!(
+            text.chars().count() <= SNIPPET_CHARS + 4 * WORD_EDGE + 4,
+            "{text}"
+        );
+        // no passage cuts a word of the filler
+        for word in text
+            .split([' ', '…'])
+            .filter(|w| w.chars().all(|c| "wort".contains(c)))
+        {
+            assert!(
+                word.is_empty() || word == "wort",
+                "a cut word: {word:?} in {text}"
+            );
+        }
+        // when one passage shows every word, the snippet is that passage
+        let near = format!("{filler}{OPEN}Kunstrasen{CLOSE} und {OPEN}Kredit{CLOSE} {filler}");
+        let (text, highlights) = snippet(&near);
+        assert_eq!(marked_words(&text, &highlights), ["Kunstrasen", "Kredit"]);
+        assert!(!text.contains(" … ") && text.starts_with('…') && text.ends_with('…'));
     }
 }

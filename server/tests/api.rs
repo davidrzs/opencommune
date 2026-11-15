@@ -967,6 +967,7 @@ async fn robots_sitemap_and_llms_txt() {
     assert!(llms.contains("The archive lists 5 documents from 2 communes, each classified"));
     assert!(llms.contains("[MCP server](https://example.test/mcp)"));
     assert!(llms.contains("`search_documents`"));
+    assert!(!llms.contains("search_text")); // no index, no full-text search
     assert!(!llms.contains("decisions`") && !llms.contains("huggingface"));
 
     let indexed = build(false, true, false).await;
@@ -1165,6 +1166,42 @@ async fn full_text_finds_documents_with_their_best_pages() {
     }
     let (_, page) = get(&f.router, "/api/pages?q=Tempo%20OR%20xyz").await;
     assert_eq!(page["total"], 0); // OR is a word that must occur
+}
+
+#[tokio::test]
+async fn full_text_searches_inside_one_document_and_shows_more_or_fewer_pages() {
+    let f = fulltext_fixture().await;
+    // Gemeinde* matches pages 1 and 2 of aaaa and page 6 of cccc
+    let (_, found) = get(&f.router, "/api/pages?q=Gemeinde*&document=cccc").await;
+    assert_eq!(
+        (&found["total"], hits(&found)),
+        (&json!(1), vec![("cccc", vec![6])])
+    );
+    let (_, found) = get(
+        &f.router,
+        "/api/pages?q=Gemeinde*&document=aaaa&pages_per_document=1",
+    )
+    .await;
+    assert_eq!(found["items"][0]["matching_pages"], 2);
+    assert_eq!(hits(&found)[0].1.len(), 1);
+    let (_, found) = get(&f.router, "/api/pages?q=Gemeinde*&document=nope").await;
+    assert_eq!(found["total"], 0);
+    for bad in ["0", "21", "x"] {
+        let (status, _) = get(
+            &f.router,
+            &format!("/api/pages?q=Gemeinde*&pages_per_document={bad}"),
+        )
+        .await;
+        assert_eq!(status, StatusCode::BAD_REQUEST, "{bad}");
+    }
+    // llms.txt tells agents about the search when the server has the index
+    let (_, _, llms) = page(&f.router, "/llms.txt").await;
+    assert!(llms.contains("`search_text`, `read_pages`"), "{llms}");
+    assert!(llms.contains("/api/pages?q=Kunstrasen*%20Kredit"), "{llms}");
+    assert!(
+        llms.contains("`capped` is true") && llms.contains("［name］"),
+        "{llms}"
+    );
 }
 
 #[tokio::test]
@@ -1506,8 +1543,19 @@ async fn openapi_describes_the_full_text_endpoints() {
     assert_eq!(
         parameters("/api/pages"),
         [
-            "q", "commune", "canton", "year", "from", "to", "section", "family", "body", "offset",
-            "limit"
+            "q",
+            "commune",
+            "canton",
+            "year",
+            "from",
+            "to",
+            "section",
+            "family",
+            "body",
+            "document",
+            "offset",
+            "limit",
+            "pages_per_document"
         ]
     );
     assert_eq!(

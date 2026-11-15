@@ -234,7 +234,8 @@ pub struct PageHit {
     pub page: i64,
     /// The types of the sections the page lies in, in the classifier's order.
     pub section_types: Vec<String>,
-    /// About 300 characters of plain text around the matches; `…` marks a cut.
+    /// Plain text: one passage of about 360 characters, or two of half that length, that shows
+    /// as many of the matched words as fit; `…` marks left-out text.
     pub snippet: String,
     /// The matched words in `snippet`: `[start, end)` in characters (Unicode code points).
     pub highlights: Vec<[u32; 2]>,
@@ -250,7 +251,7 @@ pub struct TextDocument {
     pub document: Document,
     /// How many of its pages match (counted among the pages the search considered).
     pub matching_pages: i64,
-    /// Its three best matching pages, best first.
+    /// Its best matching pages, best first: three, or `pages_per_document`.
     pub pages: Vec<PageHit>,
 }
 

@@ -72,11 +72,13 @@ pub fn build(public_url: &str) -> Value {
         )},
         "/api/pages": {"get": operation(
             "searchText", "Full text",
-            "The documents whose pages contain the words, best match first, each with its three \
-             best pages: a plain-text snippet, the matches in it and a link to the file at that \
-             page. Counts per year, section type, canton and commune. The search ranks at most \
-             the 20,000 best matching pages; `capped` says when more match. The text is \
-             machine-extracted and unchecked.",
+            "The documents whose pages contain the words, best match first, each with its best \
+             pages (three, or `pages_per_document`): a plain-text snippet, the matches in it and a \
+             link to the file at that page. `document` searches inside one document. Counts per \
+             year, section type, canton and commune. The search ranks at most the 20,000 best \
+             matching pages; `capped` says when more match. The text is machine-extracted and \
+             unchecked; names, street addresses and e-mail addresses are replaced by marks such \
+             as ［name］.",
             query::<TextSearch>(&mut input),
             ok::<TextPage>(&mut out, "One page of documents with their matching pages."),
             &[400, 503],
@@ -84,7 +86,8 @@ pub fn build(public_url: &str) -> Value {
         "/api/documents/{sha256}/pages": {"get": operation(
             "readPages", "Full text",
             "The text of up to 10 pages of a document. A page outside the search has no text and \
-             a reason instead. The text is machine-extracted and unchecked.",
+             a reason instead. The text is machine-extracted and unchecked; names, street \
+             addresses and e-mail addresses are replaced by marks such as ［name］.",
             [vec![sha256.clone()], query::<PageRange>(&mut input)].concat(),
             ok::<DocumentPages>(&mut out, "The pages."),
             &[400, 404, 503],

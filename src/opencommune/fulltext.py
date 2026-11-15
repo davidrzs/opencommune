@@ -27,7 +27,8 @@ from .privacy import redact, store
 log = logging.getLogger(__name__)
 
 SCHEMA = """
--- One row per indexed page. Its id is the rowid of the page's text in page_fts.
+-- One row per indexed page, in document and page order (the server relies on a document's ids
+-- being neighbours). Its id is the rowid of the page's text in page_fts.
 CREATE TABLE pages (
     id INTEGER PRIMARY KEY,
     sha256 TEXT NOT NULL,

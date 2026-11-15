@@ -49,20 +49,23 @@ covers the pages inside sections of these types: minutes, decisions, vote_result
 accounts, proposal, invitation_agenda and member_request; pages without a text layer come in as \
 OCR reaches them. `q`: every word must occur on the page; \"a phrase\" in double quotes must \
 occur as written; a word ending in * matches the words that begin with it (at least 3 letters \
-before the *). Case and accents do not matter; there are no operators. Filters, all optional, \
-combine with AND: `commune` (a BFS number from list_communes), `canton` (such as ZH), `year`, \
-`from` and `to` (the document's date, YYYY-MM-DD, inclusive), `section` and `family` (only pages \
-inside a section of that type or family match), `body`. `limit` 0 to 50 (default 10) and `offset` page through the \
-documents. Returns `total` (documents), `facets` (documents per year, section type, canton, and \
+before the *); German compounds need the *: Kunstrasen* also finds Kunstrasenplatz. Case and \
+accents do not matter; there are no operators. Filters, all optional, combine with AND: \
+`commune` (a BFS number from list_communes), `canton` (such as ZH), `year`, `from` and `to` (the \
+document's date, YYYY-MM-DD, inclusive), `section` and `family` (only pages inside a section of \
+that type or family match), `body`, `document` (a sha256: search inside that one document). \
+`limit` 0 to 50 (default 10) and `offset` page through the documents; `pages_per_document` 1 to \
+20 (default 3) sets how many matching pages each document shows. Returns `total` (documents), `facets` (documents per year, section type, canton, and \
 the 20 communes with the most), and `items`: documents as in search_documents, each with \
-`matching_pages` and `pages`, its three best pages: `page`, `section_types`, `snippet` (plain \
-text around the matches), `highlights` (the matches in the snippet as [start, end) character \
+`matching_pages` and `pages`, its best pages: `page`, `section_types`, `snippet` (plain text: \
+one or two passages that show as many of the matched words as fit), `highlights` (the matches in the snippet as [start, end) character \
 ranges) and `original_url` (opens the file at that page). The search ranks at most the 20,000 \
 best matching pages; when more match, `capped` is true and the total and the facets count only \
 the documents of those pages. Next, read the pages around a hit with read_pages and cite the \
 document and the page. The page text is machine-extracted (the PDF's text layer, or OCR) and no \
 person has checked yet whether it is complete or right; titles, dates and sections come from an \
-automatic classification.";
+automatic classification. Names, street addresses and e-mail addresses in the text are replaced \
+by the marks ［name］, ［address］ and ［email］ (［secret］ for passwords and keys).";
 
 const READ_PAGES_DESCRIPTION: &str = "Read the text of up to 10 pages of one document: `sha256` \
 (from search_text or search_documents), `from` (default 1) and `to` (default from + 9). Returns \
@@ -70,7 +73,8 @@ const READ_PAGES_DESCRIPTION: &str = "Read the text of up to 10 pages of one doc
 text recognition on the page image), `text` and `original_url` (opens the file at that page). A \
 page outside the search has no text and a `reason` instead. The text is machine-extracted: \
 reading order, tables and hyphenation can be off, and no person has checked yet whether it is \
-complete or right. Cite the page and its original_url.";
+complete or right. Names, street addresses and e-mail addresses are replaced by the marks ［name］, \
+［address］ and ［email］. Cite the page and its original_url.";
 
 #[derive(Deserialize, JsonSchema)]
 #[schemars(crate = "rmcp::schemars")]
@@ -292,7 +296,7 @@ impl Archive {
 
 #[tool_handler(
     name = "opencommune",
-    instructions = "OpenCommune is an open archive of the documents Swiss communes publish on their websites: minutes, decisions, budgets, accounts, vote results and other papers of assemblies, parliaments and councils. Each file is listed once, with a fixed label and a link to the original on the commune's website. Use list_communes to see coverage and to find a commune's BFS number, search_documents to filter documents by commune, section type, kind, body, year and label, and get_document for one document. To find what the pages say, use search_text, then read the pages around a hit with read_pages, then cite the document and the page: each page has an original_url that opens the file at that page. The page text is machine-extracted (the PDF's text layer, or OCR) and no person has checked it: quote it with care and point to the page. Kinds, bodies, dates and sections come from an automatic classification by a language model that no person has checked yet. Coverage is partial and growing: no result does not mean that no document exists."
+    instructions = "OpenCommune is an open archive of the documents Swiss communes publish on their websites: minutes, decisions, budgets, accounts, vote results and other papers of assemblies, parliaments and councils. Each file is listed once, with a fixed label and a link to the original on the commune's website. Use list_communes to see coverage and to find a commune's BFS number, search_documents to filter documents by commune, section type, kind, body, year and label, and get_document for one document. To find what the pages say, use search_text, then read the pages around a hit with read_pages, then cite the document and the page: each page has an original_url that opens the file at that page. The page text is machine-extracted (the PDF's text layer, or OCR) and no person has checked it: quote it with care and point to the page. Names, street addresses and e-mail addresses in the page text are replaced by ［name］, ［address］ and ［email］. Kinds, bodies, dates and sections come from an automatic classification by a language model that no person has checked yet. Coverage is partial and growing: no result does not mean that no document exists."
 )]
 impl ServerHandler for Archive {}
 
