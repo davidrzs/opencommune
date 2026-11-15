@@ -69,6 +69,17 @@ class Settings(BaseSettings):
     def text_db(self) -> Path:
         return self.data_dir / "text.db"
 
+    # The privacy check: its queues and their findings in privacy/queues/<name>. Private, as the
+    # queues carry page text.
+    @property
+    def privacy_dir(self) -> Path:
+        return self.data_dir / "privacy"
+
+    # What the privacy check found on each page (`opencommune privacy import`).
+    @property
+    def privacy_db(self) -> Path:
+        return self.data_dir / "privacy.db"
+
     # The full-text index of page text (`opencommune build-fulltext`). Private, as page text names
     # people.
     @property

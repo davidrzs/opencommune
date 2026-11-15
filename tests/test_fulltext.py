@@ -2,119 +2,14 @@ import hashlib
 import json
 import sqlite3
 from contextlib import closing
-from importlib.resources import files
 
 import pytest
 from typer.testing import CliRunner
 
-from opencommune import build, fulltext
+from opencommune import fulltext
 from opencommune.cli import app
 from opencommune.config import settings
-from opencommune.text import store
-
-A, BULLETIN, PRIVATE, D = ("a" * 64, "b" * 64, "c" * 64, "d" * 64)
-LONG = "Der Gemeinderat beantragt einen Kredit."
-
-
-def serving_db(path):
-    """A serving database with four documents: A has sections of four types, one bulletin, one from
-    a private body, and D without a kind or a body kind."""
-    with closing(sqlite3.connect(path)) as db:
-        db.executescript(files("opencommune").joinpath("serving.sql").read_text())
-        db.execute("INSERT INTO runs VALUES ('cls', 'classification', 'm', '{}', 'note', 4)")
-        db.executemany(
-            "INSERT INTO documents (sha256, first_seen, page_count, run_id, kind, body_kind, "
-            "personal_data) VALUES (?, '2026-01-01', ?, 'cls', ?, ?, 0)",
-            [
-                (A, 7, "meeting_booklet", "parliament"),
-                (BULLETIN, 1, "bulletin", "commune"),
-                (PRIVATE, 1, "standalone", "private"),
-                (D, 1, None, None),
-            ],
-        )
-        db.executemany(
-            "INSERT INTO sections VALUES (?, ?, ?, ?, ?, ?, 0)",
-            [
-                (A, 1, "budget", "money", 1, 2),
-                (A, 2, "minutes", "deliberation", 3, 2),  # given in reverse; page 2 is in two
-                (A, 3, "report", "information", 4, 4),  # not searched
-                (A, 4, "proposal", "proposals", 6, 9),  # the document ends at page 7
-                (BULLETIN, 1, "minutes", "deliberation", 1, 1),
-                (PRIVATE, 1, "minutes", "deliberation", 1, 1),
-                (D, 1, "decisions", "deliberation", 1, 1),
-            ],
-        )
-        db.commit()
-    return path
-
-
-def text_db(path):
-    """text.db with a text layer pass and an OCR run. Page 1 of A has both; page 7 has neither."""
-    pages = [
-        (A, 1, "layer:d", "Budget Zwischentext"),
-        (A, 1, "ocr:q", "Crédit d'engagement pour la route"),
-        (A, 2, "layer:d", "Der Gemeinde-\nrat beschliesst den Steuerfuss.\nGemeinde-\nRat"),
-        (A, 3, "layer:d", " ".join("abcdefghijklmnopqrs")),  # 19 non-space characters
-        (A, 4, "layer:d", LONG),
-        (A, 5, "layer:d", LONG),
-        (A, 6, "layer:d", "Antrag Tempo 30 auf der Hauptstrasse"),
-        (BULLETIN, 1, "layer:d", LONG),
-        (PRIVATE, 1, "layer:d", LONG),
-        (D, 1, "layer:d", "Beschluss Nr. 123/2026"),  # 20 non-space characters
-    ]
-    with closing(store.connect(path)) as db:
-        db.executemany(
-            "INSERT INTO runs VALUES (?, ?, ?, '{}', ?, 0)",
-            [
-                ("layer:d", "layer", "2026-11-01T00:00:00+00:00", "2026-11-01T00:00:00+00:00"),
-                ("ocr:q", "ocr", "2026-11-02T00:00:00+00:00", "2026-11-02T00:00:00+00:00"),
-            ],
-        )
-        db.executemany(
-            "INSERT INTO pages (sha256, page, run, status, text, detail) "
-            "VALUES (?, ?, ?, 'ok', ?, '{}')",
-            pages,
-        )
-        db.commit()
-    return path
-
-
-@pytest.mark.parametrize(
-    ("text", "joined"),
-    [
-        ("Gemeinde-\nrat", "Gemeinderat"),
-        ("Ver-\nwal-\ntung", "Verwaltung"),
-        ("Abstim-\nmung über die Vor-\nlage", "Abstimmung über die Vorlage"),
-        ("Gebüh-\nren und Ä-\nnderung", "Gebühren und Änderung"),
-        ("crédit d'enga-\ngement", "crédit d'engagement"),
-        ("é-\nécole", "éécole"),
-        # an upper-case continuation is a new word: a compound or a name
-        ("Gemeinde-\nRat", "Gemeinde-\nRat"),
-        ("Gemeinde-\nÄmter", "Gemeinde-\nÄmter"),
-        # no letter on either side, or not exactly a hyphen and one line break
-        ("2025-\n2026", "2025-\n2026"),
-        ("Budget-\n2026", "Budget-\n2026"),
-        ("Seite 3 -\nweiter", "Seite 3 -\nweiter"),
-        ("-\nrat", "-\nrat"),
-        ("Gemeinde-\n", "Gemeinde-\n"),
-        ("Gemeinde- \nrat", "Gemeinde- \nrat"),
-        ("Gemeinde-\n\nrat", "Gemeinde-\n\nrat"),
-        ("Gemeinde–\nrat", "Gemeinde–\nrat"),
-        ("Gemeinde-rat", "Gemeinde-rat"),
-        # a hyphen before und, oder, bis, bzw or sowie shortens a compound
-        ("Ein-\nund Ausgaben", "Ein-\nund Ausgaben"),
-        ("Hoch-\noder Tiefbau", "Hoch-\noder Tiefbau"),
-        ("Primar-\nbzw. Sekundarschule", "Primar-\nbzw. Sekundarschule"),
-        ("Gemeinde-\nunderlage", "Gemeindeunderlage"),
-    ],
-)
-def test_words_split_at_a_line_end_are_joined(text, joined):
-    assert fulltext.join_split_words(text) == joined
-
-
-def test_the_types_are_those_of_deliberation_money_and_proposals():
-    families = {"deliberation", "money", "proposals"}
-    assert set(fulltext.TYPES) == {t for t, f in build.FAMILIES.items() if f in families}
+from tests.scope_data import A, D, serving_db, text_db
 
 
 def test_the_index_holds_each_page_in_scope_once(tmp_path):

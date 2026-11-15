@@ -12,10 +12,12 @@ from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 import pymupdf
 from typer.testing import CliRunner
 
+from opencommune import scope
 from opencommune.cli import app
 from opencommune.config import settings
 from opencommune.text import layer, ocr, store
-from opencommune.text.queue import MAX_TRIES, STALE_SECONDS, Queue, select
+from opencommune.text.queue import MAX_TRIES, STALE_SECONDS, Queue
+from tests import scope_data
 
 
 def stored_pdf(raw, texts):
@@ -35,10 +37,10 @@ def make_queue(tmp_path, pages, chunk_pages=2):
     chosen = {
         **ocr.reading_settings(),
         "longest_edge": 200,
-        "pages": len(pages),
         "created": "2026-11-14T16:00:00+00:00",
     }
-    return Queue.create(tmp_path / "queue", pages, chunk_pages, chosen)
+    items = [{"sha256": sha, "page": page} for sha, page in pages]
+    return Queue.create(tmp_path / "queue", items, chunk_pages, chosen)
 
 
 @contextmanager
@@ -127,24 +129,23 @@ def test_measure_reads_the_text_layer_and_goes_on_where_it_stopped(tmp_path):
     assert layer.measure({"f" * 64: {1: ["budget"]}}, raw, out, 1)["unreadable"] == 1
 
 
-def test_select_takes_the_pages_below_the_cutoff_first_types_first():
-    records = [
-        {"sha256": "b", "page": 1, "sections": ["budget"], "chars": 0},
-        {"sha256": "a", "page": 2, "sections": ["budget"], "chars": 19},
-        {"sha256": "a", "page": 1, "sections": ["budget"], "chars": 20},
-        {"sha256": "c", "page": 4, "sections": ["accounts", "vote_result"], "chars": 3},
-        {"sha256": "c", "page": 4, "sections": ["accounts", "vote_result"], "chars": 3},
-        {"sha256": "d", "error": "FileDataError: broken"},
-    ]
-    pages, counts = select(map(json.dumps, records), 20, ["vote_result", "decisions"])
-    assert pages == [("c", 4), ("a", 2), ("b", 1)]
+def test_ocr_reads_the_pages_in_scope_without_usable_text(tmp_path):
+    a = scope_data.A
+    serving = scope_data.serving_db(tmp_path / "serving.db")
+    text = scope_data.text_db(tmp_path / "text.db")
+    pages, counts = ocr.choose(serving, text, ["proposal"])
+    assert pages == [(a, 7), (a, 3)]
     assert counts == {
-        "pages_measured": 4,
-        "pages": 3,
+        "pages_in_scope": 6,
+        "pages_with_text": 4,
+        "pages_read_before": 0,
+        "pages_without_any_text": 1,
         "pages_first": 1,
-        "documents": 3,
-        "unreadable_documents": 1,
+        "documents": 1,
     }
+    blank = [*scope_data.PAGES, (a, 3, "ocr:q", "")]  # OCR found nothing on page 3
+    pages, counts = ocr.choose(serving, scope_data.text_db(tmp_path / "again.db", blank), [])
+    assert pages == [(a, 7)] and counts["pages_read_before"] == 1
 
 
 def test_claims_are_exclusive_and_a_stale_claim_is_taken_over(tmp_path):
@@ -237,8 +238,12 @@ def test_the_text_commands_name_their_passes_and_queues(tmp_path, monkeypatch):
     monkeypatch.setattr(settings, "data_dir", tmp_path)
     raw = tmp_path / "raw"
     raw.mkdir()
-    sha = stored_pdf(raw, ["", "Budget 2027", "3"])
-    serving_db(tmp_path / "serving.db", {sha: 3}, [(sha, "budget", 1, 3)])
+    sha = stored_pdf(raw, ["", "Budget 2027 der Gemeinde Muster", "3"])
+    scope_data.serving_db(
+        tmp_path / "serving.db",
+        documents=[(sha, 3, "standalone", "commune")],
+        sections=[(sha, 1, "budget", "money", 1, 3)],
+    )
     runner = CliRunner()
 
     def run(*args):
@@ -248,17 +253,19 @@ def test_the_text_commands_name_their_passes_and_queues(tmp_path, monkeypatch):
     assert made.exit_code == 0, made.output
     assert json.loads(made.stdout.splitlines()[-1]) == {"documents": 1, "pages": 3, "unreadable": 0}
     assert run("layer", "d", "--sections", "accounts", "--margin", "0").exit_code != 0
-    made = run("queue", "q", "--layer", "d", "--chars-below", "5")
+    assert run("queue", "q").exit_code != 0  # no text.db yet
+    assert run("import", "--layer", "d").exit_code == 0
+    made = run("queue", "q")
     assert made.exit_code == 0, made.output
     queue = Queue(tmp_path / "text" / "queues" / "q")
     assert queue.pages("00000") == [(sha, 1), (sha, 3)]
-    assert queue.settings["layer_settings"]["sections"] == ["budget"]
+    assert queue.settings["scope"] == list(scope.TYPES)
+    assert (queue.settings["pages_in_scope"], queue.settings["pages"]) == (3, 2)
     assert queue.settings["revision"] == ocr.REVISION
-    assert run("queue", "q", "--layer", "d", "--chars-below", "5").exit_code != 0
+    assert run("queue", "q").exit_code != 0
     shown = run("status", "q")
     assert json.loads(shown.stdout)["pages"] == {"total": 2, "answered": 0}
     assert run("status", "../q").exit_code != 0
-    assert run("import", "--layer", "d").exit_code == 0
     imported = run("import", "--queue", "q")
     assert imported.exit_code == 0, imported.output
     assert json.loads(imported.stdout)["run"] == "ocr:q"

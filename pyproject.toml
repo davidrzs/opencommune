@@ -21,6 +21,10 @@ dependencies = [
     "pymupdf==1.28.2",
 ]
 
+[project.optional-dependencies]
+# The privacy check's worker (`opencommune privacy detect`); it runs on a GPU machine.
+privacy = ["gheim[local]==0.1.11", "huggingface-hub"]
+
 [project.urls]
 Homepage = "https://www.opencommune.ch"
 Repository = "https://github.com/davidrzs/opencommune"

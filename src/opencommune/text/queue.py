@@ -1,7 +1,9 @@
-"""A queue of pages for OCR on a shared file system, worked by any number of workers at once.
+"""A queue of pages on a shared file system, worked by any number of workers at once: OCR
+(`text.ocr`) and the privacy check (`privacy.detect`) use it.
 
     QUEUE/settings.json        how the pages were chosen and how they are to be read
-    QUEUE/chunks/NNNNN.jsonl   the pages of each chunk, {"sha256", "page"} per line, in order
+    QUEUE/chunks/NNNNN.jsonl   the pages of each chunk in order, {"sha256", "page"} per line and
+                               whatever else the worker needs (the privacy check: the text)
     QUEUE/claims/NNNNN.K       attempt K at a chunk; its holder touches the file every minute
     QUEUE/out/NNNNN.jsonl      one JSON line per answer, appended by the chunk's holder
     QUEUE/done/NNNNN           written once every page of the chunk has a final answer
@@ -14,7 +16,8 @@ writing to it. Pages that already have a final answer in the chunk's result file
 chunk goes on where its last holder stopped.
 
 A final answer is "ok", "render_error" or "rejected" (the server refused the request), or the
-MAX_TRIES-th "request_error" of a page. Earlier request errors leave the page for a later holder.
+MAX_TRIES-th error of a page ("request_error" for OCR, "error" for the privacy check). Earlier
+errors leave the page for a later holder.
 """
 
 from __future__ import annotations
@@ -23,7 +26,7 @@ import json
 import os
 import time
 from collections import Counter
-from collections.abc import Iterable, Sequence
+from collections.abc import Iterable
 from dataclasses import dataclass
 from pathlib import Path
 
@@ -39,37 +42,6 @@ class Claim:
     path: Path
 
 
-def select(
-    lines: Iterable[str], chars_below: int, first: Sequence[str]
-) -> tuple[list[tuple[str, int]], dict]:
-    """The pages of a text layer file (see `layer`) with fewer than `chars_below` non-space
-    characters, in reading order: pages of a `first` section type, then the rest, each by
-    document and page. Unreadable documents are left out and counted."""
-    chosen: dict[tuple[str, int], bool] = {}
-    seen: set[tuple[str, int]] = set()
-    unreadable: set[str] = set()
-    for line in lines:
-        record = json.loads(line)
-        if "error" in record:
-            unreadable.add(record["sha256"])
-            continue
-        key = (record["sha256"], record["page"])
-        if key in seen:  # read twice by a resumed run
-            continue
-        seen.add(key)
-        if record["chars"] < chars_below:
-            chosen[key] = bool(set(record["sections"]) & set(first))
-    pages = sorted(chosen, key=lambda key: (not chosen[key], key))
-    counts = {
-        "pages_measured": len(seen),
-        "pages": len(pages),
-        "pages_first": sum(chosen.values()),
-        "documents": len({sha for sha, _ in pages}),
-        "unreadable_documents": len(unreadable),
-    }
-    return pages, counts
-
-
 class Queue:
     def __init__(self, root: Path):
         self.root = root
@@ -77,22 +49,24 @@ class Queue:
         self._chunks = sorted(path.stem for path in (root / "chunks").glob("*.jsonl"))
 
     @classmethod
-    def create(
-        cls, root: Path, pages: Sequence[tuple[str, int]], chunk_pages: int, settings: dict
-    ) -> Queue:
-        """Write a new queue. An existing directory is never changed."""
+    def create(cls, root: Path, items: Iterable[dict], chunk_pages: int, settings: dict) -> Queue:
+        """Write a new queue of `items`, each {"sha256", "page", ...}, in their order. An existing
+        directory is never changed."""
         root.mkdir(parents=True)
         for name in DIRECTORIES:
             (root / name).mkdir()
-        chunks = 0
-        for start in range(0, len(pages), chunk_pages):
-            lines = (
-                json.dumps({"sha256": sha, "page": page}) + "\n"
-                for sha, page in pages[start : start + chunk_pages]
-            )
+        chunks = pages = 0
+        lines: list[str] = []
+        for item in items:
+            lines.append(json.dumps(item, ensure_ascii=False) + "\n")
+            pages += 1
+            if len(lines) == chunk_pages:
+                (root / "chunks" / f"{chunks:05d}.jsonl").write_text("".join(lines))
+                chunks, lines = chunks + 1, []
+        if lines:
             (root / "chunks" / f"{chunks:05d}.jsonl").write_text("".join(lines))
             chunks += 1
-        settings = {**settings, "chunk_pages": chunk_pages, "chunks": chunks}
+        settings = {**settings, "pages": pages, "chunk_pages": chunk_pages, "chunks": chunks}
         (root / "settings.json").write_text(
             json.dumps(settings, indent=2, ensure_ascii=False) + "\n"
         )
@@ -101,9 +75,12 @@ class Queue:
     def chunks(self) -> list[str]:
         return self._chunks
 
+    def items(self, chunk: str) -> list[dict]:
+        with (self.root / "chunks" / f"{chunk}.jsonl").open() as lines:
+            return [json.loads(line) for line in lines]
+
     def pages(self, chunk: str) -> list[tuple[str, int]]:
-        lines = (self.root / "chunks" / f"{chunk}.jsonl").read_text().splitlines()
-        return [(item["sha256"], item["page"]) for item in map(json.loads, lines)]
+        return [(item["sha256"], item["page"]) for item in self.items(chunk)]
 
     def answers(self, chunk: str) -> list[dict]:
         path = self.root / "out" / f"{chunk}.jsonl"
@@ -120,14 +97,14 @@ class Queue:
 
     def counting(self, chunk: str) -> dict[tuple[str, int], tuple[dict, int]]:
         """Per page of the chunk with an answer: the answer that counts (the first final one, else
-        the last request error) and the page's number of request errors."""
+        the last error) and the page's number of errors."""
         found: dict[tuple[str, int], tuple[dict, int]] = {}
         for record in self.answers(chunk):
             key = (record["sha256"], record["page"])
             before, tries = found.get(key, (None, 0))
             if before is not None and before["status"] in FINAL:
                 continue  # answered twice after a claim was taken over
-            found[key] = (record, tries + (record["status"] == "request_error"))
+            found[key] = (record, tries + (record["status"] not in FINAL))
         return found
 
     def finished(self, chunk: str) -> set[tuple[str, int]]:
@@ -223,14 +200,14 @@ class Queue:
             for record, tries in self.counting(chunk).values():
                 status = record["status"]
                 if status == "ok":
-                    tokens += record["completion_tokens"]
+                    tokens += record.get("completion_tokens", 0)
                     recent += record.get("at", 0) > hour_ago
                     if record.get("finish_reason") == "length":
                         status = "ok_length"
-                elif status == "request_error" and tries < MAX_TRIES:
-                    status = "request_error_retry"
+                elif status not in FINAL and tries < MAX_TRIES:
+                    status += "_retry"
                 pages[status] += 1
-        answered = sum(pages.values()) - pages["request_error_retry"]
+        answered = sum(n for status, n in pages.items() if not status.endswith("_retry"))
         return {
             "chunks": {"total": len(self._chunks), **chunks},
             "pages": {"total": self.settings["pages"], "answered": answered, **pages},

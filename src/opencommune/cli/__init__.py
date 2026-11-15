@@ -2,7 +2,7 @@
 
 One module per part: `crawl` (discovery and download), `configuration` (the commune list and the
 registers), `database` (the main and the serving database, the full-text index), `classify` and
-`text`. Logging is configured here, once, for every command.
+`text` and `privacy`. Logging is configured here, once, for every command.
 """
 
 from __future__ import annotations
@@ -11,7 +11,7 @@ import logging
 
 import typer
 
-from . import classify, configuration, crawl, database, text
+from . import classify, configuration, crawl, database, privacy, text
 
 app = typer.Typer(
     no_args_is_help=True, add_completion=False, help="OpenCommune crawler and database build."
@@ -32,3 +32,4 @@ app.add_typer(crawl.app)
 app.add_typer(configuration.app)
 app.add_typer(classify.app, name="classify")
 app.add_typer(text.app, name="text")
+app.add_typer(privacy.app, name="privacy")

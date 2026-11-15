@@ -8,43 +8,25 @@ from __future__ import annotations
 
 import json
 import os
-import re
 from pathlib import Path
 
 import typer
 
 from ..config import settings
-from .common import reported_errors
+from .common import file_sha256, named, now, reported_errors
 
 app = typer.Typer(
     no_args_is_help=True,
     help="The text of each page: the PDF's text layer, and OCR for the pages without one.",
 )
 
-NAME = re.compile(r"[a-z0-9][a-z0-9._-]*")
-
 
 def _named(kind: str, name: str) -> Path:
-    if not NAME.fullmatch(name):
-        raise typer.BadParameter(f"{name!r}: lower-case letters, digits, '.', '_' and '-' only")
-    return settings.text_dir / kind / name
+    return named(settings.text_dir / kind, name)
 
 
 def _types(text: str) -> list[str]:
     return [part.strip() for part in text.split(",") if part.strip()]
-
-
-def _sha256(path: Path) -> str:
-    import hashlib
-
-    with path.open("rb") as file:
-        return hashlib.file_digest(file, "sha256").hexdigest()
-
-
-def _now() -> str:
-    from datetime import UTC, datetime
-
-    return datetime.now(UTC).isoformat(timespec="seconds")
 
 
 @app.command("layer")
@@ -78,10 +60,10 @@ def layer(
         facts = {
             **chosen,
             "serving_db": str(settings.serving_db),
-            "serving_db_sha256": _sha256(settings.serving_db),
+            "serving_db_sha256": file_sha256(settings.serving_db),
             "raw": str(settings.raw_dir),
             "pymupdf": pymupdf.__version__,
-            "started": _now(),
+            "started": now(),
         }
         record.write_text(json.dumps(facts, indent=2) + "\n")
     pages = text_layer.section_pages(settings.serving_db, types, margin)
@@ -94,40 +76,44 @@ def layer(
 @app.command("queue")
 def queue(
     name: str = typer.Argument(..., help="A new name; a queue is never changed"),
-    layer: str = typer.Option(..., help="The text layer pass to choose pages from"),
-    chars_below: int = typer.Option(
-        ...,
-        min=1,
-        help="OCR the pages with fewer non-space characters than this in their text layer",
-    ),
     first: str = typer.Option("", help="Comma-separated section types whose pages are read first"),
     chunk_pages: int = typer.Option(500, min=1, help="Pages per chunk, the unit a worker claims"),
 ) -> None:
-    """Choose the pages for OCR and write them as a queue of chunks for `text ocr`."""
-    from ..text import ocr as text_ocr
-    from ..text.queue import Queue, select
+    """Choose the pages for OCR and write them as a queue of chunks for `text ocr`.
 
-    target, source = _named("queues", name), _named("layers", layer)
+    The pages are those in scope (opencommune.scope) whose text in DATA_DIR/text.db has fewer than
+    scope.MIN_CHARS non-space characters, or that have none, and that no OCR run has answered."""
+    from .. import scope
+    from ..text import ocr as text_ocr
+    from ..text.queue import Queue
+
+    target = _named("queues", name)
     if target.exists():
         raise typer.BadParameter(f"queue {name} exists; a queue is never changed")
-    if not (source / "pages.jsonl").exists():
-        raise typer.BadParameter(f"no text layer pass {layer}")
+    if not settings.text_db.exists():
+        raise typer.BadParameter("no text.db; import a text layer pass first")
     first_types = _types(first)
-    with (source / "pages.jsonl").open() as lines:
-        pages, counts = select(lines, chars_below, first_types)
+    pages, counts = text_ocr.choose(settings.serving_db, settings.text_db, first_types)
     chosen = {
-        "created": _now(),
-        "rule": f"pages whose text layer has fewer than {chars_below} non-space characters",
-        "chars_below": chars_below,
+        "created": now(),
+        "rule": (
+            f"pages in scope whose text has fewer than {scope.MIN_CHARS} non-space characters "
+            "or none, and that no OCR run has answered"
+        ),
+        "scope": list(scope.TYPES),
         "first": first_types,
-        "layer": layer,
-        "layer_settings": json.loads((source / "settings.json").read_text()),
-        "layer_sha256": _sha256(source / "pages.jsonl"),
+        "serving_db_sha256": file_sha256(settings.serving_db),
+        "text_db_sha256": file_sha256(settings.text_db),
         **counts,
         **text_ocr.reading_settings(),
     }
-    created = Queue.create(target, pages, chunk_pages, chosen)
-    typer.echo(json.dumps({"queue": str(target), **counts, "chunks": len(created.chunks())}))
+    items = ({"sha256": sha, "page": page} for sha, page in pages)
+    created = Queue.create(target, items, chunk_pages, chosen)
+    typer.echo(
+        json.dumps(
+            {"queue": str(target), "pages": len(pages), **counts, "chunks": len(created.chunks())}
+        )
+    )
 
 
 @app.command("ocr")

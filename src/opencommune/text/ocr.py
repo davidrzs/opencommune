@@ -1,4 +1,8 @@
-"""One OCR worker: it claims chunks of a queue, renders their pages and sends them to a vLLM server.
+"""OCR: which pages are read (`choose`), and one worker that claims chunks of a queue, renders their
+pages and sends them to a vLLM server.
+
+`choose` takes the pages in scope (opencommune.scope) without usable text that no OCR run has
+answered yet.
 
 Pages are rendered with PyMuPDF to the queue's page size (2048 px on the longest edge for
 LightOnOCR-3-4B, lightonocr/models.py) and sent as PNG with the text "grounding" (nothing in plain
@@ -32,6 +36,7 @@ import socket
 import threading
 import time
 from collections import Counter
+from collections.abc import Sequence
 from concurrent.futures import FIRST_COMPLETED, ProcessPoolExecutor, wait
 from concurrent.futures.process import BrokenProcessPool
 from dataclasses import dataclass
@@ -41,6 +46,7 @@ from typing import TextIO
 import httpx
 import pymupdf
 
+from .. import scope
 from .queue import Claim, Queue
 
 log = logging.getLogger(__name__)
@@ -68,6 +74,30 @@ def reading_settings() -> dict:
         "mode": MODE,
         "longest_edge": LONGEST_EDGE,
         "sampling": SAMPLING,
+    }
+
+
+def choose(
+    serving_db: Path, text_db: Path, first: Sequence[str]
+) -> tuple[list[tuple[str, int]], dict]:
+    """The pages to read, in reading order: pages of a `first` section type, then the rest, each
+    by document and page; and the counts of the pages in scope."""
+    chosen: dict[tuple[str, int], bool] = {}
+    counts = dict.fromkeys(("in_scope", "with_text", "read_before", "without_any_text"), 0)
+    for page in scope.pages(serving_db, text_db):
+        counts["in_scope"] += 1
+        if page.usable:
+            counts["with_text"] += 1
+        elif page.source == "ocr":  # an OCR answer with too little text: a blank page
+            counts["read_before"] += 1
+        else:
+            chosen[(page.sha256, page.page)] = bool(set(page.types) & set(first))
+            counts["without_any_text"] += page.raw is None
+    pages = sorted(chosen, key=lambda key: (not chosen[key], key))
+    return pages, {
+        **{f"pages_{key}": value for key, value in counts.items()},
+        "pages_first": sum(chosen.values()),
+        "documents": len({sha for sha, _ in pages}),
     }
 
 
