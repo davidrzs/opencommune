@@ -50,6 +50,16 @@ CREATE TABLE IF NOT EXISTS documents (
 );
 CREATE INDEX IF NOT EXISTS documents_year ON documents (year);
 
+-- The title index for the search box: FTS5 with the trigram tokenizer over `title` and
+-- `body_name`. A query matches any three or more characters, also inside a word, and ignores
+-- diacritics. The table indexes `documents` in place (external content): it keeps no copy of the
+-- text, and its rowid is the rowid of `documents`. The build fills it once all documents are
+-- written: INSERT INTO documents_fts (documents_fts) VALUES ('rebuild'). Nothing changes
+-- `documents` after that. Nothing may VACUUM this file either, as VACUUM can renumber those rowids.
+CREATE VIRTUAL TABLE IF NOT EXISTS documents_fts USING fts5(
+    title, body_name, content = 'documents', tokenize = 'trigram remove_diacritics 1'
+);
+
 -- Every commune that links a file, with the URL it uses. A file can belong to several communes
 -- and a commune has many files.
 CREATE TABLE IF NOT EXISTS document_communes (

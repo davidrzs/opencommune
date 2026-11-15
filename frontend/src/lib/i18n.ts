@@ -116,7 +116,27 @@ export const copy = {
     skip: 'Zum Inhalt',
     originalLanguage: 'Dokumente bleiben in ihrer Originalsprache.',
     reset: 'Filter zurücksetzen',
-    unknownDate: 'Nicht datierte PDFs erscheinen ohne Jahresfilter.'
+    unknownDate: 'Nicht datierte PDFs erscheinen ohne Jahresfilter.',
+    textSearch: 'Im Text der Dokumente suchen …',
+    textHelp:
+      'Alle Wörter müssen auf der Seite vorkommen. "Wörter in Anführungszeichen" suchen genau diese Folge. Wort* findet alle Wörter, die so beginnen.',
+    textScope:
+      'Durchsucht werden Protokolle, Beschlüsse, Abstimmungsergebnisse, Budgets, Jahresrechnungen, Anträge, Traktandenlisten und Vorstösse. Der Text ist maschinell ausgelesen und nicht geprüft.',
+    textUnavailable:
+      'Die Suche im Text ist hier zurzeit nicht verfügbar. Gesucht wurde in den Titeln.',
+    textInvalid: 'Diese Suche ist nicht möglich.',
+    textInvalidWhy:
+      'Eine Suche braucht mindestens ein Wort und höchstens zehn Wörter oder Wortfolgen. Vor einem * stehen mindestens drei Buchstaben oder Ziffern.',
+    capped:
+      'Die Suche trifft {n} Seiten oder mehr. Gezählt und gezeigt werden nur die Dokumente der {n} besten Seiten. Ein weiteres Wort oder ein Filter grenzt die Suche ein.',
+    matchingPages: '{n} passende Seiten',
+    matchingPageOne: '1 passende Seite',
+    cantonLabel: 'Kanton',
+    allCommunes: 'Alle Gemeinden',
+    communeFilter: 'Gemeinde: {name}',
+    communeSearch: 'In den Texten dieser Gemeinde suchen',
+    communeSearchPlaceholder: 'Suchbegriffe …',
+    searchButton: 'Suchen'
   },
   fr: {
     accessRestricted: 'Collecte partiellement limitée',
@@ -221,7 +241,27 @@ export const copy = {
     skip: 'Aller au contenu',
     originalLanguage: 'Les documents restent dans leur langue originale.',
     reset: 'Réinitialiser les filtres',
-    unknownDate: 'Les PDF non datés apparaissent sans filtre par année.'
+    unknownDate: 'Les PDF non datés apparaissent sans filtre par année.',
+    textSearch: 'Rechercher dans le texte des documents …',
+    textHelp:
+      'Tous les mots doivent figurer sur la page. "Des mots entre guillemets" cherchent exactement cette suite. mot* trouve tous les mots qui commencent ainsi.',
+    textScope:
+      'La recherche couvre les procès-verbaux, décisions, résultats de scrutin, budgets, comptes, préavis, ordres du jour et interventions des membres. Le texte est extrait automatiquement et n’a pas été vérifié.',
+    textUnavailable:
+      'La recherche dans le texte n’est pas disponible ici pour le moment. La recherche a porté sur les titres.',
+    textInvalid: 'Cette recherche n’est pas possible.',
+    textInvalidWhy:
+      'Une recherche demande au moins un mot et au plus dix mots ou suites de mots. Avant un *, il faut au moins trois lettres ou chiffres.',
+    capped:
+      'La recherche trouve {n} pages ou plus. Seuls les documents des {n} meilleures pages sont comptés et affichés. Un mot de plus ou un filtre affine la recherche.',
+    matchingPages: '{n} pages correspondantes',
+    matchingPageOne: '1 page correspondante',
+    cantonLabel: 'Canton',
+    allCommunes: 'Toutes les communes',
+    communeFilter: 'Commune : {name}',
+    communeSearch: 'Rechercher dans les textes de cette commune',
+    communeSearchPlaceholder: 'Mots-clés …',
+    searchButton: 'Rechercher'
   },
   it: {
     accessRestricted: 'Raccolta parzialmente limitata',
@@ -325,7 +365,27 @@ export const copy = {
     skip: 'Vai al contenuto',
     originalLanguage: 'I documenti rimangono nella loro lingua originale.',
     reset: 'Azzera i filtri',
-    unknownDate: 'I PDF senza data appaiono senza filtro per anno.'
+    unknownDate: 'I PDF senza data appaiono senza filtro per anno.',
+    textSearch: 'Cerca nel testo dei documenti …',
+    textHelp:
+      'Tutte le parole devono comparire nella pagina. "Parole tra virgolette" cercano esattamente questa sequenza. parola* trova tutte le parole che iniziano così.',
+    textScope:
+      'La ricerca copre verbali, risoluzioni, risultati di scrutinio, preventivi, consuntivi, messaggi, ordini del giorno e atti parlamentari. Il testo è estratto automaticamente e non è stato verificato.',
+    textUnavailable:
+      'La ricerca nel testo non è disponibile qui al momento. La ricerca è stata fatta nei titoli.',
+    textInvalid: 'Questa ricerca non è possibile.',
+    textInvalidWhy:
+      'Una ricerca richiede almeno una parola e al massimo dieci parole o sequenze. Prima di un * servono almeno tre lettere o cifre.',
+    capped:
+      'La ricerca trova {n} pagine o più. Sono contati e mostrati solo i documenti delle {n} pagine migliori. Un’altra parola o un filtro restringe la ricerca.',
+    matchingPages: '{n} pagine corrispondenti',
+    matchingPageOne: '1 pagina corrispondente',
+    cantonLabel: 'Cantone',
+    allCommunes: 'Tutti i comuni',
+    communeFilter: 'Comune: {name}',
+    communeSearch: 'Cerca nei testi di questo comune',
+    communeSearchPlaceholder: 'Parole chiave …',
+    searchButton: 'Cerca'
   }
 } satisfies Record<Lang, Record<string, string>>;
 

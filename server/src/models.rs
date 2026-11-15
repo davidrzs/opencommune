@@ -200,6 +200,108 @@ pub struct DocumentPage {
     pub items: Vec<Document>,
 }
 
+// --- full text ---------------------------------------------------------------------------------
+
+/// A commune and how many documents of a result it links.
+#[derive(Serialize, JsonSchema)]
+#[schemars(crate = "rmcp::schemars")]
+pub struct CommuneCount {
+    pub bfs_id: i64,
+    pub name: String,
+    pub canton: String,
+    pub count: i64,
+}
+
+/// The counts of `GET /api/pages`. Each counts the documents of the result.
+#[derive(Serialize, JsonSchema)]
+#[schemars(crate = "rmcp::schemars")]
+pub struct TextFacets {
+    /// Documents per year, newest first; no year last.
+    pub years: Vec<Count<i64>>,
+    /// Documents per section type of their matching pages.
+    pub sections: Vec<Count<String>>,
+    /// Documents per canton of the communes that link them.
+    pub cantons: Vec<Count<String>>,
+    /// The 20 communes that link the most documents of the result.
+    pub communes: Vec<CommuneCount>,
+}
+
+/// A page that matches a full-text search.
+#[derive(Serialize, JsonSchema)]
+#[schemars(crate = "rmcp::schemars")]
+pub struct PageHit {
+    /// 1 for the first page.
+    pub page: i64,
+    /// The types of the sections the page lies in, in the classifier's order.
+    pub section_types: Vec<String>,
+    /// About 300 characters of plain text around the matches; `…` marks a cut.
+    pub snippet: String,
+    /// The matched words in `snippet`: `[start, end)` in characters (Unicode code points).
+    pub highlights: Vec<[u32; 2]>,
+    /// `/original/<sha256>?page=<n>`: the file at this page.
+    pub original_url: String,
+}
+
+/// A document of a full-text search with its best matching pages.
+#[derive(Serialize, JsonSchema)]
+#[schemars(crate = "rmcp::schemars")]
+pub struct TextDocument {
+    #[serde(flatten)]
+    pub document: Document,
+    /// How many of its pages match (counted among the pages the search considered).
+    pub matching_pages: i64,
+    /// Its three best matching pages, best first.
+    pub pages: Vec<PageHit>,
+}
+
+/// `GET /api/pages` and the MCP tool `search_text`.
+#[derive(Serialize, JsonSchema)]
+#[schemars(crate = "rmcp::schemars")]
+pub struct TextPage {
+    /// The documents that match.
+    pub total: i64,
+    /// True when more pages match than the search considers (its best 20,000): `total`,
+    /// `facets` and `matching_pages` then count only the documents of those pages.
+    pub capped: bool,
+    pub offset: i64,
+    pub limit: i64,
+    pub facets: TextFacets,
+    /// The documents, best match first.
+    pub items: Vec<TextDocument>,
+}
+
+/// A page of `GET /api/documents/{sha256}/pages` and the MCP tool `read_pages`.
+#[derive(Serialize, JsonSchema)]
+#[schemars(crate = "rmcp::schemars")]
+pub struct PageText {
+    /// 1 for the first page.
+    pub page: i64,
+    /// The types of the sections the page lies in, in the classifier's order.
+    pub section_types: Vec<String>,
+    /// Where the text comes from: `layer` (the PDF's text layer) or `ocr`; null without text.
+    pub source: Option<String>,
+    /// The page's text as extracted by machine, unchecked; null when the page is not in the index.
+    pub text: Option<String>,
+    /// Why the page has no text; null when it has.
+    pub reason: Option<String>,
+    /// `/original/<sha256>?page=<n>`: the file at this page.
+    pub original_url: String,
+}
+
+/// `GET /api/documents/{sha256}/pages`: the text of a range of a document's pages.
+#[derive(Serialize, JsonSchema)]
+#[schemars(crate = "rmcp::schemars")]
+pub struct DocumentPages {
+    pub sha256: String,
+    pub page_count: Option<i64>,
+    pub pages: Vec<PageText>,
+}
+
+/// The URL of a document's file, opened at a page.
+pub fn page_url(sha256: &str, page: i64) -> String {
+    format!("/original/{sha256}?page={page}")
+}
+
 // --- runs --------------------------------------------------------------------------------------
 
 /// The run named by a document.

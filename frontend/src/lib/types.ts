@@ -156,6 +156,32 @@ export type DocumentPage = {
   };
   items: Document[];
 };
+// A page that matches a full-text search (/api/pages). `snippet` is plain text; `highlights` are
+// the matched words in it as [start, end) offsets in characters (code points, not UTF-16 units).
+export type PageHit = {
+  page: number;
+  section_types: string[];
+  snippet: string;
+  highlights: [number, number][];
+  original_url: string;
+};
+// a document of a full-text search: how many of its pages match, and its three best pages
+export type TextDocument = Document & { matching_pages: number; pages: PageHit[] };
+export type TextPage = {
+  total: number;
+  // true when the search reached its cap of matching pages: the counts cover only the best ones
+  capped: boolean;
+  offset: number;
+  limit: number;
+  // each facet counts the documents of the result, with every filter applied
+  facets: {
+    years: Facet[];
+    sections: Facet[];
+    cantons: Facet[];
+    communes: { bfs_id: number; name: string; canton: string; count: number }[];
+  };
+  items: TextDocument[];
+};
 // one row of /api/runs
 export type Run = {
   id: string;

@@ -8,6 +8,9 @@ use std::path::PathBuf;
 pub struct Config {
     /// `DATABASE_PATH`: the serving database the Python build writes; opened read-only.
     pub database_path: PathBuf,
+    /// `FULLTEXT_PATH`: the full-text index of page text the Python build writes; attached
+    /// read-only when the file exists. Defaults to `fulltext.db` next to the serving database.
+    pub fulltext_path: PathBuf,
     /// `STATIC_DIR`: the built front end (`frontend/build`).
     pub static_dir: PathBuf,
     /// `BIND`: the address to listen on.
@@ -31,10 +34,15 @@ impl Config {
             .parse()
             .map_err(|e| format!("BIND: {e}"))?;
         let usage_enabled = flag("USAGE_ENABLED", true)?;
+        let database_path: PathBuf = var("DATABASE_PATH")
+            .unwrap_or_else(|| "data/opencommune.db".into())
+            .into();
         Ok(Self {
-            database_path: var("DATABASE_PATH")
-                .unwrap_or_else(|| "data/opencommune.db".into())
-                .into(),
+            fulltext_path: var("FULLTEXT_PATH").map_or_else(
+                || database_path.with_file_name("fulltext.db"),
+                PathBuf::from,
+            ),
+            database_path,
             static_dir: var("STATIC_DIR")
                 .unwrap_or_else(|| "frontend/build".into())
                 .into(),

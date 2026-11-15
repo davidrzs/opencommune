@@ -12,7 +12,11 @@ use serde_json::{Map, Value, json};
 use super::documents::OriginalParams;
 use crate::AppState;
 use crate::db::documents::Search;
-use crate::models::{Commune, CommuneDetail, DocumentDetail, DocumentPage, RegisterEntry, Run};
+use crate::db::fulltext::{PageRange, TextSearch};
+use crate::models::{
+    Commune, CommuneDetail, DocumentDetail, DocumentPage, DocumentPages, RegisterEntry, Run,
+    TextPage,
+};
 
 /// `GET /api/openapi.json`.
 pub async fn spec(State(state): State<AppState>) -> Json<Value> {
@@ -66,6 +70,25 @@ pub fn build(public_url: &str) -> Value {
             "One document with the classification run behind its fields.",
             vec![sha256.clone()], ok::<DocumentDetail>(&mut out, "The document."), &[404],
         )},
+        "/api/pages": {"get": operation(
+            "searchText", "Full text",
+            "The documents whose pages contain the words, best match first, each with its three \
+             best pages: a plain-text snippet, the matches in it and a link to the file at that \
+             page. Counts per year, section type, canton and commune. The search ranks at most \
+             the 20,000 best matching pages; `capped` says when more match. The text is \
+             machine-extracted and unchecked.",
+            query::<TextSearch>(&mut input),
+            ok::<TextPage>(&mut out, "One page of documents with their matching pages."),
+            &[400, 503],
+        )},
+        "/api/documents/{sha256}/pages": {"get": operation(
+            "readPages", "Full text",
+            "The text of up to 10 pages of a document. A page outside the search has no text and \
+             a reason instead. The text is machine-extracted and unchecked.",
+            [vec![sha256.clone()], query::<PageRange>(&mut input)].concat(),
+            ok::<DocumentPages>(&mut out, "The pages."),
+            &[400, 404, 503],
+        )},
         "/api/runs": {"get": operation(
             "listRuns", "Documents",
             "The classification runs, with every setting that changes what they saw and a note on \
@@ -110,7 +133,8 @@ pub fn build(public_url: &str) -> Value {
                  language model that no person has checked yet. Private people's names appear \
                  as [name].\n\n\
                  AI agents can use the same data over MCP: `{public_url}/mcp` (streamable HTTP, \
-                 tools `search_documents`, `get_document`, `list_communes`)."
+                 tools `search_documents`, `get_document`, `list_communes`, `search_text`, \
+                 `read_pages`)."
             ),
             "license": {"name": "CC0 1.0 (the data)", "identifier": "CC0-1.0"},
             "contact": {"url": public_url},
@@ -119,6 +143,7 @@ pub fn build(public_url: &str) -> Value {
         "tags": [
             {"name": "Documents", "description": "Files, their sections and where they are."},
             {"name": "Communes", "description": "The communes and the coverage register."},
+            {"name": "Full text", "description": "Search and read the text of the pages."},
             {"name": "API", "description": "This description."},
         ],
         "paths": paths,
@@ -137,6 +162,7 @@ fn operation(
     for status in errors {
         let description = match status {
             400 => "An invalid parameter.",
+            503 => "The server has no full-text index.",
             _ => "Not in the archive.",
         };
         responses[status.to_string()] = json!({

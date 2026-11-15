@@ -28,6 +28,13 @@ impl ApiError {
             detail: detail.into(),
         }
     }
+
+    pub fn unavailable(detail: &str) -> Self {
+        Self {
+            status: StatusCode::SERVICE_UNAVAILABLE,
+            detail: detail.into(),
+        }
+    }
 }
 
 impl From<sqlx::Error> for ApiError {

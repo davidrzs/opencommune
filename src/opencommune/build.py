@@ -104,6 +104,8 @@ def run(serving_path: Path, database_path: Path, process_path: Path) -> dict[str
                 _communes(db, database_path)
                 _documents(db, database_path, process_path, register)
                 _register(db, register)
+                # The title index reads `documents` (serving.sql), so it comes last.
+                db.execute("INSERT INTO documents_fts (documents_fts) VALUES ('rebuild')")
             counts = {t: db.execute(f"SELECT count(*) FROM {t}").fetchone()[0] for t in TABLES}
             db.execute("PRAGMA journal_mode=DELETE")
         os.replace(tmp, serving_path)

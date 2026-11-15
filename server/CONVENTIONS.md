@@ -1,8 +1,8 @@
 # Conventions
 
 One binary crate (a library for the tests, a thin `main.rs`). It serves the JSON API, MCP and the
-built front end from the serving database the Python package builds (`serving.sql`). Endpoints:
-`API.md`.
+built front end from the serving database the Python package builds (`serving.sql`), and full-text
+search from the index of page text it builds (`fulltext.py`). Endpoints: `API.md`.
 
 ## Where things go
 
@@ -17,13 +17,13 @@ built front end from the serving database the Python package builds (`serving.sq
 | Pages for crawlers: shell, texts, rendering | `src/site.rs`; handlers in `src/routes/pages.rs` |
 | Usage statistics | `src/usage.rs` |
 | Errors | `src/error.rs` |
-| Tables the Python build must write | `../src/opencommune/serving.sql` |
-| Integration tests | `tests/api.rs`, the database created in the test from `serving.sql` |
+| Tables the Python build must write | `../src/opencommune/serving.sql`; the full-text index: `SCHEMA` in `../src/opencommune/fulltext.py` |
+| Integration tests | `tests/api.rs`, the databases created in the test from `serving.sql` and `fulltext.py` |
 
 ## Rules
 
-1. Read-only. The serving database is opened read-only; the only file the server writes is the
-   usage database.
+1. Read-only. The serving database is opened read-only, and the full-text index is attached to it
+   read-only; the only file the server writes is the usage database.
 2. No caches. Anything slow becomes a table or an index in the Python build, not memory here.
    Every list query is backed by an index; a new list query names its index in `API.md`.
 3. Runtime queries: `sqlx::query_as` with `FromRow` structs, `QueryBuilder` for optional

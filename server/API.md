@@ -1,7 +1,8 @@
 # API
 
 The JSON API, MCP and the static front end, served from the serving database the Python build
-writes (`src/opencommune/serving.sql`). No key; every response carries
+writes (`src/opencommune/serving.sql`). Full-text search reads a second file, the index of page
+text (`src/opencommune/fulltext.py`), when there is one. No key; every response carries
 `X-Robots-Tag: noindex, nofollow` until `SEARCH_INDEXING` is on.
 
 ## Running
@@ -15,6 +16,7 @@ DATABASE_PATH=data/opencommune.db STATIC_DIR=frontend/build server/target/releas
 | Variable | Default | Meaning |
 | --- | --- | --- |
 | `DATABASE_PATH` | `data/opencommune.db` | serving database, opened read-only; the server does not start without its tables |
+| `FULLTEXT_PATH` | `fulltext.db` next to `DATABASE_PATH` | full-text index, attached read-only when the file exists and holds the index's tables; without it the full-text endpoints and tools answer that they are not available |
 | `STATIC_DIR` | `frontend/build` | built front end; `index.html` answers every other path |
 | `BIND` | `127.0.0.1:8000` | listen address |
 | `USAGE_PATH` | `data/logs/usage.sqlite3` | usage statistics (writable, separate file) |
@@ -35,6 +37,8 @@ DATABASE_PATH=data/opencommune.db STATIC_DIR=frontend/build server/target/releas
 | `GET /api/communes/{bfs_id}` | commune page |
 | `GET /api/documents` | document lists and search, MCP `search_documents` |
 | `GET /api/documents/{sha256}` | one document, MCP `get_document` |
+| `GET /api/pages` | full-text search, MCP `search_text` |
+| `GET /api/documents/{sha256}/pages` | the text of pages, MCP `read_pages` |
 | `GET /api/runs` | the runs behind the classification |
 | `GET /api/openapi.json` | the OpenAPI 3.1 description of this API, for tools and the website's API page |
 | `GET /api/register` | API users |
@@ -42,8 +46,8 @@ DATABASE_PATH=data/opencommune.db STATIC_DIR=frontend/build server/target/releas
 | `POST /mcp` | AI agents |
 | `GET /robots.txt`, `/sitemap.xml`, `/llms.txt` and the pages below | search engines, AI assistants |
 
-Errors are JSON, `{"detail": "..."}`; invalid parameters answer 400, unknown `/api/...` paths 404.
-Dates are `YYYY-MM-DD`.
+Errors are JSON, `{"detail": "..."}`; invalid parameters answer 400, unknown `/api/...` paths 404,
+and the full-text endpoints 503 when the server has no full-text index. Dates are `YYYY-MM-DD`.
 
 ### `GET /api/communes`
 
@@ -75,8 +79,10 @@ Parameters, all optional; filters combine with AND, and a blank text filter is n
 4. `body`: `documents.body_kind`.
 5. `year`: `documents.year` (the year of `date`, else the one year in `years`, else of
    `listing_date`).
-6. `q`: text the title contains, case-insensitive for ASCII (SQLite `lower`); `%` and `_` are
-   plain characters.
+6. `q`: text the title contains. From 3 characters on, the title index `documents_fts` answers:
+   case and accents do not matter (`zurich` finds `Zürich`, and `Gemeinderat` also finds
+   `Gemeinderäte`). Shorter text is matched with `LIKE`, case-insensitive for ASCII (SQLite
+   `lower`), as trigrams need 3 characters. Either way `%`, `_` and `"` are plain characters.
 7. `limit`: 0 to 100, default 20; `0` gives the total and the facets only.
 8. `offset`: 0 or more, default 0.
 
@@ -116,6 +122,95 @@ original_url`. Every document is classified; files without an answer are not in 
 
 The `Document` with `run`: `{id, stage, model, note}` of `run_id`, or null. 404 when unknown.
 
+### `GET /api/pages`
+
+Full-text search in the text of the pages. It needs the full-text index; without it the answer is
+503. The index holds the pages that lie inside a section of the types `minutes`, `decisions`,
+`vote_result`, `budget`, `accounts`, `proposal`, `invitation_agenda` and `member_request` and have
+at least 20 characters of text. It leaves out bulletins and the documents of private bodies. Pages
+without a text layer come in as OCR reaches them.
+
+Parameters; the filters are optional and combine with AND, and a blank text filter is no filter:
+
+1. `q` (required): the words to find.
+   1. Every word must occur on the page, in any order.
+   2. `"a phrase"` in double quotes must occur as written. An unclosed quote runs to the end.
+   3. `word*` matches every word that begins with `word`; at least 3 letters or digits come
+      before the `*`. A `*` after a phrase makes its last word a prefix.
+   4. Case and accents do not matter: `ecole` finds `École`.
+   5. Punctuation inside a word separates words: `d'engagement` is the phrase `d engagement`, and
+      it also finds `d’engagement`.
+   6. There are no operators: `OR`, `NOT` and `NEAR` are words, `-` and `^` are punctuation. A word
+      without a letter or a digit is left out.
+   7. 400 when `q` has no word, more than 10 words and phrases, more than 500 characters, or a
+      prefix of fewer than 3 characters.
+
+   The server reads `q` into words and phrases and writes each as a quoted FTS5 string; nothing a
+   user types reaches FTS5 as syntax.
+2. `commune`, `year`, `body`: the document, as in `/api/documents`.
+3. `canton`: a canton's code, such as `ZH`, in any case: documents linked by one of its communes.
+4. `from`, `to`: `YYYY-MM-DD`, inclusive: the document's `date`, else its `listing_date`. When one
+   is set, documents with neither are left out.
+5. `section`, `family`: only pages inside a section of this type or family match. In
+   `/api/documents` these filters select documents; here they select pages.
+6. `limit`: 0 to 50, default 10. `offset`: 0 or more, default 0.
+
+```json
+{"total": 0, "capped": false, "offset": 0, "limit": 10,
+ "facets": {"years": [Count], "sections": [Count], "cantons": [Count],
+            "communes": [{"bfs_id": 0, "name": "", "canton": "", "count": 0}]},
+ "items": [TextDocument]}
+```
+
+1. `items` are the documents with a matching page, best first: by the relevance of their best page
+   (FTS5 `bm25`), then by `sha256`.
+2. `TextDocument` is the `Document` of `/api/documents` with `matching_pages` (how many of its pages
+   match) and `pages`, its three best matching pages, best first:
+   `{page, section_types, snippet, highlights, original_url}`.
+3. `section_types`: the types of the sections that hold the page, in the classifier's order.
+4. `snippet`: plain text, never HTML, about 300 characters around the matches: FTS5 `snippet()`
+   with 40 words, runs of white space and control characters as one space, at most 360
+   characters. `…` marks a cut.
+5. `highlights`: `[[start, end], ...]`, the matched words in `snippet`, as offsets in characters
+   (Unicode code points; in JavaScript, index `Array.from(snippet)`), `end` exclusive.
+6. `original_url`: `/original/<sha256>?page=<n>`, which opens the file at that page.
+7. The facets count the documents of the result, with every filter applied. This differs from
+   `/api/documents`, where each facet leaves out its own filter: that needs a search per facet,
+   and a search of a common word costs most of a second. `years`: newest first, no year last.
+   `sections`: by type; a document counts for each type that holds one of its matching pages.
+   `cantons`: by code; a document linked by communes of two cantons counts for both.
+   `communes`: the 20 communes that link the most documents of the result, most first, then by
+   name.
+8. The cap: a search ranks at most the 20,000 best matching pages that pass the filters. When that
+   many match, `capped` is `true`. Then `total`, the facets and `matching_pages` count only the
+   documents of those pages, and `offset` pages through only them. Common words reach the cap:
+   `Gemeinde` is on about 430,000 of the 1.2 million pages, `Budget` on about 730,000. Without the
+   cap such a search takes 3 to 5 seconds.
+9. The text is machine-extracted (the PDF's text layer, or OCR) and no person has checked it.
+
+### `GET /api/documents/{sha256}/pages?from=<n>&to=<n>`
+
+The text of up to 10 pages of a document. `from` defaults to 1 and `to` to `from` + 9; pages past
+the document's `page_count` are left out. 503 without the full-text index, 404 for an unknown
+document, 400 when `from` is below 1, `to` is before `from` or the range has more than 10 pages.
+
+```json
+{"sha256": "...", "page_count": 12,
+ "pages": [{"page": 1, "section_types": ["minutes"], "source": "layer", "text": "...",
+            "reason": null, "original_url": "/original/<sha256>?page=1"}]}
+```
+
+Every page of the range is listed. A page in the index has `source` (`layer`: the PDF's text
+layer; `ocr`: text recognition on the page image) and `text`, as the index holds it: line breaks
+kept, words split at a line end joined. A page outside the index has `source` and `text` null and
+a `reason`:
+
+1. "Not searched: ... bulletins and the documents of private bodies": the document's `kind` is
+   `bulletin` or its `body_kind` is `private`.
+2. "Not searched: ... no section of a type the search covers": the page lies in no section of the
+   types the index records in its `build` table.
+3. "No text yet: ...": otherwise. The page has no usable text layer, and OCR has not reached it.
+
 ### `GET /api/openapi.json`
 
 The OpenAPI 3.1 description of the endpoints above. Its schemas are generated from the same Rust
@@ -147,10 +242,18 @@ Streamable HTTP, stateless (no session kept), JSON responses. Tools:
 2. `search_documents(commune, section, family, body, year, q, offset, limit)`: the parameters and
    the result of `/api/documents`; an offset or limit out of range is a tool error with a reason.
 3. `get_document(sha256)`: as `/api/documents/{sha256}`; `{"error": "not found"}` when unknown.
+4. `search_text(q, commune, canton, year, from, to, section, family, body, offset, limit)`: the
+   parameters and the result of `/api/pages`. A refused query is a tool error with the reason.
+5. `read_pages(sha256, from, to)`: as `/api/documents/{sha256}/pages`. A bad range or an unknown
+   sha256 is a tool error.
 
-The descriptions of `search_documents` and `get_document` say that titles, bodies, dates and sections
-come from an automatic classification that no person has checked yet. Every tool has a title and is
-marked read-only (`readOnlyHint`). Results are `structuredContent` plus the same JSON as text.
+Without the full-text index, `search_text` and `read_pages` answer with a tool error that says so.
+The server's instructions tell agents to search with `search_text`, read the pages around a hit with
+`read_pages`, and cite the document and the page; they say that the page text is machine-extracted
+(PDF text layer or OCR) and unchecked. The descriptions of the tools other than `list_communes` say
+that no person has checked the classification, and for the full-text tools the text, yet. Every
+tool has a title and is marked read-only and idempotent (`readOnlyHint`, `idempotentHint`). Results
+are `structuredContent` plus the same JSON as text.
 
 ## Pages for search engines and AI assistants
 
@@ -177,22 +280,74 @@ visitor receives the same HTML.
 
 ## Tables and indexes
 
-The server reads the tables of `src/opencommune/serving.sql` only: `communes`, `runs`,
-`documents`, `document_communes`, `sections`, `register`, `register_publications` and
+The server reads the tables of `src/opencommune/serving.sql`: `communes`, `runs`, `documents`,
+`documents_fts`, `document_communes`, `sections`, `register`, `register_publications` and
 `access_observations`. `opencommune build` writes them from scratch; the integration tests create
 their database from the same file. The build leaves the database out of WAL mode, so the read-only
-server needs no `-shm` file.
+server needs no `-shm` file. The server does not start without these tables.
+
+The full-text index is a second file, `fulltext.db`, which `opencommune build-fulltext` writes
+(`src/opencommune/fulltext.py`): `pages (id, sha256, page, source, run)`, `page_fts` (FTS5,
+`unicode61 remove_diacritics 2`, the text stored, rowid = `pages.id`) and `build`. Every
+connection attaches it as the schema `fulltext`. The serving database is opened read-only, and an
+attached file inherits that. The integration tests create the index from the schema in
+`fulltext.py`.
 
 | Query | Index |
 | --- | --- |
 | `documents` count per commune, `commune` filter | `document_communes_commune` |
 | `section` filter, `sections` facet | `sections_type` |
 | `year` filter, `years` facet, the order's first key | `documents_year` |
+| `q` on titles, 3 characters or more | `documents_fts` (FTS5 trigram) |
 | a page's sections and communes, `/original` | the primary keys of `sections` and `document_communes` |
 | access observations of a commune | `access_observations_commune` |
+| full text: the matching pages | `fulltext.page_fts` (FTS5), then `fulltext.pages` by id |
+| full text: `section` and `family` filters | `sections_type`, `sections_family`, then the primary key of `sections` |
+| full text: `commune` and `canton` filters, `cantons` and `communes` facets | `document_communes_commune`, the primary keys of `document_communes` and `communes` |
+| full text: `year` filter, `years` facet | `documents_year`, the primary key of `documents` |
+| page text of a document | the unique index of `fulltext.pages` (`sha256, page`), then `fulltext.page_fts` by rowid |
 
-The `bodies` facet and the `q` filter read the whole `documents`
-table (or what the other filters leave of it). On a synthetic database of the archive's size
-(360,000 documents, 650,000 sections) `/api/documents` without filters takes about 0.65 s, with
-`q` about 1.2 s; with `commune` or `year` it takes under 0.1 s. Deep pages are slow too: an offset
-of 300,000 takes about 1 s.
+The `bodies` facet and a `q` of fewer than 3 characters read the whole `documents` table (or what
+the other filters leave of it). On a synthetic database of the archive's size (360,000 documents,
+650,000 sections) `/api/documents` without filters takes about 0.65 s, with a 2-character `q`
+about 1.2 s; with `commune` or `year` it takes under 0.1 s. Deep pages are slow too: an offset of
+300,000 takes about 1 s. With the title index, `q=Protokoll` (20,855 documents) takes about 0.16 s
+on the real data.
+
+### How a full-text search runs
+
+One statement gives everything but the snippets, so that the index is searched once:
+
+1. `hit`: the pages that match (`page_fts MATCH`), joined to `pages`, with the filters: documents
+   as an `IN` list on sha256, `section` and `family` as `EXISTS` on `sections`. They are ordered
+   by `+rank` and cut at 20,000. The `+` keeps FTS5 from ranking every match itself; SQLite then
+   ranks only the pages that pass the filters.
+2. `doc`: per document the best score and the number of pages. The total, the facets, the
+   requested documents and their three best pages come from `hit` and `doc`. `CROSS JOIN` makes
+   SQLite start from them; it would otherwise scan the serving tables.
+3. A second statement writes the snippets of those pages (at most 150) with FTS5 `snippet()`. It
+   names them as `+rowid IN (...)`, so that FTS5 reads the matches in order. Looked up one by one,
+   a prefix query searches the whole vocabulary for each page: 60 snippets of `gem*` took 6 s.
+
+Measured on the archive's data (an index of 1,229,565 pages of 58,123 documents, 4.5 GB; 349,986
+documents in the serving database), with a release build, a warm cache and the default `limit`,
+whole requests take:
+
+| Request | Pages that match | `total` | Time |
+| --- | --- | --- | --- |
+| `/api/pages?q="Investitionskredit"` | 946 | 701 | 0.01 s |
+| `/api/pages?q=crédit d'engagement` | 3,510 | 1,627 | 0.03 s |
+| `/api/pages?q=preventivo 2025` | 11,293 | 352 | 0.04 s |
+| `/api/pages?q=Steuerfuss` | 18,452 | 8,245 | 0.12 s |
+| `/api/pages?q=Tempo* 30` | 17,577 | 6,782 | 0.14 s |
+| `/api/pages?q=Gemeinde` | 426,862 | 8,510, capped | 0.40 s |
+| `/api/pages?q=Budget` | 727,900 | 7,047, capped | 0.54 s |
+| `/api/pages?q=gem*` | 636,404 | 12,190, capped | 0.82 s |
+| `/api/pages?q=Gemeinde&canton=ZH` | | 3,559, capped | 0.34 s |
+| `/api/pages?q=Gemeinde&commune=261` | | 1 | 0.11 s |
+| `/api/pages?q=Gemeinde&section=minutes` | | 412 | 0.19 s |
+| `/api/documents/{sha256}/pages`, 10 pages | | | 0.001 s |
+
+A `commune` or `canton` filter makes a search faster: fewer pages are ranked. The first searches
+after a start can take 1 to 2.5 s, while the operating system reads the index into its cache.
+Without the cap, `Gemeinde` takes about 2.7 s and `Budget` about 5 s.

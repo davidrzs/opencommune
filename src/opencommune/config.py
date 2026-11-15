@@ -69,6 +69,12 @@ class Settings(BaseSettings):
     def text_db(self) -> Path:
         return self.data_dir / "text.db"
 
+    # The full-text index of page text (`opencommune build-fulltext`). Private, as page text names
+    # people.
+    @property
+    def fulltext_db(self) -> Path:
+        return self.data_dir / "fulltext.db"
+
     # Model answers and job state; private, as answers can name people.
     @property
     def process_db(self) -> Path:

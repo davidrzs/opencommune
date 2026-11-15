@@ -1,5 +1,6 @@
 use std::io::IsTerminal;
 use std::net::SocketAddr;
+use std::path::Path;
 use std::process::ExitCode;
 
 use opencommune_server::config::Config;
@@ -28,7 +29,8 @@ async fn main() -> ExitCode {
 
 async fn run() -> Result<(), Box<dyn std::error::Error>> {
     let config = Config::from_env()?;
-    let db = db::open_read_only(&config.database_path)
+    let fulltext = fulltext_index(&config.fulltext_path).await;
+    let db = db::open_read_only(&config.database_path, fulltext)
         .await
         .map_err(|e| format!("{}: {e}", config.database_path.display()))?;
     db::check_tables(&db).await.map_err(|e| {
@@ -55,7 +57,12 @@ async fn run() -> Result<(), Box<dyn std::error::Error>> {
         config.search_indexing,
         &config.static_dir,
     );
-    let state = AppState { db, usage, site };
+    let state = AppState {
+        db,
+        fulltext: fulltext.is_some(),
+        usage,
+        site,
+    };
     let router = app(state, &config.static_dir, &config.mcp_allowed_hosts);
     let listener = TcpListener::bind(config.bind).await?;
     tracing::info!(
@@ -70,6 +77,29 @@ async fn run() -> Result<(), Box<dyn std::error::Error>> {
     .with_graceful_shutdown(shutdown())
     .await?;
     Ok(())
+}
+
+/// The full-text index to attach: the file when it exists and holds an index. Without one the
+/// server runs, and full-text search answers that it is not available.
+async fn fulltext_index(path: &Path) -> Option<&Path> {
+    if !path.is_file() {
+        tracing::info!(path = %path.display(), "no full-text index: full-text search is off");
+        return None;
+    }
+    match db::check_fulltext(path).await {
+        Ok(()) => {
+            tracing::info!(path = %path.display(), "full-text index attached");
+            Some(path)
+        }
+        Err(error) => {
+            tracing::warn!(
+                %error,
+                path = %path.display(),
+                "not a full-text index: full-text search is off"
+            );
+            None
+        }
+    }
 }
 
 async fn shutdown() {

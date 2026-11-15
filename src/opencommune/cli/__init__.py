@@ -1,8 +1,8 @@
 """The `opencommune` command. Each stage is idempotent and skips work whose output already exists.
 
 One module per part: `crawl` (discovery and download), `configuration` (the commune list and the
-registers), `database` (the main and the serving database), `classify` and `text`. Logging is
-configured here, once, for every command.
+registers), `database` (the main and the serving database, the full-text index), `classify` and
+`text`. Logging is configured here, once, for every command.
 """
 
 from __future__ import annotations

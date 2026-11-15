@@ -45,7 +45,8 @@ pub struct Search {
     /// commune's listing date.
     #[serde(default)]
     pub year: Option<i64>,
-    /// Text the document's title contains, case-insensitive.
+    /// Text the document's title contains, ignoring case; from 3 characters on also ignoring
+    /// accents.
     #[serde(default)]
     pub q: Option<String>,
     /// Documents to skip.
@@ -97,7 +98,7 @@ impl Search {
 }
 
 /// A text parameter that is set: present and not blank.
-fn text(value: &Option<String>) -> Option<&str> {
+pub(crate) fn text(value: &Option<String>) -> Option<&str> {
     value.as_deref().map(str::trim).filter(|v| !v.is_empty())
 }
 
@@ -157,9 +158,16 @@ fn push_filters(qb: &mut QueryBuilder<Sqlite>, s: &Search, counting: Option<Face
         qb.push(" AND d.year = ").push_bind(year);
     }
     if let Some(q) = text(&s.q) {
-        qb.push(" AND lower(d.title) LIKE lower(")
-            .push_bind(contains_pattern(q))
-            .push(") ESCAPE '/'");
+        if q.chars().count() >= 3 {
+            // the title index (trigrams): a quoted string matches where the title contains it
+            qb.push(" AND d.rowid IN (SELECT rowid FROM documents_fts WHERE documents_fts MATCH ")
+                .push_bind(format!("title : \"{}\"", q.replace('"', "\"\"")))
+                .push(")");
+        } else {
+            qb.push(" AND lower(d.title) LIKE lower(")
+                .push_bind(contains_pattern(q))
+                .push(") ESCAPE '/'");
+        }
     }
 }
 
@@ -230,6 +238,22 @@ pub async fn get(pool: &SqlitePool, sha256: &str) -> sqlx::Result<Option<Documen
         .await?
         .pop()
         .map(|document| DocumentDetail { document, run }))
+}
+
+/// The documents with these sha256, with their sections and communes, in no particular order.
+pub(crate) async fn by_sha256(pool: &SqlitePool, shas: &[String]) -> sqlx::Result<Vec<Document>> {
+    if shas.is_empty() {
+        return Ok(Vec::new());
+    }
+    let mut qb = QueryBuilder::new(DOCUMENT_SELECT);
+    qb.push(" WHERE d.sha256 IN (");
+    let mut list = qb.separated(", ");
+    for sha256 in shas {
+        list.push_bind(sha256.clone());
+    }
+    qb.push(")");
+    let rows: Vec<DocumentRow> = qb.build_query_as().fetch_all(pool).await?;
+    complete(pool, rows).await
 }
 
 /// The documents of `rows` with their sections and communes.

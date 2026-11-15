@@ -1,18 +1,30 @@
 <script lang="ts">
+  import PageHits from './PageHits.svelte';
   import ReportProblem from './ReportProblem.svelte';
   import { originalLink } from './documents';
   import { copy, fmt, href, label, when, type Lang } from './i18n';
-  import type { Document, Section } from './types';
+  import type { Document, PageHit, Section } from './types';
   // `commune`: the commune whose page lists the file; its link to the original is used, and the
   // file's communes are named only when there are several. `section` and `family`: the list's
-  // filters; the sections they match get a line of their own.
+  // filters; the sections they match get a line of their own. `hits` and `matching`: in a
+  // full-text search, the file's best matching pages and how many of its pages match.
   let {
     doc,
     lang,
     commune,
     section = '',
-    family = ''
-  }: { doc: Document; lang: Lang; commune?: number; section?: string; family?: string } = $props();
+    family = '',
+    hits,
+    matching = 0
+  }: {
+    doc: Document;
+    lang: Lang;
+    commune?: number;
+    section?: string;
+    family?: string;
+    hits?: PageHit[];
+    matching?: number;
+  } = $props();
   let t = $derived(copy[lang]);
   const pagesOf = (s: Section) => s.last_page - s.first_page + 1;
   const name = (s: Section) => label(lang, 'section', s.type);
@@ -103,6 +115,14 @@
     </p>
     <h2>{title}</h2>
     {#if doc.sections.length > 1 && contains}<p class="contains">{t.contains} {contains}</p>{/if}
+    {#if hits?.length}<PageHits
+        {hits}
+        {matching}
+        sections={doc.sections}
+        languages={doc.languages}
+        {lang}
+        {at}
+      />{/if}
     {#each matches as s}<p class="match family-{s.family}">
         <strong>{name(s)}</strong> · {range(s)} ·
         <a href={open(s.first_page)} target="_blank" rel="noreferrer"

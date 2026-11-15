@@ -1,12 +1,14 @@
 """Offline API fixture for the UI tests; never contacts municipal sites.
 
 It answers the endpoints the front end reads (server/API.md) from a few invented communes and
-files, and filters and counts the files the way the API does: each facet with every filter except
-its own.
+files, and filters and counts the files the way the API does: for /api/documents each facet with
+every filter except its own, for the full-text search (/api/pages) with every filter.
 """
 
 import datetime as dt
 import json
+import re
+import unicodedata
 from http.server import BaseHTTPRequestHandler, HTTPServer
 from pathlib import Path
 from urllib.parse import parse_qs, urlsplit
@@ -161,6 +163,8 @@ def matches(doc, filters, leave_out=None):
             continue
         if key == "commune" and int(value) not in [c["bfs_id"] for c in doc["communes"]]:
             return False
+        if key == "canton" and value.upper() not in [c["canton"] for c in doc["communes"]]:
+            return False
         if key == "section" and value not in [s["type"] for s in doc["sections"]]:
             return False
         if key == "family" and value not in [s["family"] for s in doc["sections"]]:
@@ -209,6 +213,123 @@ def documents(query):
             bodies=facet(others("body"), lambda d: [d["body_kind"]]),
         ),
         items=chosen[offset : offset + limit],
+    )
+
+
+# The text of the pages the full-text index holds, invented: pages inside a section of a searched
+# type. The bulletin (3) is left out, as the index leaves out bulletins.
+PAGES = {
+    (1, 3): "Antrag des Gemeinderates: Für die Sanierung der Schulanlage wird ein "
+    "Investitionskredit von 4,2 Millionen Franken beantragt.",
+    (1, 11): "Protokoll der Gemeindeversammlung. Die Versammlung genehmigt den Investitionskredit "
+    "für die Schulanlage. Der Steuerfuss bleibt bei 115 Prozent.",
+    # text that looks like HTML: the page shows it as text
+    (1, 13): "Budget 2026. Der Gemeinderat beantragt, den Steuerfuss auf 115 Prozent festzusetzen. "
+    "Aufwand <b>und</b> Ertrag sind ausgeglichen.",
+    (2, 5): "Jahresrechnung 2024. Der Steuerfuss betrug 115 Prozent; der Ertrag lag über "
+    "dem Budget.",
+    # a character outside the Basic Multilingual Plane before the match: offsets count code points
+    (2, 6): "Comptes 2024 \U0001d7d0 : le crédit d\u2019engagement pour l\u2019école est bouclé.",
+} | {
+    (10 + i, 1): f"Protokoll der Sitzung {2000 + i}. Traktandum 1: Steuerfuss und Finanzplan."
+    for i in range(20)
+}
+# The most matching pages a search ranks; the server's cap is 20,000.
+CAP = 22
+
+
+def fold(text):
+    """Lower case without accents, and a space for every character that is not a letter or a digit:
+    one character for each, so that offsets in the folded text are offsets in the text."""
+    return "".join(
+        unicodedata.normalize("NFD", c)[0].lower()[:1] if c.isalnum() else " " for c in text
+    )
+
+
+def patterns(q):
+    """The words and "phrases" of a query as patterns over folded text; None when the server would
+    refuse it: no word, more than 10 terms, or fewer than 3 characters before a *."""
+    found = []
+    for m in re.finditer(r'"([^"]*)"?(\*?)|([^\s"]+)', q):
+        raw = m.group(1) if m.group(1) is not None else m.group(3)
+        prefix = bool(m.group(2)) or raw.endswith("*")
+        words = fold(raw.rstrip("*")).split()
+        if not words:
+            continue
+        if prefix and len(words[-1]) < 3:
+            return None
+        end = r"\w*" if prefix else r"(?!\w)"
+        found.append(r"(?<!\w)" + r"\s+".join(map(re.escape, words)) + end)
+    return found if 0 < len(found) <= 10 else None
+
+
+def pages(query):
+    """GET /api/pages: the documents with a page that holds every term, best page first."""
+    terms = patterns(query.get("q", [""])[0])
+    if terms is None:
+        return 400, dict(detail="q is not a search")
+    keys = ("commune", "canton", "year", "body")
+    filters = {k: v[0] for k, v in query.items() if k in keys and v[0]}
+    section = query.get("section", [""])[0]
+    family = query.get("family", [""])[0]
+    offset = int(query.get("offset", ["0"])[0])
+    limit = min(int(query.get("limit", ["10"])[0]), 50)
+    by_sha = {d["sha256"]: d for d in DOCUMENTS}
+    hits = []
+    for (n, number), text in PAGES.items():
+        doc = by_sha[f"{n:064x}"]
+        holding = [s for s in doc["sections"] if s["first_page"] <= number <= s["last_page"]]
+        if not matches(doc, filters):
+            continue
+        if section and section not in [s["type"] for s in holding]:
+            continue
+        if family and family not in [s["family"] for s in holding]:
+            continue
+        spans = [[m.span() for m in re.finditer(t, fold(text))] for t in terms]
+        if all(spans):
+            marks = sorted(span for found in spans for span in found)
+            score = -len(marks)
+            hits.append((score, doc["sha256"], number, [s["type"] for s in holding], text, marks))
+    # the best pages first, cut at the cap; a document's first page is its best
+    hits.sort(key=lambda h: h[:3])
+    capped = len(hits) >= CAP
+    found = {}
+    for hit in hits[:CAP]:
+        found.setdefault(hit[1], []).append(hit)
+    docs = [by_sha[sha] for sha in found]
+    communes = {}
+    for d in docs:
+        for c in d["communes"]:
+            communes.setdefault(c["bfs_id"], dict(c, count=0))["count"] += 1
+    items = [
+        dict(
+            d,
+            matching_pages=len(found[d["sha256"]]),
+            pages=[
+                dict(
+                    page=number,
+                    section_types=types,
+                    snippet=text,
+                    highlights=[list(span) for span in marks],
+                    original_url=f"/original/{sha}?page={number}",
+                )
+                for _, sha, number, types, text, marks in found[d["sha256"]][:3]
+            ],
+        )
+        for d in docs[offset : offset + limit]
+    ]
+    return 200, dict(
+        total=len(docs),
+        capped=capped,
+        offset=offset,
+        limit=limit,
+        facets=dict(
+            years=facet(docs, lambda d: [d["year"]], newest_first=True),
+            sections=facet(docs, lambda d: {t for h in found[d["sha256"]] for t in h[3]}),
+            cantons=facet(docs, lambda d: {c["canton"] for c in d["communes"]}),
+            communes=sorted(communes.values(), key=lambda c: (-c["count"], c["name"]))[:20],
+        ),
+        items=items,
     )
 
 
@@ -284,14 +405,15 @@ class Handler(BaseHTTPRequestHandler):
         url = urlsplit(self.path)
         path = url.path
         body = None
+        status = 200
         if path == "/api/communes":
             body = [listed(bfs, name, status) for bfs, name, status, _ in COMMUNES]
         elif path.startswith("/api/communes/"):
-            body = next(
-                (detail(*c) for c in COMMUNES if str(c[0]) == path.rsplit("/", 1)[1]), None
-            )
+            body = next((detail(*c) for c in COMMUNES if str(c[0]) == path.rsplit("/", 1)[1]), None)
         elif path == "/api/documents":
             body = documents(parse_qs(url.query))
+        elif path == "/api/pages":
+            status, body = pages(parse_qs(url.query))
         elif path == "/api/runs":
             body = RUNS
         elif path == "/api/openapi.json":
@@ -303,7 +425,7 @@ class Handler(BaseHTTPRequestHandler):
             self.end_headers()
             self.wfile.write(b'{"detail": "not found"}')
             return
-        self.send_response(200)
+        self.send_response(status)
         self.send_header("Content-Type", "application/json")
         self.end_headers()
         self.wfile.write(json.dumps(body).encode())

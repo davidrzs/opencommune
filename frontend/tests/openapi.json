@@ -3,7 +3,7 @@
   "info": {
     "title": "OpenCommune API",
     "version": "0.1.0",
-    "description": "Read-only JSON API of OpenCommune, the open archive of the documents Swiss communes publish on their websites. No key, no account. The data is free to use under CC0 1.0; a citation is appreciated.\n\nTitles, bodies, dates and sections come from an automatic classification by a language model that no person has checked yet. Private people's names appear as [name].\n\nAI agents can use the same data over MCP: `http://127.0.0.1:8013/mcp` (streamable HTTP, tools `search_documents`, `get_document`, `list_communes`).",
+    "description": "Read-only JSON API of OpenCommune, the open archive of the documents Swiss communes publish on their websites. No key, no account. The data is free to use under CC0 1.0; a citation is appreciated.\n\nTitles, bodies, dates and sections come from an automatic classification by a language model that no person has checked yet. Private people's names appear as [name].\n\nAI agents can use the same data over MCP: `http://127.0.0.1:8013/mcp` (streamable HTTP, tools `search_documents`, `get_document`, `list_communes`, `search_text`, `read_pages`).",
     "license": {
       "name": "CC0 1.0 (the data)",
       "identifier": "CC0-1.0"
@@ -25,6 +25,10 @@
     {
       "name": "Communes",
       "description": "The communes and the coverage register."
+    },
+    {
+      "name": "Full text",
+      "description": "Search and read the text of the pages."
     },
     {
       "name": "API",
@@ -184,7 +188,7 @@
             "name": "q",
             "in": "query",
             "required": false,
-            "description": "Text the document's title contains, case-insensitive.",
+            "description": "Text the document's title contains, ignoring case; from 3 characters on also ignoring\naccents.",
             "schema": {
               "type": ["string", "null"],
               "default": null
@@ -267,6 +271,244 @@
           },
           "404": {
             "description": "Not in the archive.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/pages": {
+      "get": {
+        "operationId": "searchText",
+        "tags": ["Full text"],
+        "summary": "The documents whose pages contain the words, best match first, each with its three best pages: a plain-text snippet, the matches in it and a link to the file at that page",
+        "description": "The documents whose pages contain the words, best match first, each with its three best pages: a plain-text snippet, the matches in it and a link to the file at that page. Counts per year, section type, canton and commune. The search ranks at most the 20,000 best matching pages; `capped` says when more match. The text is machine-extracted and unchecked.",
+        "parameters": [
+          {
+            "name": "q",
+            "in": "query",
+            "required": true,
+            "description": "The words to find in the page text. Every word must occur on the page; \"a phrase\" in\ndouble quotes must occur as written; a word ending in * matches the words that begin with\nit (at least 3 letters before the *). Case and accents do not matter. No operators.",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "commune",
+            "in": "query",
+            "required": false,
+            "description": "A commune's BFS number: the documents it links.",
+            "schema": {
+              "type": ["integer", "null"],
+              "format": "int64",
+              "default": null
+            }
+          },
+          {
+            "name": "canton",
+            "in": "query",
+            "required": false,
+            "description": "A canton's code, such as ZH: the documents of its communes.",
+            "schema": {
+              "type": ["string", "null"],
+              "default": null
+            }
+          },
+          {
+            "name": "year",
+            "in": "query",
+            "required": false,
+            "description": "The document's year.",
+            "schema": {
+              "type": ["integer", "null"],
+              "format": "int64",
+              "default": null
+            }
+          },
+          {
+            "name": "from",
+            "in": "query",
+            "required": false,
+            "description": "The earliest date (YYYY-MM-DD) of the document: its date, else the commune's listing date.",
+            "schema": {
+              "type": ["string", "null"],
+              "default": null
+            }
+          },
+          {
+            "name": "to",
+            "in": "query",
+            "required": false,
+            "description": "The latest date (YYYY-MM-DD) of the document, inclusive.",
+            "schema": {
+              "type": ["string", "null"],
+              "default": null
+            }
+          },
+          {
+            "name": "section",
+            "in": "query",
+            "required": false,
+            "description": "A section type: only pages inside a section of this type match.",
+            "schema": {
+              "type": ["string", "null"],
+              "default": null
+            }
+          },
+          {
+            "name": "family",
+            "in": "query",
+            "required": false,
+            "description": "A section family: only pages inside a section of this family match.",
+            "schema": {
+              "type": ["string", "null"],
+              "default": null
+            }
+          },
+          {
+            "name": "body",
+            "in": "query",
+            "required": false,
+            "description": "The kind of body behind the document.",
+            "schema": {
+              "type": ["string", "null"],
+              "default": null
+            }
+          },
+          {
+            "name": "offset",
+            "in": "query",
+            "required": false,
+            "description": "Documents to skip.",
+            "schema": {
+              "type": "integer",
+              "format": "int64",
+              "default": 0
+            }
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "required": false,
+            "description": "Documents to return, 0 to 50.",
+            "schema": {
+              "type": "integer",
+              "format": "int64",
+              "default": 10
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "One page of documents with their matching pages.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TextPage"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "An invalid parameter.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "The server has no full-text index.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/documents/{sha256}/pages": {
+      "get": {
+        "operationId": "readPages",
+        "tags": ["Full text"],
+        "summary": "The text of up to 10 pages of a document",
+        "description": "The text of up to 10 pages of a document. A page outside the search has no text and a reason instead. The text is machine-extracted and unchecked.",
+        "parameters": [
+          {
+            "name": "sha256",
+            "in": "path",
+            "required": true,
+            "description": "The file's SHA-256, from a document list.",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "from",
+            "in": "query",
+            "required": false,
+            "description": "The first page to read; 1, the default, is the first page of the file.",
+            "schema": {
+              "type": ["integer", "null"],
+              "format": "int64",
+              "default": null
+            }
+          },
+          {
+            "name": "to",
+            "in": "query",
+            "required": false,
+            "description": "The last page to read. From `from` to `to` are at most 10 pages. Default: `from` + 9.",
+            "schema": {
+              "type": ["integer", "null"],
+              "format": "int64",
+              "default": null
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "The pages.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DocumentPages"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "An invalid parameter.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not in the archive.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "The server has no full-text index.",
             "content": {
               "application/json": {
                 "schema": {
@@ -999,6 +1241,303 @@
         },
         "required": ["id", "stage", "model", "note"],
         "description": "The run named by a document."
+      },
+      "TextPage": {
+        "type": "object",
+        "properties": {
+          "total": {
+            "type": "integer",
+            "format": "int64",
+            "description": "The documents that match."
+          },
+          "capped": {
+            "type": "boolean",
+            "description": "True when more pages match than the search considers (its best 20,000): `total`,\n`facets` and `matching_pages` then count only the documents of those pages."
+          },
+          "offset": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "limit": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "facets": {
+            "$ref": "#/components/schemas/TextFacets"
+          },
+          "items": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/TextDocument"
+            },
+            "description": "The documents, best match first."
+          }
+        },
+        "required": ["total", "capped", "offset", "limit", "facets", "items"],
+        "description": "`GET /api/pages` and the MCP tool `search_text`."
+      },
+      "TextFacets": {
+        "type": "object",
+        "properties": {
+          "years": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Count_int64"
+            },
+            "description": "Documents per year, newest first; no year last."
+          },
+          "sections": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Count_string"
+            },
+            "description": "Documents per section type of their matching pages."
+          },
+          "cantons": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Count_string"
+            },
+            "description": "Documents per canton of the communes that link them."
+          },
+          "communes": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/CommuneCount"
+            },
+            "description": "The 20 communes that link the most documents of the result."
+          }
+        },
+        "required": ["years", "sections", "cantons", "communes"],
+        "description": "The counts of `GET /api/pages`. Each counts the documents of the result."
+      },
+      "CommuneCount": {
+        "type": "object",
+        "properties": {
+          "bfs_id": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "name": {
+            "type": "string"
+          },
+          "canton": {
+            "type": "string"
+          },
+          "count": {
+            "type": "integer",
+            "format": "int64"
+          }
+        },
+        "required": ["bfs_id", "name", "canton", "count"],
+        "description": "A commune and how many documents of a result it links."
+      },
+      "TextDocument": {
+        "type": "object",
+        "properties": {
+          "sha256": {
+            "type": "string"
+          },
+          "title": {
+            "type": ["string", "null"],
+            "description": "As printed, as the classifier read it; private names appear as [name]."
+          },
+          "body_name": {
+            "type": ["string", "null"],
+            "description": "The body as printed, as the classifier read it."
+          },
+          "first_seen": {
+            "type": "string"
+          },
+          "listing_date": {
+            "type": ["string", "null"]
+          },
+          "date": {
+            "type": ["string", "null"]
+          },
+          "year": {
+            "type": ["integer", "null"],
+            "format": "int64"
+          },
+          "years": {
+            "type": "array",
+            "items": {
+              "type": "integer",
+              "format": "int64"
+            }
+          },
+          "page_count": {
+            "type": ["integer", "null"],
+            "format": "int64"
+          },
+          "pages_seen": {
+            "type": ["integer", "null"],
+            "format": "int64"
+          },
+          "run_id": {
+            "type": "string"
+          },
+          "body_kind": {
+            "type": ["string", "null"]
+          },
+          "languages": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "personal_data": {
+            "type": "boolean"
+          },
+          "sections": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Section"
+            },
+            "description": "In the order the classifier gave them."
+          },
+          "communes": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/CommuneRef"
+            },
+            "description": "The communes that link the document, by name."
+          },
+          "original_url": {
+            "type": "string",
+            "description": "`/original/<sha256>`, never a commune's URL."
+          },
+          "matching_pages": {
+            "type": "integer",
+            "format": "int64",
+            "description": "How many of its pages match (counted among the pages the search considered)."
+          },
+          "pages": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/PageHit"
+            },
+            "description": "Its three best matching pages, best first."
+          }
+        },
+        "required": [
+          "sha256",
+          "title",
+          "body_name",
+          "first_seen",
+          "listing_date",
+          "date",
+          "year",
+          "years",
+          "page_count",
+          "pages_seen",
+          "run_id",
+          "body_kind",
+          "languages",
+          "personal_data",
+          "sections",
+          "communes",
+          "original_url",
+          "matching_pages",
+          "pages"
+        ],
+        "description": "A document of a full-text search with its best matching pages."
+      },
+      "PageHit": {
+        "type": "object",
+        "properties": {
+          "page": {
+            "type": "integer",
+            "format": "int64",
+            "description": "1 for the first page."
+          },
+          "section_types": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "description": "The types of the sections the page lies in, in the classifier's order."
+          },
+          "snippet": {
+            "type": "string",
+            "description": "About 300 characters of plain text around the matches; `…` marks a cut."
+          },
+          "highlights": {
+            "type": "array",
+            "items": {
+              "type": "array",
+              "items": {
+                "type": "integer",
+                "format": "uint32",
+                "minimum": 0
+              },
+              "minItems": 2,
+              "maxItems": 2
+            },
+            "description": "The matched words in `snippet`: `[start, end)` in characters (Unicode code points)."
+          },
+          "original_url": {
+            "type": "string",
+            "description": "`/original/<sha256>?page=<n>`: the file at this page."
+          }
+        },
+        "required": ["page", "section_types", "snippet", "highlights", "original_url"],
+        "description": "A page that matches a full-text search."
+      },
+      "DocumentPages": {
+        "type": "object",
+        "properties": {
+          "sha256": {
+            "type": "string"
+          },
+          "page_count": {
+            "type": ["integer", "null"],
+            "format": "int64"
+          },
+          "pages": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/PageText"
+            }
+          }
+        },
+        "required": ["sha256", "page_count", "pages"],
+        "description": "`GET /api/documents/{sha256}/pages`: the text of a range of a document's pages."
+      },
+      "PageText": {
+        "type": "object",
+        "properties": {
+          "page": {
+            "type": "integer",
+            "format": "int64",
+            "description": "1 for the first page."
+          },
+          "section_types": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "description": "The types of the sections the page lies in, in the classifier's order."
+          },
+          "source": {
+            "type": ["string", "null"],
+            "description": "Where the text comes from: `layer` (the PDF's text layer) or `ocr`; null without text."
+          },
+          "text": {
+            "type": ["string", "null"],
+            "description": "The page's text as extracted by machine, unchecked; null when the page is not in the index."
+          },
+          "reason": {
+            "type": ["string", "null"],
+            "description": "Why the page has no text; null when it has."
+          },
+          "original_url": {
+            "type": "string",
+            "description": "`/original/<sha256>?page=<n>`: the file at this page."
+          }
+        },
+        "required": ["page", "section_types", "source", "text", "reason", "original_url"],
+        "description": "A page of `GET /api/documents/{sha256}/pages` and the MCP tool `read_pages`."
       },
       "Run": {
         "type": "object",

@@ -36,7 +36,7 @@ ANSWER = {
         {"type": "minutes", "first_page": 1, "last_page": 10},
         {"type": "budget", "first_page": 60, "last_page": 70},
     ],
-    "title": "Gemeindeversammlung  vom 28. November 2024,\n Antrag von [name]",
+    "title": "Gemeindeversammlung  vom 28. November 2024,\n Anträge von [name]",
     "body_name": "Gemeindeversammlung Alpha",
     "body_kind": "citizens_assembly",
     "years": [2024, 2025],
@@ -137,7 +137,7 @@ def test_build_writes_the_serving_database_from_scratch(tmp_path, monkeypatch):
         (SAMPLED,),
     ).fetchone()
     assert row == (
-        "Gemeindeversammlung vom 28. November 2024, Antrag von [name]",
+        "Gemeindeversammlung vom 28. November 2024, Anträge von [name]",
         "Gemeindeversammlung Alpha",
         "2026-01-05",
         "2024-12-01",
@@ -157,6 +157,18 @@ def test_build_writes_the_serving_database_from_scratch(tmp_path, monkeypatch):
         "SELECT title, body_name, date, year, personal_data FROM documents WHERE sha256 = ?",
         (BUDGET,),
     ).fetchone() == (None, None, None, 2026, 0)
+
+    # the title index: three or more characters of the title or the body, diacritics ignored
+    def titled(query):
+        return db.execute(
+            "SELECT d.sha256 FROM documents_fts f JOIN documents d ON d.rowid = f.rowid "
+            "WHERE documents_fts MATCH ?",
+            (query,),
+        ).fetchall()
+
+    assert titled("antrage") == titled("VERSAMMLUNG ALPHA") == [(SAMPLED,)]
+    assert titled("budget") == []
+    db.execute("INSERT INTO documents_fts (documents_fts, rank) VALUES ('integrity-check', 1)")
     # the first 50 pages were all shown; pages 60 to 70 lie where only some were
     assert db.execute(
         "SELECT type, family, first_page, last_page, partly_unseen FROM sections "

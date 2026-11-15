@@ -3,6 +3,7 @@
 
 mod communes;
 mod documents;
+mod fulltext;
 mod openapi;
 mod pages;
 
@@ -21,6 +22,8 @@ pub fn router() -> Router<AppState> {
         .route("/api/register", get(communes::register))
         .route("/api/documents", get(documents::list))
         .route("/api/documents/{sha256}", get(documents::get))
+        .route("/api/documents/{sha256}/pages", get(fulltext::pages))
+        .route("/api/pages", get(fulltext::search))
         .route("/api/runs", get(documents::runs))
         .route("/api/openapi.json", get(openapi::spec))
         .route("/api/{*rest}", get(not_found))

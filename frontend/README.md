@@ -24,7 +24,8 @@ Open http://127.0.0.1:5173/de (or `/fr`, `/it`). Vite proxies `/api` and `/origi
 `API_ORIGIN` (default http://127.0.0.1:8000). Pages load their data in the browser with universal
 `+page.ts` / `+layout.ts` loaders: the commune list (`/api/communes`) once for the map and the
 search, one commune (`/api/communes/{bfs}`) and a page of its files (`/api/documents`) on its page,
-the classification runs (`/api/runs`) on the about page.
+a full-text search (`/api/pages`) on the search page, the classification runs (`/api/runs`) on the
+about page.
 
 To serve the built site: `npm run build`, then run the server with `STATIC_DIR=frontend/build`.
 
@@ -39,7 +40,14 @@ To serve the built site: `npm run build`, then run the server with `STATIC_DIR=f
   section's first page. Selectors with counts (section type, body, year) and a title text field;
   filtering by a section type or family shows the matching sections as lines of their own. Pages
   of 20; the filters live in the URL query. Under the list, the exact `/api/documents` request.
-- The same list across all communes (`/{lang}/suche`), each file with its communes.
+- The search page (`/{lang}/suche`): one box. With words in it, the text of the pages is searched
+  (`/api/pages`). Each file shows its best matching pages: the page, its section type, a snippet
+  with the matches marked (`<mark>`, built from `highlights`; the API's text is never read as HTML)
+  and a link to the original at that page. Filters for section type, body, year, canton and
+  commune; a note when the search reached its cap. Without words, or when the server has no
+  full-text index (503), the commune page's list across all communes, by title. The site never
+  shows the full text of a page.
+- Commune pages have a box that opens the search page for that commune.
 - The about page explains each classification run from `/api/runs`; files link to their run.
 - The API page (`/{lang}/api`): what the API is, the MCP address with a configuration snippet,
   and an interactive reference from `/api/openapi.json` ([Scalar](https://github.com/scalar/scalar),
@@ -66,7 +74,7 @@ npm run format:check
 ```
 
 CI runs `check`, `format:check`, `build` and the offline tests (`access.spec.ts`,
-`documents.spec.ts`, `api.spec.ts` against `tests/access-fixture.py`, which serves a saved copy of
+`documents.spec.ts`, `api.spec.ts`, `search.spec.ts` against `tests/access-fixture.py`, which serves a saved copy of
 the server's `openapi.json` from `tests/openapi.json`). The smoke test needs real data (it opens
 Wetzikon, BFS 121, and expects files there), so it runs only by hand.
 Screenshots go to the ignored `test-results/` directory.
@@ -74,8 +82,10 @@ Screenshots go to the ignored `test-results/` directory.
 ## Limits
 
 UI translations do not translate source material or enable cross-language semantic search.
-Romansh and English are not yet provided. File contents are not searched: the text field matches
-the printed titles. Titles, bodies, dates and sections come from a language model and are not
+Romansh and English are not yet provided. The full-text search covers the pages inside sections
+of eight types (minutes, decisions, vote results, budgets, accounts, proposals, agendas and
+members' requests); its text is machine-extracted and unchecked. The commune page's text field
+matches the printed titles. Titles, bodies, dates and sections come from a language model and are not
 checked by a person; private names in titles appear as "[name]". `personal_data` is never shown.
 
 ## Deployment

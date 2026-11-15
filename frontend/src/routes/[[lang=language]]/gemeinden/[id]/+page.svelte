@@ -23,6 +23,27 @@
       {#if c.website}<a class="text-link" href={c.website} target="_blank" rel="noreferrer"
           >{t.official} ↗</a
         >{/if}
+      <!-- the search page's full-text search, filtered to this commune -->
+      {#if c.documents}<form
+          class="text-search"
+          method="GET"
+          action={href('/suche', lang)}
+          role="search"
+        >
+          <label for="commune-text-search">{t.communeSearch}</label>
+          <div>
+            <input
+              id="commune-text-search"
+              name="q"
+              type="search"
+              required
+              maxlength="500"
+              placeholder={t.communeSearchPlaceholder}
+            /><input type="hidden" name="commune" value={c.bfs_id} /><button
+              >{t.searchButton}</button
+            >
+          </div>
+        </form>{/if}
     </div>
     <!-- the access notice below shows the access state -->
     <div class="mini-map">
@@ -55,3 +76,34 @@
     />
   </div>
 </section>
+
+<style>
+  .text-search {
+    margin-top: var(--space-2xl);
+    max-width: var(--measure-medium);
+  }
+  .text-search label {
+    display: block;
+    font-size: var(--font-size-md);
+    color: var(--muted);
+  }
+  .text-search div {
+    display: flex;
+    gap: var(--space-md);
+    align-items: center;
+  }
+  .text-search input {
+    width: 100%;
+    min-width: 0;
+    padding: var(--space-md) 0;
+    background: transparent;
+    border: 0;
+    border-bottom: var(--rule);
+    color: var(--ink);
+    font-size: var(--font-size-base);
+  }
+  .text-search button {
+    font-size: var(--font-size-md);
+    white-space: nowrap;
+  }
+</style>

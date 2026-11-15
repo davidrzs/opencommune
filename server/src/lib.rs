@@ -1,6 +1,6 @@
 //! OpenCommune web server: the JSON API, MCP over streamable HTTP, the static front end and the
-//! pages crawlers read, all from the serving database the Python package builds. See `API.md` and
-//! `CONVENTIONS.md`.
+//! pages crawlers read, all from the serving database the Python package builds, and full-text
+//! search from its index of page text when there is one. See `API.md` and `CONVENTIONS.md`.
 
 pub mod config;
 pub mod db;
@@ -31,6 +31,8 @@ use crate::usage::Usage;
 pub struct AppState {
     /// The serving database, read-only.
     pub db: SqlitePool,
+    /// Whether every connection of `db` has the full-text index attached (schema `fulltext`).
+    pub fulltext: bool,
     /// Usage statistics, when enabled.
     pub usage: Option<Usage>,
     /// The public address, the indexing switch and the front end's HTML for the crawled pages.

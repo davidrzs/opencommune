@@ -1,7 +1,10 @@
-"""The databases: the main one (`init-db`), the internal catalogue of files in it (`catalog`) and
-the serving database the web server reads (`build`)."""
+"""The databases: the main one (`init-db`), the internal catalogue of files in it (`catalog`), the
+serving database the web server reads (`build`) and the full-text index of page text
+(`build-fulltext`)."""
 
 from __future__ import annotations
+
+import json
 
 import typer
 
@@ -28,6 +31,17 @@ def build() -> None:
 
     for table, rows in stage.run(settings.serving_db, database_path(), settings.process_db).items():
         typer.echo(f"{table}: {rows} rows")
+
+
+@app.command("build-fulltext")
+def build_fulltext() -> None:
+    """Write the full-text index of page text, from scratch, into DATA_DIR/fulltext.db.
+
+    Reads the serving database and DATA_DIR/text.db."""
+    from .. import fulltext
+
+    counts = fulltext.run(settings.fulltext_db, settings.serving_db, settings.text_db)
+    typer.echo(json.dumps(counts))
 
 
 @app.command("catalog")
