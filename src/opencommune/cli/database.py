@@ -35,12 +35,21 @@ def build() -> None:
 
 @app.command("build-fulltext")
 def build_fulltext() -> None:
-    """Write the full-text index of page text, from scratch, into DATA_DIR/fulltext.db.
+    """Write the full-text index of page text, redacted, from scratch, into DATA_DIR/fulltext.db.
 
-    Reads the serving database and DATA_DIR/text.db."""
+    Reads the serving database, DATA_DIR/text.db and DATA_DIR/privacy.db; changes none of them.
+    Run it again after a new privacy check is imported, or after the redaction rules change."""
     from .. import fulltext
 
-    counts = fulltext.run(settings.fulltext_db, settings.serving_db, settings.text_db)
+    for path, made_by in (
+        (settings.text_db, "text import"),
+        (settings.privacy_db, "privacy import"),
+    ):
+        if not path.exists():
+            raise typer.BadParameter(f"no {path.name}; run `opencommune {made_by}` first")
+    counts = fulltext.run(
+        settings.fulltext_db, settings.serving_db, settings.text_db, settings.privacy_db
+    )
     typer.echo(json.dumps(counts))
 
 

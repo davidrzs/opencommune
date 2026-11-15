@@ -1,7 +1,8 @@
 """The privacy check of page text with gheim: which pages (`choose`) and one worker.
 
 `choose` takes the pages in scope (opencommune.scope) with usable text, and the text exactly as the
-index stores it, so the offsets found here fit the index.
+index reads it, so the offsets found here fit it. Given privacy.db, it leaves out the pages already
+checked with the same text, so a new queue holds only new or changed text.
 
 A worker claims chunks of a privacy queue and runs gheim's calibrated detector on each page: the
 gheim-ch-560m model at REVISION with gheim's default O-bias of 0.5, in float32 (the precision of
@@ -33,6 +34,7 @@ from pathlib import Path
 
 from .. import scope
 from ..text.queue import Claim, Queue
+from . import store
 
 log = logging.getLogger(__name__)
 
@@ -45,8 +47,9 @@ REPORT_SECONDS = 300
 MAX_FAILURES_IN_A_ROW = 25
 FAILED = "the detector failed page after page; see the log"
 RULE = (
-    "pages in scope whose text has at least "
-    f"{scope.MIN_CHARS} non-space characters, with the text as the index stores it"
+    f"pages in scope whose text has at least {scope.MIN_CHARS} non-space characters, with the text "
+    "as the index reads it, less the pages that privacy.db (privacy_db_sha256, unless null) "
+    "already holds a finding for with the same text"
 )
 
 
@@ -62,11 +65,25 @@ def detector_settings() -> dict:
     }
 
 
-def choose(serving_db: Path, text_db: Path) -> Iterator[dict]:
-    """{"sha256", "page", "text"} for each page to check, by document and page."""
-    for page in scope.pages(serving_db, text_db):
-        if page.usable:
-            yield {"sha256": page.sha256, "page": page.page, "text": page.text}
+def choose(serving_db: Path, text_db: Path, privacy_db: Path | None = None) -> Iterator[dict]:
+    """{"sha256", "page", "text"} for each page to check, by document and page. With `privacy_db`,
+    a page is left out when it holds a finding for the same text."""
+    privacy = None if privacy_db is None else store.read_only(privacy_db)
+    document, found = None, {}
+    try:
+        for page in scope.pages(serving_db, text_db):
+            if not page.usable:
+                continue
+            text = page.text
+            if privacy is not None:
+                if page.sha256 != document:
+                    document, found = page.sha256, store.checked(privacy, page.sha256)
+                if (page.page, hashlib.sha256(text.encode()).hexdigest()) in found:
+                    continue
+            yield {"sha256": page.sha256, "page": page.page, "text": text}
+    finally:
+        if privacy is not None:
+            privacy.close()
 
 
 def load() -> tuple[object, dict]:

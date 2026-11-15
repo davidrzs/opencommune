@@ -12,7 +12,7 @@ from typer.testing import CliRunner
 
 from opencommune.cli import app
 from opencommune.config import settings
-from opencommune.privacy import detect
+from opencommune.privacy import detect, redact
 from opencommune.text.queue import MAX_TRIES, Queue
 from tests.scope_data import A, D, serving_db, text_db
 
@@ -135,6 +135,16 @@ def test_the_privacy_commands_check_count_and_import(tmp_path, monkeypatch):
     assert imported.exit_code == 0, imported.output
     assert json.loads(imported.stdout) == {"run": "q", "pages": {"ok": 4}}
     assert json.loads(run("import", "q").stdout) == {"run": "q", "pages": {"ok": 4}}
+    # the next queue holds only the pages without a finding for their text
+    assert json.loads(run("queue", "again").stdout)["pages"] == 0
+    assert json.loads(run("queue", "everything", "--all").stdout)["pages"] == 4
+    with closing(sqlite3.connect(settings.privacy_db)) as db, db:
+        db.execute("UPDATE findings SET text_sha256 = ? WHERE page = 2", ("0" * 64,))
+    assert json.loads(run("queue", "changed").stdout)["pages"] == 1
+    settings_json = json.loads(
+        (settings.privacy_dir / "queues" / "changed" / "settings.json").read_text()
+    )
+    assert len(settings_json["privacy_db_sha256"]) == 64
     with closing(sqlite3.connect(settings.privacy_db)) as db:
         spans, detail = db.execute(
             "SELECT spans, detail FROM findings WHERE sha256 = ? AND page = 2", (A,)
@@ -142,3 +152,34 @@ def test_the_privacy_commands_check_count_and_import(tmp_path, monkeypatch):
         assert json.loads(spans) == [["private_person", 4, 15, 0.9123]]
         assert json.loads(detail)["worker"].startswith("2@")
         assert db.execute("SELECT name, pages FROM runs").fetchall() == [("q", 4)]
+
+
+def test_redaction_marks_names_addresses_and_emails_and_keeps_the_rest():
+    text = (
+        "Herr Hans Muster, Dorfstrasse 4, Tel. 044 123 45 67, am 3. März 2026, www.dorf.ch, "
+        "Konto 4122, hans@example.ch"
+    )
+
+    def span(label, words, score=0.9):
+        start = text.index(words)
+        return [label, start, start + len(words), score]
+
+    spans = [
+        span("private_url", "www.dorf.ch"),
+        span("private_person", "Hans Muster", 0.31),  # any score counts
+        span("private_person", "Muster"),  # inside the span before
+        span("private_address", "Dorfstrasse 4"),
+        span("private_phone", "044 123 45 67"),
+        span("private_email", "hans@example.ch"),
+        span("private_date", "3. März 2026"),
+        span("account_number", "4122"),
+    ]
+    redacted, marks = redact.redact(text, spans)
+    assert redacted == (
+        "Herr \uff3bname\uff3d, \uff3baddress\uff3d, Tel. 044 123 45 67, am 3. März 2026, "
+        "www.dorf.ch, Konto 4122, \uff3bemail\uff3d"
+    )
+    assert marks == {"private_person": 1, "private_address": 1, "private_email": 1}
+    assert redact.redact(text, []) == (text, {})
+    with pytest.raises(ValueError, match="no rule"):
+        redact.redact(text, [["passport", 0, 4, 0.9]])

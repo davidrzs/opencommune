@@ -80,8 +80,8 @@ class Settings(BaseSettings):
     def privacy_db(self) -> Path:
         return self.data_dir / "privacy.db"
 
-    # The full-text index of page text (`opencommune build-fulltext`). Private, as page text names
-    # people.
+    # The full-text index of page text (`opencommune build-fulltext`), redacted. Private: the
+    # redaction misses some names, and the index holds every word and its position.
     @property
     def fulltext_db(self) -> Path:
         return self.data_dir / "fulltext.db"

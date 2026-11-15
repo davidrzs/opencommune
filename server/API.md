@@ -288,7 +288,9 @@ server needs no `-shm` file. The server does not start without these tables.
 
 The full-text index is a second file, `fulltext.db`, which `opencommune build-fulltext` writes
 (`src/opencommune/fulltext.py`): `pages (id, sha256, page, source, run)`, `page_fts` (FTS5,
-`unicode61 remove_diacritics 2`, the text stored, rowid = `pages.id`) and `build`. Every
+`unicode61 remove_diacritics 2`, the text stored redacted, rowid = `pages.id`) and `build`. The
+redaction marks, such as `［name］`, are written in full-width brackets, which the tokenizer keeps
+inside a word, so a search for "Name" does not find them. Every
 connection attaches it as the schema `fulltext`. The serving database is opened read-only, and an
 attached file inherits that. The integration tests create the index from the schema in
 `fulltext.py`.

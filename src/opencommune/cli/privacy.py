@@ -31,10 +31,14 @@ def _queue(name: str) -> Path:
 def queue(
     name: str = typer.Argument(..., help="A new name; a queue is never changed"),
     chunk_pages: int = typer.Option(2000, min=1, help="Pages per chunk, the unit a worker claims"),
+    every_page: bool = typer.Option(
+        False, "--all", help="Also the pages DATA_DIR/privacy.db already has a finding for"
+    ),
 ) -> None:
     """Write the pages to check, with their text, as a queue of chunks for `privacy detect`.
 
-    The pages are those in scope (opencommune.scope) with usable text in DATA_DIR/text.db."""
+    The pages are those in scope (opencommune.scope) with usable text in DATA_DIR/text.db, less
+    those DATA_DIR/privacy.db already has a finding for with the same text (unless --all)."""
     from ..privacy import detect
     from ..text.queue import Queue
 
@@ -43,14 +47,16 @@ def queue(
         raise typer.BadParameter(f"queue {name} exists; a queue is never changed")
     if not settings.text_db.exists():
         raise typer.BadParameter("no text.db; import a text layer pass first")
+    checked = None if every_page or not settings.privacy_db.exists() else settings.privacy_db
     chosen = {
         "created": now(),
         "rule": detect.RULE,
         "serving_db_sha256": file_sha256(settings.serving_db),
         "text_db_sha256": file_sha256(settings.text_db),
+        "privacy_db_sha256": None if checked is None else file_sha256(checked),
         **detect.detector_settings(),
     }
-    items = detect.choose(settings.serving_db, settings.text_db)
+    items = detect.choose(settings.serving_db, settings.text_db, checked)
     created = Queue.create(target, items, chunk_pages, chosen)
     pages = created.settings["pages"]
     typer.echo(json.dumps({"queue": str(target), "pages": pages, "chunks": len(created.chunks())}))

@@ -1,11 +1,15 @@
-"""A serving database and a text.db for the tests of the search scope, OCR, the privacy check and
-the index. A has sections of four types; one document is a bulletin, one from a private body, and
-D has neither a kind nor a body kind."""
+"""A serving database, a text.db and a privacy.db for the tests of the search scope, OCR, the
+privacy check and the index. A has sections of four types; one document is a bulletin, one from a
+private body, and D has neither a kind nor a body kind."""
 
+import hashlib
+import json
 import sqlite3
 from contextlib import closing
 from importlib.resources import files
 
+from opencommune.privacy import detect
+from opencommune.privacy import store as privacy_store
 from opencommune.text import store
 
 A, BULLETIN, PRIVATE, D = ("a" * 64, "b" * 64, "c" * 64, "d" * 64)
@@ -69,6 +73,30 @@ def text_db(path, pages=PAGES):
             "INSERT INTO pages (sha256, page, run, status, text, detail) "
             "VALUES (?, ?, ?, 'ok', ?, '{}')",
             pages,
+        )
+        db.commit()
+    return path
+
+
+def privacy_db(path, serving, text, spans=lambda text: []):
+    """privacy.db with one run `p` that checked every page in scope with usable text; `spans` gives
+    the spans found in a page's text."""
+    findings = [
+        (item["sha256"], item["page"], hashlib.sha256(item["text"].encode()).hexdigest(), item)
+        for item in detect.choose(serving, text)
+    ]
+    with closing(privacy_store.connect(path)) as db:
+        db.execute(
+            "INSERT INTO runs VALUES ('p', '2026-11-03T00:00:00+00:00', '{}', "
+            "'2026-11-03T00:00:00+00:00', ?)",
+            (len(findings),),
+        )
+        db.executemany(
+            "INSERT INTO findings VALUES (?, ?, 'p', 'ok', ?, ?, '{}')",
+            [
+                (sha, page, digest, json.dumps(spans(item["text"])))
+                for sha, page, digest, item in findings
+            ],
         )
         db.commit()
     return path

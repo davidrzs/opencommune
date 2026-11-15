@@ -2,7 +2,8 @@
 
 Only `opencommune privacy import` writes it. A run is a privacy queue; importing it again replaces
 its rows, so a queue can be imported while it is still being worked on. A finding holds the
-SHA-256 of the text that was checked, so the index build uses it only for that same text.
+SHA-256 of the text that was checked, so the index build (`checked`) uses it only for that same
+text, and the next queue leaves out the pages already checked.
 """
 
 from __future__ import annotations
@@ -44,6 +45,21 @@ def connect(path: Path) -> sqlite3.Connection:
     db.execute("PRAGMA foreign_keys = ON")
     db.executescript(SCHEMA)
     return db
+
+
+def read_only(path: Path) -> sqlite3.Connection:
+    return sqlite3.connect(f"file:{path}?mode=ro", uri=True)
+
+
+def checked(db: sqlite3.Connection, sha256: str) -> dict[tuple[int, str], list]:
+    """The spans found on each page of a document, by (page, text_sha256). When two runs read the
+    same text, the run whose queue was made last counts."""
+    rows = db.execute(
+        "SELECT f.page, f.text_sha256, f.spans FROM findings f JOIN runs r ON r.name = f.run "
+        "WHERE f.sha256 = ? AND f.status = 'ok' ORDER BY r.created",
+        (sha256,),
+    )
+    return {(page, text_sha256): json.loads(spans) for page, text_sha256, spans in rows}
 
 
 def import_queue(db: sqlite3.Connection, name: str, queue: Queue) -> dict:
