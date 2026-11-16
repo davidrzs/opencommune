@@ -19,7 +19,7 @@ def check(body="", status=200, url="https://test.ch/docs/a.pdf"):
     with httpx.Client(
         transport=httpx.MockTransport(lambda r: httpx.Response(status, text=body))
     ) as client:
-        return http.Politeness(client, 0, "OpenCommuneBot/0.1").allowed(url)
+        return http.Politeness(client, 0, "TractandaBot/0.1").allowed(url)
 
 
 def test_real_restriction_and_path_recovery(storage):
@@ -82,7 +82,7 @@ def test_request_failure_cannot_clear_robots_restriction(storage):
     url = "https://test.ch/docs/a.pdf"
     check("User-agent: *\nDisallow: /docs/")
     with httpx.Client(transport=httpx.MockTransport(lambda r: httpx.Response(429))) as client:
-        polite = http.Politeness(client, 0, "OpenCommuneBot/0.1")
+        polite = http.Politeness(client, 0, "TractandaBot/0.1")
         http._send(client, polite, client.build_request("GET", url))
     assert {r["status"] for r in access.observations()} == {"restricted", "rate_limited"}
     access.record(url, "ok", channel="request")
@@ -91,7 +91,7 @@ def test_request_failure_cannot_clear_robots_restriction(storage):
 
 def test_speculative_missing_page_is_not_access_restriction(storage):
     with httpx.Client(transport=httpx.MockTransport(lambda r: httpx.Response(404))) as client:
-        polite = http.Politeness(client, 0, "OpenCommuneBot/0.1")
+        polite = http.Politeness(client, 0, "TractandaBot/0.1")
         http._send(client, polite, client.build_request("GET", "https://test.ch/missing"))
     assert not access.observations()
 

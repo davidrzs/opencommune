@@ -26,7 +26,7 @@ The linked-archive and WordPress stages run with two workers (`OPENCOMMUNE_DOWNL
 robots.txt rules. A drained inventory means every discovered URL was handled, not that a commune's
 whole website is archived.
 
-The units expect the checkout at `~/opencommune`; change `WorkingDirectory` otherwise. The script
+The units expect the checkout at `~/tractanda`; change `WorkingDirectory` otherwise. The script
 runs `.venv/bin/opencommune`, so run `uv sync` (or `make setup`) in the checkout first.
 
 ```sh

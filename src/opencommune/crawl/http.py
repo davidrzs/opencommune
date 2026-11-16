@@ -34,6 +34,9 @@ BACKOFF_SECONDS = (
 )
 RETRY_AFTER_MAX = 120.0  # a longer Retry-After is honoured by not retrying at all
 MAX_REDIRECTS = 10
+# Product tokens the crawler used before its current name (lower case). robots.txt groups written
+# for them still apply to it.
+FORMER_NAMES = ("opencommunebot",)
 
 
 class RobotsRules:
@@ -41,7 +44,8 @@ class RobotsRules:
     The standard library parser ignores wildcards and would fetch what `Disallow: /*.pdf$` forbids."""
 
     def __init__(self, text: str, user_agent: str) -> None:
-        token = user_agent.split("/")[0].strip().lower()
+        # Our name and the names we used before: a group written for any of them binds us.
+        tokens = [user_agent.split("/")[0].strip().lower(), *FORMER_NAMES]
         groups: list[tuple[list[str], list[tuple[bool, str]], float | None]] = []
         agents: list[str] = []
         rules: list[tuple[bool, str]] = []
@@ -68,20 +72,17 @@ class RobotsRules:
                     delay = float(value)
         if agents:
             groups.append((agents, rules, delay))
-        chosen = next(
-            (
-                g
-                for g in groups
-                if any(a != "*" and (token.startswith(a) or a in token) for a in g[0])
-            ),
-            None,
-        )
-        chosen = chosen or next((g for g in groups if "*" in g[0]), None)
-        self._rules = [
-            (allow, len(pat), self._compile(pat)) for allow, pat in (chosen[1] if chosen else [])
+        named = [
+            g
+            for g in groups
+            if any(a != "*" and any(t.startswith(a) or a in t for t in tokens) for a in g[0])
         ]
-        self.patterns = chosen[1] if chosen else []
-        self.crawl_delay: float | None = chosen[2] if chosen else None
+        # The groups that name us all apply, so a refusal of a former name still holds (a URL is
+        # allowed only if each allows it); without one, the `*` group applies.
+        chosen = named or [g for g in groups if "*" in g[0]][:1]
+        self._groups = [[(allow, pat, self._compile(pat)) for allow, pat in g[1]] for g in chosen]
+        delays = [g[2] for g in chosen if g[2] is not None]
+        self.crawl_delay: float | None = max(delays) if delays else None
 
     @staticmethod
     def _compile(pattern: str) -> re.Pattern[str]:
@@ -92,16 +93,24 @@ class RobotsRules:
         )
 
     def allowed(self, url: str) -> bool:
-        """Longest matching rule wins, Allow wins a tie, no match means allowed."""
+        """In each group that applies, the longest matching rule wins, Allow wins a tie and no
+        match means allowed; the URL is allowed only if every group allows it."""
+        return self.refusing_rule(url) is None
+
+    def refusing_rule(self, url: str) -> str | None:
+        """The Disallow pattern that refuses the URL, or None when it is allowed."""
         parts = urlsplit(url)
         target = parts.path + (f"?{parts.query}" if parts.query else "")
-        best: tuple[int, bool] | None = None
-        for allow, length, rx in self._rules:
-            if rx.match(target) and (
-                best is None or length > best[0] or (length == best[0] and allow)
-            ):
-                best = (length, allow)
-        return True if best is None else best[1]
+        for rules in self._groups:
+            best: tuple[int, bool, str] | None = None
+            for allow, pattern, rx in rules:
+                if rx.match(target) and (
+                    best is None or len(pattern) > best[0] or (len(pattern) == best[0] and allow)
+                ):
+                    best = (len(pattern), allow, pattern)
+            if best is not None and not best[1]:
+                return best[2]
+        return None
 
 
 class Politeness:
@@ -178,16 +187,13 @@ class Politeness:
                 self._robots[host] = self._fetch_rules(parts.scheme, host)
             _check_host_cooldown(url)
             rules = self._robots[host]
-            allowed = True if rules is None else rules.allowed(url)
+            refused_by = None if rules is None else rules.refusing_rule(url)
+            allowed = refused_by is None
             status = self._robots_status.get(host, "ok")
             matched = None
             if status == "ok" and not allowed:
                 status = "restricted"
-                target = parts.path + (f"?{parts.query}" if parts.query else "")
-                matches = [
-                    (len(p), a, p) for a, p in rules.patterns if rules._compile(p).match(target)
-                ]
-                matched = max(matches)[2] if matches else None
+                matched = refused_by
             access.record(url, status, rule=matched, user_agent=self.user_agent)
             return allowed
 

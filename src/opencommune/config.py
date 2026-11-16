@@ -30,7 +30,7 @@ class Settings(BaseSettings):
     def ua(self) -> str:
         if self.user_agent:
             return self.user_agent
-        return "OpenCommuneBot/0.1 (+https://www.opencommune.ch)"
+        return "TractandaBot/0.1 (+https://www.tractanda.ch)"
 
     @property
     def raw_dir(self) -> Path:

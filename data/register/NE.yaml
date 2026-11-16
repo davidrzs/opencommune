@@ -248,7 +248,7 @@
     status: blocked_robots
     listing_url: https://www.lelocle.ch/administration/autorites/conseil-general/
     obstacle: 'robots.txt: ''User-agent: *'' with ''Disallow: /'' (only named search engines are allowed)'
-    how: collectable if the commune allows OpenCommuneBot or publishes a crawlable listing
+    how: collectable if the commune allows TractandaBot or publishes a crawlable listing
 - bfs_id: 6437
   name: Les Ponts-de-Martel
   canton: NE

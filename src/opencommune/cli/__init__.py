@@ -14,7 +14,7 @@ import typer
 from . import classify, configuration, crawl, database, privacy, text
 
 app = typer.Typer(
-    no_args_is_help=True, add_completion=False, help="OpenCommune crawler and database build."
+    no_args_is_help=True, add_completion=False, help="Tractanda crawler and database build."
 )
 
 

@@ -2358,7 +2358,7 @@
     listing_url: https://www.chavannes.ch/officiel/conseil-communal/proc%C3%A8s-verbaux.html
     obstacle: the page lists 155 procès-verbaux 2006-2026, but every PDF is under /images/pdf/, and robots.txt disallows
       /images/ (and /pdf/) for User-agent *
-    how: collectable if the commune allows /images/pdf/MaCommune/Seances_Conseil/ for OpenCommuneBot
+    how: collectable if the commune allows /images/pdf/MaCommune/Seances_Conseil/ for TractandaBot
 - bfs_id: 5628
   name: Chigny
   canton: VD

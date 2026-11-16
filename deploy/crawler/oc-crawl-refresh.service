@@ -1,11 +1,11 @@
 [Unit]
-Description=OpenCommune crawl: daily check for newly published PDFs
+Description=Tractanda crawl: daily check for newly published PDFs
 After=network-online.target
 Wants=network-online.target
 
 [Service]
 Type=oneshot
-WorkingDirectory=%h/opencommune
+WorkingDirectory=%h/tractanda
 Environment=PYTHONUNBUFFERED=1
 ExecStart=/bin/bash deploy/crawl.sh refresh
 Nice=10

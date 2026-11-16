@@ -63,10 +63,10 @@ def test_host_crawl_delay_does_not_slow_the_rest_of_its_network(monkeypatch):
 
 
 def test_robots_crawl_delay_is_honoured(monkeypatch):
-    p = Politeness(httpx.Client(), delay=0.1, user_agent="OpenCommuneBot/0.1")
+    p = Politeness(httpx.Client(), delay=0.1, user_agent="TractandaBot/0.1")
     monkeypatch.setattr(p, "_network", lambda host: host)
     Politeness._network_last.clear()
-    rules = RobotsRules("User-agent: *\nCrawl-delay: 1\nDisallow: /private\n", "OpenCommuneBot/0.1")
+    rules = RobotsRules("User-agent: *\nCrawl-delay: 1\nDisallow: /private\n", "TractandaBot/0.1")
     p._robots["slow.example.ch"] = rules
     p._crawl_delay["slow.example.ch"] = rules.crawl_delay
     assert p.allowed("https://slow.example.ch/x") and not p.allowed(
@@ -89,7 +89,7 @@ Disallow: /images/
 Allow: /images/public/
 Crawl-delay: 10
 """
-    r = RobotsRules(text, "OpenCommuneBot/0.1 (+https://www.opencommune.ch)")
+    r = RobotsRules(text, "TractandaBot/0.1 (+https://www.tractanda.ch)")
     assert not r.allowed("https://x.ch/docs/pv-2024.pdf")  # wildcard plus end anchor
     assert r.allowed(
         "https://x.ch/docs/pv-2024.pdf?download=1"
@@ -99,10 +99,30 @@ Crawl-delay: 10
     )  # longest rule wins
     assert r.allowed("https://x.ch/nothing-for-us") and r.crawl_delay == 10.0
     ours = RobotsRules(
-        "User-agent: OpenCommuneBot\nDisallow: /\n\nUser-agent: *\nDisallow:\n",
-        "OpenCommuneBot/0.1",
+        "User-agent: TractandaBot\nDisallow: /\n\nUser-agent: *\nDisallow:\n",
+        "TractandaBot/0.1",
     )
     assert not ours.allowed("https://x.ch/anything")
+
+
+def test_a_refusal_written_for_the_former_name_still_binds_the_crawler():
+    former = RobotsRules(
+        "User-agent: OpenCommuneBot\nDisallow: /\n\nUser-agent: *\nDisallow:\n",
+        "TractandaBot/0.1",
+    )
+    assert not former.allowed("https://x.ch/anything")
+    assert former.refusing_rule("https://x.ch/anything") == "/"
+    # Both names have a group: each must allow the URL, and the longer Crawl-delay applies.
+    both = RobotsRules(
+        "User-agent: TractandaBot\nDisallow: /intern/\nCrawl-delay: 2\n\n"
+        "User-agent: OpenCommuneBot\nDisallow: /archiv/\nCrawl-delay: 5\n\n"
+        "User-agent: *\nDisallow:\n",
+        "TractandaBot/0.1",
+    )
+    assert not both.allowed("https://x.ch/intern/a.pdf")
+    assert not both.allowed("https://x.ch/archiv/a.pdf")
+    assert both.allowed("https://x.ch/protokolle/a.pdf")
+    assert both.crawl_delay == 5.0
 
 
 def test_driver_passes_response_headers_and_parent_to_the_adapter(monkeypatch):
@@ -129,7 +149,7 @@ def test_driver_passes_response_headers_and_parent_to_the_adapter(monkeypatch):
         lambda req: httpx.Response(200, text="<html></html>", headers={"X-WP-TotalPages": "3"})
     )
     client = httpx.Client(transport=transport)
-    p = Politeness(client, delay=0.0, user_agent="OpenCommuneBot/0.1")
+    p = Politeness(client, delay=0.0, user_agent="TractandaBot/0.1")
     monkeypatch.setattr(p, "_network", lambda host: host)
     p._robots["x.ch"] = None
     parent = Link(url="https://x.ch/session", text="Sitzung", date=dt.date(2025, 3, 10))
@@ -160,7 +180,7 @@ def test_also_documents_takes_documents_from_the_listing_page(monkeypatch):
         )
     )
     client = httpx.Client(transport=transport)
-    p = Politeness(client, delay=0.0, user_agent="OpenCommuneBot/0.1")
+    p = Politeness(client, delay=0.0, user_agent="TractandaBot/0.1")
     monkeypatch.setattr(p, "_network", lambda host: host)
     p._robots["x.ch"] = None
     cfg = AdapterConfig(

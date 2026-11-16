@@ -1,7 +1,7 @@
 [project]
 name = "opencommune"
 version = "0.1.0"
-description = "Crawler and database build for an open archive of Swiss municipal council decisions"
+description = "Tractanda: crawler and database build for an open archive of Swiss municipal documents"
 readme = "README.md"
 authors = [{ name = "David Zollikofer" }]
 license = "MIT"
@@ -26,9 +26,9 @@ dependencies = [
 privacy = ["gheim[local]==0.1.11", "huggingface-hub"]
 
 [project.urls]
-Homepage = "https://www.opencommune.ch"
-Repository = "https://github.com/davidrzs/opencommune"
-Issues = "https://github.com/davidrzs/opencommune/issues"
+Homepage = "https://www.tractanda.ch"
+Repository = "https://github.com/davidrzs/tractanda"
+Issues = "https://github.com/davidrzs/tractanda/issues"
 
 [project.scripts]
 opencommune = "opencommune.cli:app"

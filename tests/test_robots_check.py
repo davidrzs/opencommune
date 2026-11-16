@@ -15,7 +15,7 @@ def storage(tmp_path, monkeypatch):
 def run(status, body="", url="https://test.ch/protokolle/a.pdf"):
     transport = httpx.MockTransport(lambda r: httpx.Response(status, text=body))
     with httpx.Client(transport=transport) as client:
-        return verdicts(http.Politeness(client, 0, "OpenCommuneBot/0.1"), [url])[0]
+        return verdicts(http.Politeness(client, 0, "TractandaBot/0.1"), [url])[0]
 
 
 @pytest.mark.parametrize("status", [401, 403, 404, 410, 418])

@@ -1,11 +1,11 @@
 [Unit]
-Description=OpenCommune crawl: weekly pass over the curated sources in communes.yaml
+Description=Tractanda crawl: weekly pass over the curated sources in communes.yaml
 After=network-online.target
 Wants=network-online.target
 
 [Service]
 Type=oneshot
-WorkingDirectory=%h/opencommune
+WorkingDirectory=%h/tractanda
 Environment=PYTHONUNBUFFERED=1
 ExecStart=/bin/bash deploy/crawl.sh fetch
 Nice=10

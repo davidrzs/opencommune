@@ -89,7 +89,7 @@
     listing_url: https://erstfeld.ch/politik/gemeindeversammlungen
     obstacle: all assembly documents (Traktandenliste, Anträge, Abrechnungen) are under /uploads/, which robots.txt
       disallows
-    how: collectable if the commune allows /uploads/ for OpenCommuneBot
+    how: collectable if the commune allows /uploads/ for TractandaBot
 - bfs_id: 1207
   name: Flüelen
   canton: UR
