@@ -21,6 +21,15 @@ systemctl enable --now opencommune
 systemctl reload caddy
 ```
 
+Usage report: `GET /api/usage` (`server/API.md`) needs a token. Make one and keep a copy in the
+password manager:
+
+```sh
+install -d -m 700 /etc/opencommune
+printf 'USAGE_TOKEN=%s\n' "$(openssl rand -hex 32)" > /etc/opencommune/secrets.env
+chmod 600 /etc/opencommune/secrets.env
+```
+
 To update, replace the binary, the site or the database and run `systemctl restart opencommune`.
 Logs: `journalctl -u opencommune`. Settings: `server/API.md`.
 

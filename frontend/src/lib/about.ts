@@ -33,7 +33,7 @@ export const about = {
     llms: 'Kurzbeschreibung für KI-Agenten (llms.txt)',
     privacyTitle: 'Datenschutz',
     privacy:
-      'Die Website setzt keine Cookies und lädt nichts von Dritten nach. Für die Nutzungsstatistik zählt der Server Aufrufe pro Tag und Seitentyp; IP-Adressen, Suchbegriffe und vollständige Adressen der aufgerufenen Seiten speichert er nicht. Die Zahl der Besuchenden pro Tag wird mit einem täglich wechselnden Schlüssel geschätzt, sodass niemand über Tage hinweg wiedererkannt werden kann. Wer «Do Not Track» oder «Global Privacy Control» sendet, fliesst nicht in diese Schätzung ein. Die Zählungen pro Tag werden dauerhaft aufbewahrt; sie enthalten keine Angaben zu Personen.'
+      'Die Website setzt keine Cookies und lädt nichts von Dritten nach. Für die Nutzungsstatistik zählt der Server Aufrufe pro Tag und Seitentyp, bei Links von anderen Websites nur deren Domain; IP-Adressen, Suchbegriffe und vollständige Adressen der aufgerufenen Seiten speichert er nicht. Die Zahl der Besuchenden pro Tag wird mit einem täglich wechselnden Schlüssel geschätzt, sodass niemand über Tage hinweg wiedererkannt werden kann. Wer «Do Not Track» oder «Global Privacy Control» sendet, fliesst weder in diese Schätzung noch in die Zählung der Domains ein. Die Zählungen pro Tag werden dauerhaft aufbewahrt; sie enthalten keine Angaben zu Personen.'
   },
   fr: {
     title: 'À propos de Tractanda',
@@ -69,7 +69,7 @@ export const about = {
     llms: 'Description courte pour les agents IA (llms.txt)',
     privacyTitle: 'Protection des données',
     privacy:
-      'Le site n’utilise pas de cookies et ne charge rien de tiers. Pour les statistiques d’utilisation, le serveur compte les accès par jour et par type de page ; il n’enregistre ni adresses IP, ni termes de recherche, ni adresses complètes des pages consultées. Le nombre de visiteurs par jour est estimé à l’aide d’une clé qui change chaque jour, de sorte que personne ne peut être reconnu d’un jour à l’autre. Les navigateurs qui envoient « Do Not Track » ou « Global Privacy Control » ne sont pas pris en compte dans cette estimation. Les décomptes par jour sont conservés sans limite de durée ; ils ne contiennent aucune donnée personnelle.'
+      'Le site n’utilise pas de cookies et ne charge rien de tiers. Pour les statistiques d’utilisation, le serveur compte les accès par jour et par type de page, et pour les liens venant d’autres sites seulement leur domaine ; il n’enregistre ni adresses IP, ni termes de recherche, ni adresses complètes des pages consultées. Le nombre de visiteurs par jour est estimé à l’aide d’une clé qui change chaque jour, de sorte que personne ne peut être reconnu d’un jour à l’autre. Les navigateurs qui envoient « Do Not Track » ou « Global Privacy Control » ne sont pris en compte ni dans cette estimation ni dans le décompte des domaines. Les décomptes par jour sont conservés sans limite de durée ; ils ne contiennent aucune donnée personnelle.'
   },
   it: {
     title: 'Informazioni su Tractanda',
@@ -105,6 +105,6 @@ export const about = {
     llms: 'Descrizione breve per agenti IA (llms.txt)',
     privacyTitle: 'Protezione dei dati',
     privacy:
-      'Il sito non usa cookie e non carica nulla da terzi. Per le statistiche d’uso il server conta gli accessi per giorno e per tipo di pagina; non registra né indirizzi IP, né termini di ricerca, né gli indirizzi completi delle pagine visitate. Il numero di visitatori al giorno è stimato con una chiave che cambia ogni giorno, così nessuno può essere riconosciuto da un giorno all’altro. Chi invia «Do Not Track» o «Global Privacy Control» non viene considerato in questa stima. I conteggi giornalieri vengono conservati senza limiti di tempo e non contengono dati personali.'
+      'Il sito non usa cookie e non carica nulla da terzi. Per le statistiche d’uso il server conta gli accessi per giorno e per tipo di pagina e, per i link da altri siti, solo il loro dominio; non registra né indirizzi IP, né termini di ricerca, né gli indirizzi completi delle pagine visitate. Il numero di visitatori al giorno è stimato con una chiave che cambia ogni giorno, così nessuno può essere riconosciuto da un giorno all’altro. Chi invia «Do Not Track» o «Global Privacy Control» non viene considerato né in questa stima né nel conteggio dei domini. I conteggi giornalieri vengono conservati senza limiti di tempo e non contengono dati personali.'
   }
 };

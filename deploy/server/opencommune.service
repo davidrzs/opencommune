@@ -10,6 +10,10 @@ Environment=STATIC_DIR=/opt/opencommune/site
 Environment=USAGE_PATH=/var/lib/opencommune/usage.sqlite3
 Environment=MCP_ALLOWED_HOSTS=www.tractanda.ch,tractanda.ch,opencommune.ch,www.opencommune.ch,localhost,127.0.0.1
 Environment=PUBLIC_URL=https://www.tractanda.ch
+# The bare name and the former names: sent on to PUBLIC_URL and counted.
+Environment=FORMER_HOSTS=tractanda.ch,opencommune.ch,www.opencommune.ch
+# USAGE_TOKEN for the operator's report GET /api/usage, readable by root only (see README.md).
+EnvironmentFile=-/etc/opencommune/secrets.env
 # Search engines may index the pages; the commune pages only once the second switch is true.
 Environment=SEARCH_INDEXING=true
 Environment=SEARCH_INDEX_COMMUNES=false

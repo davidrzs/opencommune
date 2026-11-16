@@ -26,6 +26,8 @@ pub fn router() -> Router<AppState> {
         .route("/api/pages", get(fulltext::search))
         .route("/api/runs", get(documents::runs))
         .route("/api/openapi.json", get(openapi::spec))
+        // the operator's usage report: needs a token, not part of the public API
+        .route("/api/usage", get(crate::usage::report))
         .route("/api/{*rest}", get(not_found))
         .route("/original/{sha256}", get(documents::original))
         .route("/robots.txt", get(pages::robots))

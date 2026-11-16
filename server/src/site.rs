@@ -8,6 +8,14 @@
 use std::path::Path;
 use std::sync::Arc;
 
+use axum::extract::{Request, State};
+use axum::http::header;
+use axum::middleware::Next;
+use axum::response::{IntoResponse, Redirect, Response};
+
+use crate::AppState;
+use crate::usage::{Hit, bot_name};
+
 /// The site's languages; the first is the default.
 #[derive(Clone, Copy, PartialEq, Eq, Debug)]
 pub enum Lang {
@@ -202,6 +210,10 @@ pub struct Site {
     pub indexing: bool,
     pub index_communes: bool,
     shell: Arc<Path>,
+    /// The host of `public_url`, lower case.
+    host: String,
+    /// Former names of the site, lower case (`with_former_hosts`).
+    former_hosts: Arc<[String]>,
 }
 
 impl Site {
@@ -211,7 +223,21 @@ impl Site {
             indexing,
             index_communes,
             shell: static_dir.join("index.html").into(),
+            host: host_of(public_url),
+            former_hosts: Arc::from([]),
         }
+    }
+
+    /// Other names of the site (`FORMER_HOSTS`): requests to them are sent on to `public_url`
+    /// (`former_hosts`).
+    pub fn with_former_hosts(mut self, hosts: &[String]) -> Self {
+        self.former_hosts = hosts.iter().map(|h| h.to_ascii_lowercase()).collect();
+        self
+    }
+
+    /// Whether `host` (lower case, without port) names this site, now or formerly.
+    pub fn is_own_host(&self, host: &str) -> bool {
+        host == self.host || self.former_hosts.iter().any(|h| h == host)
     }
 
     /// The front end's `index.html`, read for every page: it names the build's script files, so a
@@ -341,6 +367,50 @@ pub fn date(iso: &str) -> String {
         (Some(y), Some(m), Some(d)) if iso.len() >= 10 => format!("{d}.{m}.{y}"),
         _ => iso.to_string(),
     }
+}
+
+/// The host of an address such as `https://www.example.ch/`, lower case, without port.
+fn host_of(url: &str) -> String {
+    let rest = url.split_once("://").map_or(url, |(_, rest)| rest);
+    rest.split(['/', ':'])
+        .next()
+        .unwrap_or("")
+        .to_ascii_lowercase()
+}
+
+/// Middleware: a request to a former name of the site is sent on to the same path under
+/// `public_url` (308, so the method stays), and counted under the name it came to, so the usage
+/// statistics show how many still arrive through old links.
+pub async fn former_hosts(State(state): State<AppState>, request: Request, next: Next) -> Response {
+    let host = request
+        .headers()
+        .get(header::HOST)
+        .and_then(|v| v.to_str().ok())
+        .or_else(|| request.uri().host())
+        .map(|h| h.split(':').next().unwrap_or(h).to_ascii_lowercase());
+    let Some(host) = host.filter(|h| state.site.former_hosts.iter().any(|f| f == h)) else {
+        return next.run(request).await;
+    };
+    let path = request.uri().path_and_query().map_or("/", |p| p.as_str());
+    let target = format!("{}{path}", state.site.public_url);
+    if let Some(usage) = &state.usage {
+        let user_agent = request
+            .headers()
+            .get(header::USER_AGENT)
+            .and_then(|v| v.to_str().ok())
+            .unwrap_or("");
+        usage.record(Hit {
+            channel: "redirect",
+            route: host,
+            bot: bot_name(user_agent),
+            status: 308,
+            duration_ms: 0.0,
+            search_total: None,
+            visitor: None,
+            referrer: None,
+        });
+    }
+    Redirect::permanent(&target).into_response()
 }
 
 #[cfg(test)]

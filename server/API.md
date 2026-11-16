@@ -21,9 +21,11 @@ DATABASE_PATH=data/opencommune.db STATIC_DIR=frontend/build server/target/releas
 | `BIND` | `127.0.0.1:8000` | listen address |
 | `USAGE_PATH` | `data/logs/usage.sqlite3` | usage statistics (writable, separate file) |
 | `USAGE_ENABLED` | `true` | `false`: count nothing |
-| `USAGE_VISITORS` | `true` | daily visitor estimate |
+| `USAGE_VISITORS` | `true` | daily visitor estimates |
+| `USAGE_TOKEN` | none | token of the operator's report `GET /api/usage` (at least 32 characters); without it the report answers 404 |
 | `MCP_ALLOWED_HOSTS` | `localhost,127.0.0.1,::1` | `Host` values `/mcp` accepts; add the public domains |
 | `PUBLIC_URL` | `http://` + `BIND` | the site's address in canonical links, the sitemap and `llms.txt` |
+| `FORMER_HOSTS` | none | comma-separated former names of the site: a request to one is answered with a 308 to the same path under `PUBLIC_URL` and counted under that name |
 | `SEARCH_INDEXING` | `false` | `true`: search engines may index the pages; `false`: every response says `noindex` |
 | `SEARCH_INDEX_COMMUNES` | `false` | `true`: the commune pages may be indexed too and join the sitemap; `false`: they say `noindex` |
 | `RUST_LOG` | `info,rmcp=warn` | log filter; `debug` logs one line per request (route template only) |
@@ -244,6 +246,24 @@ object (null if it does not parse); `note` says in plain sentences what the sett
 Every register row, by canton and BFS id: `bfs_id, name, canton, status, website, vendor,
 reachable, checked, checked_by, notes, publications[{body, kind, status, listing_url, from, to,
 cadence, obstacle, how}]`.
+
+### `GET /api/usage?days=<n>` (operator only)
+
+The usage statistics of the last `days` days (default 30, today included), for the operator: it
+needs `Authorization: Bearer <USAGE_TOKEN>` (401 without it, 404 when no token is set), is not
+part of the OpenAPI description and is not counted itself. It sends what `src/usage.rs` keeps and
+nothing else, as rows by day:
+
+1. `totals`: `day, channel, route, bot, status, requests, searches, empty_searches, duration_ms`.
+   Channels: `web` (pages), `api`, `mcp` (by tool), `original`, `redirect` (requests to a
+   former name, by name).
+2. `visitors`: `day, pages, browsers`: the estimated number of clients that loaded a page, and of
+   browsers that also ran the front end (they ask for `/api/communes`). Programs that fetch HTML
+   only count in `pages`. Today's numbers are counts so far; null for a day without any.
+3. `referrers`: `day, host, requests`: the domain of the linking site for pages opened from a
+   link elsewhere, from browsers only.
+4. `bots`: `day, name, requests`: requests from recognised automated clients, by crawler name
+   (`other` when unknown, `none` without a user agent).
 
 ### `GET /original/{sha256}?commune=<bfs_id>`
 

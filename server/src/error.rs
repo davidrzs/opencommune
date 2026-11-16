@@ -29,6 +29,13 @@ impl ApiError {
         }
     }
 
+    pub fn unauthorized() -> Self {
+        Self {
+            status: StatusCode::UNAUTHORIZED,
+            detail: "Unauthorized".into(),
+        }
+    }
+
     pub fn unavailable(detail: &str) -> Self {
         Self {
             status: StatusCode::SERVICE_UNAVAILABLE,

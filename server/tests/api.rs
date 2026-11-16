@@ -166,6 +166,9 @@ async fn fulltext_fixture() -> Fixture {
     build(false, false, false, true).await
 }
 
+/// The token of the operator's usage report in the fixture.
+const USAGE_TOKEN: &str = "usage-token-0123456789abcdef0123456789";
+
 /// The front end's page shell as the build writes it, reduced to what the server touches.
 const SHELL: &str = "<!doctype html><html lang=\"de\"><head><meta charset=\"utf-8\"></head>\
 <body data-sveltekit-preload-data=\"hover\"><div style=\"display: contents\"></div></body></html>";
@@ -185,7 +188,12 @@ async fn build(with_usage: bool, indexing: bool, index_communes: bool, fulltext:
     }
     let usage_path = temp_path("usage.sqlite3");
     let usage = if with_usage {
-        Some(Usage::open(&usage_path, true).await.unwrap())
+        Some(
+            Usage::open(&usage_path, true)
+                .await
+                .unwrap()
+                .with_token(Some(USAGE_TOKEN)),
+        )
     } else {
         None
     };
@@ -206,7 +214,8 @@ async fn build(with_usage: bool, indexing: bool, index_communes: bool, fulltext:
             indexing,
             index_communes,
             &static_dir,
-        ),
+        )
+        .with_former_hosts(&["old.example.test".to_string()]),
     };
     let router = app(state, &static_dir, &["localhost".to_string()]);
     Fixture {
@@ -721,6 +730,165 @@ async fn usage_counts_route_templates_without_paths_or_addresses() {
     }
 }
 
+/// `(key, requests)` rows of the usage table `referrers` or `bots`, once `want` requests are in.
+async fn usage_counts(path: &Path, sql: &'static str, want: i64) -> Vec<(String, i64)> {
+    let pool = SqlitePool::connect_with(SqliteConnectOptions::new().filename(path))
+        .await
+        .unwrap();
+    for _ in 0..50 {
+        let rows: Vec<(String, i64)> = sqlx::query_as(sql)
+            .fetch_all(&pool)
+            .await
+            .unwrap_or_default();
+        if rows.iter().map(|r| r.1).sum::<i64>() >= want {
+            return rows;
+        }
+        tokio::time::sleep(Duration::from_millis(40)).await;
+    }
+    panic!("usage counts not written: {sql}");
+}
+
+#[tokio::test]
+async fn usage_counts_crawlers_linking_domains_and_browsers_that_run_the_front_end() {
+    let f = fixture(true).await;
+    let firefox = "Mozilla/5.0 (X11; Linux x86_64) Firefox/140.0";
+    let peer: SocketAddr = "127.0.0.1:40000".parse().unwrap();
+    let send_as = |uri: &str, agent: &str, extra: &[(&str, &str)]| {
+        let mut request = Request::get(uri)
+            .header(header::USER_AGENT, agent)
+            .header("x-forwarded-for", "203.0.113.7");
+        for (name, value) in extra {
+            request = request.header(*name, *value);
+        }
+        let mut request = request.body(Body::empty()).unwrap();
+        request.extensions_mut().insert(ConnectInfo(peer));
+        send(&f.router, request)
+    };
+    let news = (
+        "referer",
+        "https://user@News.Example.ch:8443/artikel?name=Muster#top",
+    );
+    send_as("/de/gemeinden/261", firefox, &[news]).await;
+    send_as("/fr/gemeinden/5938", firefox, &[news]).await;
+    // the site itself, a former name of it, an address and an opted-out browser are not counted
+    send_as(
+        "/de",
+        firefox,
+        &[("referer", "https://example.test/de/suche")],
+    )
+    .await;
+    send_as("/de", firefox, &[("referer", "https://old.example.test/")]).await;
+    send_as("/de", firefox, &[("referer", "http://192.0.2.1/")]).await;
+    send_as("/de", firefox, &[news, ("dnt", "1")]).await;
+    // a crawler with a link is counted by name, its link not
+    let google = "Mozilla/5.0 (compatible; Googlebot/2.1; +http://www.google.com/bot.html)";
+    send_as("/de/gemeinden/261", google, &[news]).await;
+    send_as("/api/communes", "", &[]).await;
+    // the front end's first request: a browser that runs it
+    send_as("/api/communes", firefox, &[]).await;
+    let referrers = usage_counts(&f.usage_path, "SELECT host, requests FROM referrers", 2).await;
+    assert_eq!(referrers, [("news.example.ch".to_string(), 2)]);
+    let bots = usage_counts(
+        &f.usage_path,
+        "SELECT name, requests FROM bots ORDER BY 1",
+        2,
+    )
+    .await;
+    assert_eq!(
+        bots,
+        [("Googlebot".to_string(), 1), ("none".to_string(), 1)]
+    );
+    let browsers = usage_counts(
+        &f.usage_path,
+        "SELECT day, count(*) FROM browser_visitors GROUP BY day",
+        1,
+    )
+    .await;
+    assert_eq!(browsers.len(), 1);
+    assert_eq!(browsers[0].1, 1);
+    let rows = usage_rows(&f.usage_path, 9).await;
+    assert!(
+        rows.iter()
+            .any(|r| r == &("web".into(), "/gemeinden/{id}".into(), 1, 200, 1, 0))
+    );
+    let pool = SqlitePool::connect_with(SqliteConnectOptions::new().filename(&f.usage_path))
+        .await
+        .unwrap();
+    let dump: Vec<(String,)> = sqlx::query_as(
+        "SELECT group_concat(host) FROM referrers UNION ALL SELECT group_concat(name) FROM bots \
+         UNION ALL SELECT group_concat(token) FROM browser_visitors",
+    )
+    .fetch_all(&pool)
+    .await
+    .unwrap();
+    let dump = format!("{dump:?}");
+    for secret in ["artikel", "Muster", "user", "8443", "203.0.113", "Mozilla"] {
+        assert!(!dump.contains(secret), "{secret} stored");
+    }
+}
+
+#[tokio::test]
+async fn the_usage_report_needs_its_token_and_is_not_counted() {
+    let off = fixture(false).await;
+    let (status, _) = get(&off.router, "/api/usage").await;
+    assert_eq!(status, StatusCode::NOT_FOUND); // no usage statistics, no report
+    let f = fixture(true).await;
+    get(&f.router, "/api/runs").await;
+    usage_rows(&f.usage_path, 1).await;
+    for authorization in [None, Some("Bearer wrong"), Some(USAGE_TOKEN)] {
+        let mut request = Request::get("/api/usage");
+        if let Some(value) = authorization {
+            request = request.header(header::AUTHORIZATION, value);
+        }
+        let (status, headers, _) = send(&f.router, request.body(Body::empty()).unwrap()).await;
+        assert_eq!(status, StatusCode::UNAUTHORIZED, "{authorization:?}");
+        assert_eq!(headers[header::WWW_AUTHENTICATE], "Bearer");
+    }
+    let request = Request::get("/api/usage?days=7")
+        .header(header::AUTHORIZATION, format!("Bearer {USAGE_TOKEN}"))
+        .body(Body::empty())
+        .unwrap();
+    let (status, headers, body) = send(&f.router, request).await;
+    assert_eq!(status, StatusCode::OK);
+    assert_eq!(headers[header::CACHE_CONTROL], "no-store");
+    let report: Value = serde_json::from_slice(&body).unwrap();
+    assert_eq!(keys(&report), ["totals", "visitors", "referrers", "bots"]);
+    let totals = report["totals"].as_array().unwrap();
+    assert_eq!(totals.len(), 1);
+    assert_eq!(totals[0]["route"], "/api/runs");
+    assert_eq!(totals[0]["bot"], true);
+    assert_eq!(report["bots"][0]["name"], "none");
+    // the report itself stays out of the counts
+    tokio::time::sleep(Duration::from_millis(200)).await;
+    let rows = usage_rows(&f.usage_path, 1).await;
+    assert!(rows.iter().all(|r| r.1 != "/api/usage"), "{rows:?}");
+}
+
+#[tokio::test]
+async fn former_names_of_the_site_lead_to_the_same_path_and_are_counted() {
+    let f = fixture(true).await;
+    for host in ["old.example.test", "OLD.example.test:443"] {
+        let request = Request::post("/mcp?x=1")
+            .header(header::HOST, host)
+            .body(Body::empty())
+            .unwrap();
+        let (status, headers, _) = send(&f.router, request).await;
+        assert_eq!(status, StatusCode::PERMANENT_REDIRECT);
+        assert_eq!(headers[header::LOCATION], "https://example.test/mcp?x=1");
+    }
+    let request = Request::get("/de/gemeinden/261")
+        .header(header::HOST, "example.test")
+        .body(Body::empty())
+        .unwrap();
+    let (status, _, _) = send(&f.router, request).await;
+    assert_eq!(status, StatusCode::OK);
+    let rows = usage_rows(&f.usage_path, 3).await;
+    assert!(
+        rows.contains(&("redirect".into(), "old.example.test".into(), 1, 308, 2, 0)),
+        "{rows:?}"
+    );
+}
+
 #[tokio::test]
 async fn usage_keeps_daily_counts_and_turns_past_visitors_into_a_number() {
     let f = fixture(true).await;
@@ -1090,6 +1258,7 @@ async fn openapi_describes_every_route_and_the_fields_the_api_sends() {
         .skip(1)
         .filter_map(|rest| rest.split('"').next())
         .filter(|p| (p.starts_with("/api/") && *p != "/api/{*rest}") || p.starts_with("/original/"))
+        .filter(|p| *p != "/api/usage") // the operator's report, not part of the public API
         .collect();
     routes.sort();
     let mut described = keys(&spec["paths"]);

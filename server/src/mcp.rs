@@ -107,11 +107,12 @@ impl Archive {
             usage.record(Hit {
                 channel: "mcp",
                 route: tool.to_string(),
-                bot: false,
+                bot: None,
                 status,
                 duration_ms: started.elapsed().as_secs_f64() * 1000.0,
                 search_total,
                 visitor: None,
+                referrer: None,
             });
         }
     }

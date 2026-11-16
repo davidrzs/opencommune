@@ -41,7 +41,7 @@ async fn run() -> Result<(), Box<dyn std::error::Error>> {
     })?;
     let usage = match &config.usage_path {
         Some(path) => match Usage::open(path, config.usage_visitors).await {
-            Ok(usage) => Some(usage),
+            Ok(usage) => Some(usage.with_token(config.usage_token.as_deref())),
             Err(error) => {
                 tracing::warn!(%error, path = %path.display(), "usage statistics disabled");
                 None
@@ -57,7 +57,8 @@ async fn run() -> Result<(), Box<dyn std::error::Error>> {
         config.search_indexing,
         config.search_index_communes,
         &config.static_dir,
-    );
+    )
+    .with_former_hosts(&config.former_hosts);
     let state = AppState {
         db,
         fulltext: fulltext.is_some(),

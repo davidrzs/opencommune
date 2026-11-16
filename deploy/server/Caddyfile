@@ -1,9 +1,6 @@
-www.tractanda.ch {
+# The bare name and the former names reach the server too, which sends them on to
+# www.tractanda.ch and counts how many still arrive that way (FORMER_HOSTS).
+www.tractanda.ch, tractanda.ch, opencommune.ch, www.opencommune.ch {
 	encode zstd gzip
 	reverse_proxy 127.0.0.1:8000
-}
-
-# The bare name and the former names lead to the same address.
-tractanda.ch, opencommune.ch, www.opencommune.ch {
-	redir https://www.tractanda.ch{uri} 308
 }
