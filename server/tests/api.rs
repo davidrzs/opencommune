@@ -60,12 +60,12 @@ INSERT INTO document_communes VALUES
   ('dddd', 261, NULL),
   ('eeee', 261, 'ftp://old.example/x.pdf');
 INSERT INTO sections VALUES
-  ('aaaa', 1, 'invitation_agenda', 'proposals', 1, 1, 0),
-  ('aaaa', 2, 'minutes', 'deliberation', 2, 11, 0),
-  ('aaaa', 3, 'vote_result', 'deliberation', 12, 12, 0),
-  ('bbbb', 1, 'minutes', 'deliberation', 1, 28, 0),
-  ('bbbb', 2, 'minutes', 'deliberation', 29, 30, 0),
-  ('cccc', 1, 'budget', 'money', 1, 200, 1);
+  ('aaaa', 1, 'invitation_agenda', 'proposals', 1, 1, 0, 1),
+  ('aaaa', 2, 'minutes', 'deliberation', 2, 11, 0, 10),
+  ('aaaa', 3, 'vote_result', 'deliberation', 12, 12, 0, 1),
+  ('bbbb', 1, 'minutes', 'deliberation', 1, 28, 0, 28),
+  ('bbbb', 2, 'minutes', 'deliberation', 29, 30, 0, 2),
+  ('cccc', 1, 'budget', 'money', 1, 200, 1, 200);
 INSERT INTO register VALUES
   (261, 'Zürich', 'ZH', 'configured', 'https://www.stadt-zuerich.ch', 'custom', 1, '2026-09-30',
    'reviewer', NULL, NULL),
@@ -158,19 +158,19 @@ impl Drop for Fixture {
 }
 
 async fn fixture(with_usage: bool) -> Fixture {
-    build(with_usage, false, false).await
+    build(with_usage, false, false, false).await
 }
 
 /// The fixture with a full-text index attached.
 async fn fulltext_fixture() -> Fixture {
-    build(false, false, true).await
+    build(false, false, false, true).await
 }
 
 /// The front end's page shell as the build writes it, reduced to what the server touches.
 const SHELL: &str = "<!doctype html><html lang=\"de\"><head><meta charset=\"utf-8\"></head>\
 <body data-sveltekit-preload-data=\"hover\"><div style=\"display: contents\"></div></body></html>";
 
-async fn build(with_usage: bool, indexing: bool, fulltext: bool) -> Fixture {
+async fn build(with_usage: bool, indexing: bool, index_communes: bool, fulltext: bool) -> Fixture {
     let database = temp_path("serving.db");
     create(&database, &[SERVING, ROWS, TITLES]).await;
     let index = temp_path("fulltext.db");
@@ -201,7 +201,12 @@ async fn build(with_usage: bool, indexing: bool, fulltext: bool) -> Fixture {
         db: pool,
         fulltext,
         usage,
-        site: Site::new("https://example.test", indexing, &static_dir),
+        site: Site::new(
+            "https://example.test",
+            indexing,
+            index_communes,
+            &static_dir,
+        ),
     };
     let router = app(state, &static_dir, &["localhost".to_string()]);
     Fixture {
@@ -313,13 +318,14 @@ async fn a_commune_has_its_register_entry_and_access_observations() {
         ]
     );
     assert_eq!(zh["vendor"], "custom");
-    // per year and family, newest year first; a document without a year is not counted
+    // per year and family, newest year first; a document without a year is not counted. aaaa
+    // opens with its agenda, so it counts as a proposals document, and its pages split by section
     assert_eq!(
         zh["holdings"],
         json!([
-            {"year": 2024, "family": "deliberation", "documents": 1},
-            {"year": 2024, "family": "proposals", "documents": 1},
-            {"year": 2023, "family": "money", "documents": 1}
+            {"year": 2024, "family": "deliberation", "documents": 1, "pages": 11, "first_part_documents": 0},
+            {"year": 2024, "family": "proposals", "documents": 1, "pages": 1, "first_part_documents": 1},
+            {"year": 2023, "family": "money", "documents": 1, "pages": 200, "first_part_documents": 1}
         ])
     );
     assert_eq!(zh["documents"], 4);
@@ -432,6 +438,11 @@ async fn each_facet_is_counted_without_its_own_filter() {
     assert_eq!(page["facets"]["bodies"][0]["value"], "executive");
     let (_, page) = get(&f.router, "/api/documents?family=deliberation").await;
     assert_eq!(shas(&page), ["bbbb", "aaaa"]);
+    // by the first section only: aaaa opens with its agenda, a proposals section
+    let (_, page) = get(&f.router, "/api/documents?first_family=deliberation").await;
+    assert_eq!(shas(&page), ["bbbb"]);
+    let (_, page) = get(&f.router, "/api/documents?first_family=proposals").await;
+    assert_eq!(shas(&page), ["aaaa"]);
     let (_, page) = get(&f.router, "/api/documents?commune=5938").await;
     assert_eq!(shas(&page), ["bbbb", "cccc"]);
     let (_, page) = get(&f.router, "/api/documents?family=&body=%20").await;
@@ -808,7 +819,7 @@ async fn mcp_lists_the_tools_and_answers_a_search() {
     let (status, _, body) = send(&f.router, post(init)).await;
     assert_eq!(status, StatusCode::OK);
     let body: Value = serde_json::from_slice(&body).unwrap();
-    assert_eq!(body["result"]["serverInfo"]["name"], "opencommune");
+    assert_eq!(body["result"]["serverInfo"]["name"], "tractanda");
     let (_, _, body) = send(
         &f.router,
         post(json!({"jsonrpc": "2.0", "id": 2, "method": "tools/list"})),
@@ -847,7 +858,15 @@ async fn mcp_lists_the_tools_and_answers_a_search() {
     assert_eq!(
         parameters,
         [
-            "body", "commune", "family", "limit", "offset", "q", "section", "year"
+            "body",
+            "commune",
+            "family",
+            "first_family",
+            "limit",
+            "offset",
+            "q",
+            "section",
+            "year"
         ]
     );
 
@@ -915,12 +934,18 @@ async fn commune_pages_carry_their_facts_for_crawlers() {
     assert_eq!(status, StatusCode::OK);
     assert_eq!(headers["x-robots-tag"], "noindex, nofollow"); // indexing is off by default
     assert!(html.starts_with("<!doctype html><html lang=\"fr\">"));
-    assert!(html.contains("<title>Zürich — OpenCommune</title>"));
+    assert!(html.contains("<title>Zürich — Tractanda</title>"));
     assert!(
         html.contains("<link rel=\"canonical\" href=\"https://example.test/fr/gemeinden/261\">")
     );
     assert!(html.contains("hreflang=\"de\" href=\"https://example.test/de/gemeinden/261\""));
     assert!(html.contains("\"@type\":\"AdministrativeArea\""));
+    // link previews in the page's language
+    assert!(html.contains("<meta property=\"og:title\" content=\"Zürich — Tractanda\">"));
+    assert!(html.contains("<meta property=\"og:locale\" content=\"fr_CH\">"));
+    assert!(html.contains("<meta property=\"og:locale:alternate\" content=\"de_CH\">"));
+    // commune pages are not indexed until SEARCH_INDEX_COMMUNES is set
+    assert!(html.contains("<meta name=\"robots\" content=\"noindex\">"));
     // the fact sheet opens the body: counts, years and the newest documents
     let facts = html.split("<main id=\"oc-facts\">").nth(1).unwrap();
     assert!(html.contains("data-sveltekit-preload-data=\"hover\"><main id=\"oc-facts\">"));
@@ -956,11 +981,34 @@ async fn start_about_privacy_and_search_pages() {
     assert!(!html.contains("/it/gemeinden/4001")); // no documents
     let (status, _, html) = page(&f.router, "/de/ueber-uns").await;
     assert_eq!(status, StatusCode::OK);
-    assert!(html.contains("<h1>Über OpenCommune</h1>"));
+    assert!(html.contains("<h1>Über Tractanda</h1>"));
     let (status, _, html) = page(&f.router, "/fr/datenschutz").await;
     assert_eq!(status, StatusCode::OK);
     assert!(html.contains("<h1>Protection des données</h1>"));
     let (_, _, html) = page(&f.router, "/de/suche").await;
+    assert!(html.contains("<meta name=\"robots\" content=\"noindex\">"));
+    for (uri, heading) in [
+        ("/fr/api", "<h1>API et serveur MCP</h1>"),
+        ("/it/lizenzen", "<h1>Licenze e ringraziamenti</h1>"),
+    ] {
+        let (status, _, html) = page(&f.router, uri).await;
+        assert_eq!(status, StatusCode::OK, "{uri}");
+        assert!(html.contains(heading), "{uri}");
+        assert!(html.contains(&format!(
+            "<link rel=\"canonical\" href=\"https://example.test{uri}\">"
+        )));
+        assert!(!html.contains("<meta name=\"robots\""), "{uri}");
+    }
+    assert!(
+        page(&f.router, "/it/api")
+            .await
+            .2
+            .starts_with("<!doctype html><html lang=\"it\">")
+    );
+    // any other path under a language: the front end's error page in that language, status 404
+    let (status, _, html) = page(&f.router, "/fr/nexiste/pas").await;
+    assert_eq!(status, StatusCode::NOT_FOUND);
+    assert!(html.starts_with("<!doctype html><html lang=\"fr\">"));
     assert!(html.contains("<meta name=\"robots\" content=\"noindex\">"));
     let request = Request::get("/").body(Body::empty()).unwrap();
     let (status, headers, _) = send(&f.router, request).await;
@@ -979,25 +1027,24 @@ async fn robots_sitemap_and_llms_txt() {
             .unwrap()
             .starts_with("text/plain")
     );
-    // training crawlers read nothing, everyone else reads the pages but not the API
-    assert!(robots.contains("User-agent: GPTBot\nUser-agent: ClaudeBot\n"));
-    assert!(robots.contains("Bytespider\nUser-agent: cohere-ai\nDisallow: /\n"));
-    assert!(robots.contains("User-agent: *\nDisallow: /api/\n"));
-    assert!(!robots.contains("OAI-SearchBot") && !robots.contains("Claude-SearchBot"));
+    // every crawler reads the pages, none the API, the MCP server, the originals or searches
+    assert!(
+        robots.contains("User-agent: *\nDisallow: /api/\nDisallow: /mcp\nDisallow: /original/\n")
+    );
+    assert!(robots.contains("Disallow: /it/suche\nAllow: /\n"));
+    assert_eq!(robots.matches("User-agent:").count(), 1);
+    assert!(robots.contains("# https://huggingface.co/datasets/davidrzs/tractanda\n"));
     assert!(
         !robots.contains("Sitemap:"),
         "no sitemap while indexing is off"
     );
     let (_, _, xml) = page(&f.router, "/sitemap.xml").await;
-    for id in [261, 5938, 4001] {
-        assert!(xml.contains(&format!(
-            "<loc>https://example.test/de/gemeinden/{id}</loc>"
-        )));
-    }
-    assert!(!xml.contains("/gemeinden/4176")); // only in the register
+    assert!(!xml.contains("/gemeinden/")); // not until SEARCH_INDEX_COMMUNES is set
     assert!(!xml.contains("entscheide"));
     assert!(xml.contains("<loc>https://example.test/fr</loc>"));
     assert!(xml.contains("<loc>https://example.test/it/datenschutz</loc>"));
+    assert!(xml.contains("<loc>https://example.test/de/api</loc>"));
+    assert!(xml.contains("<loc>https://example.test/fr/lizenzen</loc>"));
     let (status, headers, llms) = page(&f.router, "/llms.txt").await;
     assert_eq!(status, StatusCode::OK);
     assert!(
@@ -1006,18 +1053,29 @@ async fn robots_sitemap_and_llms_txt() {
             .unwrap()
             .starts_with("text/markdown")
     );
-    assert!(llms.starts_with("# OpenCommune\n\n> Open archive"));
+    assert!(llms.starts_with("# Tractanda\n\n> Open archive"));
     assert!(llms.contains("The archive lists 5 documents from 2 communes, each classified"));
     assert!(llms.contains("[MCP server](https://example.test/mcp)"));
     assert!(llms.contains("`search_documents`"));
     assert!(!llms.contains("search_text")); // no index, no full-text search
     assert!(!llms.contains("decisions`") && !llms.contains("huggingface"));
 
-    let indexed = build(false, true, false).await;
-    let (_, headers, _) = page(&indexed.router, "/de/gemeinden/261").await;
+    let indexed = build(false, true, false, false).await;
+    let (_, headers, _) = page(&indexed.router, "/de").await;
     assert!(headers.get("x-robots-tag").is_none());
     let (_, _, robots) = page(&indexed.router, "/robots.txt").await;
     assert!(robots.ends_with("Sitemap: https://example.test/sitemap.xml\n"));
+    // with SEARCH_INDEX_COMMUNES the commune pages may be indexed and join the sitemap
+    let communes = build(false, true, true, false).await;
+    let (_, _, html) = page(&communes.router, "/de/gemeinden/261").await;
+    assert!(!html.contains("<meta name=\"robots\""));
+    let (_, _, xml) = page(&communes.router, "/sitemap.xml").await;
+    for id in [261, 5938, 4001] {
+        assert!(xml.contains(&format!(
+            "<loc>https://example.test/de/gemeinden/{id}</loc>"
+        )));
+    }
+    assert!(!xml.contains("/gemeinden/4176")); // only in the register
 }
 
 #[tokio::test]
@@ -1077,7 +1135,15 @@ async fn openapi_describes_every_route_and_the_fields_the_api_sends() {
     assert_eq!(
         parameters,
         [
-            "commune", "section", "family", "body", "year", "q", "offset", "limit"
+            "commune",
+            "section",
+            "family",
+            "first_family",
+            "body",
+            "year",
+            "q",
+            "offset",
+            "limit"
         ]
     );
 }

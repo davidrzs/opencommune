@@ -45,7 +45,10 @@ pub async fn detail(pool: &SqlitePool, bfs_id: i64) -> sqlx::Result<Option<Commu
     .fetch_all(pool)
     .await?;
     commune.holdings = sqlx::query_as(
-        "SELECT d.year, s.family, count(DISTINCT d.sha256) AS documents FROM documents d \
+        "SELECT d.year, s.family, count(DISTINCT d.sha256) AS documents, \
+         sum(s.pages) AS pages, \
+         count(DISTINCT CASE WHEN s.position = 1 THEN d.sha256 END) AS first_part_documents \
+         FROM documents d \
          JOIN sections s ON s.sha256 = d.sha256 \
          JOIN document_communes dc ON dc.sha256 = d.sha256 \
          WHERE dc.bfs_id = ? AND d.year IS NOT NULL \

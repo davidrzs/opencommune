@@ -37,6 +37,10 @@ pub struct Search {
     /// with at least one section of it.
     #[serde(default)]
     pub family: Option<String>,
+    /// A section family: documents whose first section is of it. A document has one first section,
+    /// so these counts add up across the families to all documents.
+    #[serde(default)]
+    pub first_family: Option<String>,
     /// The kind of body behind the document. One of parliament, citizens_assembly, executive,
     /// commission, commune, other_public_body, private, unknown.
     #[serde(default)]
@@ -67,6 +71,7 @@ impl Default for Search {
             commune: None,
             section: None,
             family: None,
+            first_family: None,
             body: None,
             year: None,
             q: None,
@@ -90,9 +95,15 @@ impl Search {
 
     /// A first page with a query or a filter: a search in the usage statistics.
     pub fn is_search(&self) -> bool {
-        let text_set = [&self.section, &self.family, &self.body, &self.q]
-            .into_iter()
-            .any(|v| text(v).is_some());
+        let text_set = [
+            &self.section,
+            &self.family,
+            &self.first_family,
+            &self.body,
+            &self.q,
+        ]
+        .into_iter()
+        .any(|v| text(v).is_some());
         self.offset == 0 && (text_set || self.commune.is_some() || self.year.is_some())
     }
 }
@@ -148,6 +159,11 @@ fn push_filters(qb: &mut QueryBuilder<Sqlite>, s: &Search, counting: Option<Face
     }
     if let Some(family) = text(&s.family) {
         qb.push(" AND d.sha256 IN (SELECT sha256 FROM sections WHERE family = ")
+            .push_bind(family.to_string())
+            .push(")");
+    }
+    if let Some(family) = text(&s.first_family) {
+        qb.push(" AND d.sha256 IN (SELECT sha256 FROM sections WHERE position = 1 AND family = ")
             .push_bind(family.to_string())
             .push(")");
     }

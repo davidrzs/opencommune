@@ -3,7 +3,7 @@ name = "opencommune-server"
 version = "0.1.0"
 edition = "2024"
 license = "MIT"
-description = "Web server for OpenCommune: JSON API, MCP and the static front end"
+description = "Web server for Tractanda: JSON API, MCP and the static front end"
 publish = false
 
 [dependencies]

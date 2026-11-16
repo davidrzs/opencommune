@@ -46,13 +46,20 @@ pub struct CommuneDetail {
     pub holdings: Vec<Holding>,
 }
 
-/// How many of a commune's documents of a year have a section of a family.
+/// A commune's documents of a year with a section of a family. `pages` and
+/// `first_part_documents` add up across the families of a year without counting a page or a
+/// document twice; `documents` counts a document once for each family it has a section of.
 #[derive(FromRow, Serialize, JsonSchema)]
 #[schemars(crate = "rmcp::schemars")]
 pub struct Holding {
     pub year: i64,
     pub family: String,
+    /// Documents with at least one section of the family.
     pub documents: i64,
+    /// Pages of the family's sections; a page two sections share counts for the first.
+    pub pages: i64,
+    /// Documents whose first section is of the family.
+    pub first_part_documents: i64,
 }
 
 /// A commune named by a document or a page.

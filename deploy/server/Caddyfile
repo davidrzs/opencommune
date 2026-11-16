@@ -1,4 +1,9 @@
-opencommune.ch, www.opencommune.ch {
+www.tractanda.ch {
 	encode zstd gzip
 	reverse_proxy 127.0.0.1:8000
+}
+
+# The bare name and the former names lead to the same address.
+tractanda.ch, opencommune.ch, www.opencommune.ch {
+	redir https://www.tractanda.ch{uri} 308
 }

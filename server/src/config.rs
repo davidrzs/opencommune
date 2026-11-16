@@ -25,6 +25,9 @@ pub struct Config {
     pub public_url: String,
     /// `SEARCH_INDEXING`: let search engines index the pages; off, every response says `noindex`.
     pub search_indexing: bool,
+    /// `SEARCH_INDEX_COMMUNES`: let them index the commune pages too; off, those pages say
+    /// `noindex` and stay out of the sitemap.
+    pub search_index_communes: bool,
 }
 
 impl Config {
@@ -61,6 +64,7 @@ impl Config {
                 .collect(),
             public_url: var("PUBLIC_URL").unwrap_or_else(|| format!("http://{bind}")),
             search_indexing: flag("SEARCH_INDEXING", false)?,
+            search_index_communes: flag("SEARCH_INDEX_COMMUNES", false)?,
         })
     }
 }

@@ -11,31 +11,17 @@ use crate::db::pages;
 use crate::error::ApiError;
 use crate::site::{Lang, Page, date, escape};
 
-/// Crawlers that collect training data. They may read nothing; search engines and the assistants'
-/// search and on-request fetchers may read the pages.
-const TRAINING_CRAWLERS: [&str; 9] = [
-    "GPTBot",
-    "ClaudeBot",
-    "anthropic-ai",
-    "CCBot",
-    "Google-Extended",
-    "Applebot-Extended",
-    "Meta-ExternalAgent",
-    "Bytespider",
-    "cohere-ai",
-];
-
-const SOURCE: &str = "https://github.com/davidrzs/opencommune";
+const SOURCE: &str = "https://github.com/davidrzs/tractanda";
+const DATASET: &str = "https://huggingface.co/datasets/davidrzs/tractanda";
 
 pub async fn robots(State(state): State<AppState>) -> Response {
-    let mut body = String::from(
-        "# Search engines and AI search assistants may read the pages; crawlers that collect\n\
-         # training data may not. The API and the MCP server are for direct use.\n",
+    let mut body = format!(
+        "# Every crawler may read the pages: search engines, AI assistants and the crawlers that\n\
+         # collect training data alike. The API, the MCP server and the links to the originals are\n\
+         # for direct use, and search results are not pages. The whole archive, as open data:\n\
+         # {DATASET}\n\
+         User-agent: *\n"
     );
-    for bot in TRAINING_CRAWLERS {
-        body.push_str(&format!("User-agent: {bot}\n"));
-    }
-    body.push_str("Disallow: /\n\nUser-agent: *\n");
     for path in ["/api/", "/mcp", "/original/"] {
         body.push_str(&format!("Disallow: {path}\n"));
     }
@@ -52,16 +38,17 @@ pub async fn robots(State(state): State<AppState>) -> Response {
     text("text/plain; charset=utf-8", body)
 }
 
-/// Every page in every language: the start, about and privacy pages and every commune. One file
-/// holds at most 50,000 addresses; past that the sitemap needs an index.
+/// Every page in every language: the start, about, privacy, API and licences pages, and every
+/// commune once their pages may be indexed. One file holds at most 50,000 addresses; past that the
+/// sitemap needs an index.
 pub async fn sitemap(State(state): State<AppState>) -> Result<Response, ApiError> {
-    let communes = pages::sitemap(&state.db).await?;
-    let mut paths = vec![
-        String::new(),
-        "/ueber-uns".to_string(),
-        "/datenschutz".to_string(),
-    ];
-    paths.extend(communes.iter().map(|id| format!("/gemeinden/{id}")));
+    let mut paths: Vec<String> = ["", "/ueber-uns", "/datenschutz", "/api", "/lizenzen"]
+        .map(String::from)
+        .to_vec();
+    if state.site.index_communes {
+        let communes = pages::sitemap(&state.db).await?;
+        paths.extend(communes.iter().map(|id| format!("/gemeinden/{id}")));
+    }
     let mut xml = String::from(
         "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n\
          <urlset xmlns=\"http://www.sitemaps.org/schemas/sitemap/0.9\">\n",
@@ -89,12 +76,12 @@ pub async fn llms(State(state): State<AppState>) -> Result<Response, ApiError> {
         ("", String::new())
     };
     let body = format!(
-        "# OpenCommune\n\n\
+        "# Tractanda\n\n\
          > Open archive of the documents Swiss municipalities publish on their websites: minutes, \
          decisions, budgets, accounts, vote results and other papers of communal assemblies, \
          parliaments and councils. Each file is listed once, with its title and a link to the \
          original on the commune's website. Free to use under CC0 1.0; a citation \
-         (\"OpenCommune, {base}\") is appreciated.\n\n\
+         (\"Tractanda, {base}\") is appreciated.\n\n\
          The archive lists {} documents from {} communes, each classified by a language model: \
          its title and body as printed, the kind of body, its date and years, its languages and \
          its sections (minutes, decisions, vote results, budget, accounts and others) with their \
@@ -165,7 +152,7 @@ pub async fn home(state: AppState, lang: Lang) -> Result<Response, ApiError> {
         ],
     );
     let mut facts = format!(
-        "<h1>OpenCommune</h1><p>{}</p><p>{}</p><h2>{}</h2><ul>",
+        "<h1>Tractanda</h1><p>{}</p><p>{}</p><h2>{}</h2><ul>",
         escape(w.site),
         escape(&totals),
         escape(w.with_documents)
@@ -187,12 +174,12 @@ pub async fn home(state: AppState, lang: Lang) -> Result<Response, ApiError> {
     let page = Page {
         lang,
         path: String::new(),
-        title: format!("OpenCommune — {}", first_clause(w.site)),
+        title: format!("Tractanda — {}", first_clause(w.site)),
         description: w.site.to_string(),
         json_ld: Some(json!({
             "@context": "https://schema.org",
             "@type": "Dataset",
-            "name": "OpenCommune",
+            "name": "Tractanda",
             "description": w.site,
             "url": state.site.url(lang, ""),
             "license": "https://creativecommons.org/publicdomain/zero/1.0/",
@@ -200,7 +187,14 @@ pub async fn home(state: AppState, lang: Lang) -> Result<Response, ApiError> {
             "inLanguage": ["de", "fr", "it"],
             "spatialCoverage": {"@type": "Place", "name": "Switzerland"},
             "creator": {"@type": "Person", "name": "David Zollikofer"},
-            "sameAs": [SOURCE],
+            "sameAs": [SOURCE, DATASET],
+            "distribution": [
+                {
+                    "@type": "DataDownload",
+                    "encodingFormat": "application/json",
+                    "contentUrl": format!("{}/api/documents", state.site.public_url),
+                },
+            ],
         })),
         facts,
         noindex: false,
@@ -279,12 +273,12 @@ pub async fn commune(state: AppState, lang: Lang, id: String) -> Result<Response
     }
     let page = Page {
         lang,
-        title: format!("{} — OpenCommune", c.name),
+        title: format!("{} — Tractanda", c.name),
         description: line,
         path,
         json_ld: Some(place),
         facts,
-        noindex: false,
+        noindex: !state.site.index_communes,
     };
     Ok(html(&state, StatusCode::OK, &page).await)
 }
@@ -294,7 +288,7 @@ pub async fn about(state: AppState, lang: Lang) -> Response {
     let page = Page {
         lang,
         path: "/ueber-uns".to_string(),
-        title: format!("{} — OpenCommune", w.about),
+        title: format!("{} — Tractanda", w.about),
         description: w.about_text.to_string(),
         json_ld: None,
         facts: format!(
@@ -313,7 +307,7 @@ pub async fn privacy(state: AppState, lang: Lang) -> Response {
     let page = Page {
         lang,
         path: "/datenschutz".to_string(),
-        title: format!("{} — OpenCommune", w.privacy),
+        title: format!("{} — Tractanda", w.privacy),
         description: w.privacy_text.to_string(),
         json_ld: None,
         facts: format!(
@@ -326,13 +320,57 @@ pub async fn privacy(state: AppState, lang: Lang) -> Response {
     html(&state, StatusCode::OK, &page).await
 }
 
+pub async fn api(state: AppState, lang: Lang) -> Response {
+    let w = lang.words();
+    let base = &state.site.public_url;
+    let page = Page {
+        lang,
+        path: "/api".to_string(),
+        title: format!("{} — Tractanda", w.api),
+        description: w.api_text.to_string(),
+        json_ld: None,
+        facts: format!(
+            "<h1>{}</h1><p>{}</p><ul><li><a href=\"{base}/llms.txt\">llms.txt</a></li>\
+             <li><a href=\"{base}/api/openapi.json\">OpenAPI</a></li><li>MCP: {base}/mcp</li></ul>",
+            escape(w.api),
+            escape(w.api_text),
+        ),
+        noindex: false,
+    };
+    html(&state, StatusCode::OK, &page).await
+}
+
+pub async fn licences(state: AppState, lang: Lang) -> Response {
+    let w = lang.words();
+    let page = Page {
+        lang,
+        path: "/lizenzen".to_string(),
+        title: format!("{} — Tractanda", w.licences),
+        description: w.licences_text.to_string(),
+        json_ld: None,
+        facts: format!(
+            "<h1>{}</h1><p>{}</p><p><a href=\"{SOURCE}\">GitHub</a> · \
+             <a href=\"{DATASET}\">Hugging Face</a></p>",
+            escape(w.licences),
+            escape(w.licences_text),
+        ),
+        noindex: false,
+    };
+    html(&state, StatusCode::OK, &page).await
+}
+
+/// A path under a language that is no page: the front end shows its error page, with status 404.
+pub async fn missing(state: AppState, lang: Lang, rest: String) -> Response {
+    not_found(&state, lang, format!("/{rest}")).await
+}
+
 /// Search results are never indexed: the page carries only its title.
 pub async fn search(state: AppState, lang: Lang) -> Response {
     let w = lang.words();
     let page = Page {
         lang,
         path: "/suche".to_string(),
-        title: format!("{} — OpenCommune", w.search),
+        title: format!("{} — Tractanda", w.search),
         description: w.site.to_string(),
         json_ld: None,
         facts: format!("<h1>{}</h1>", escape(w.search)),
@@ -345,7 +383,7 @@ async fn not_found(state: &AppState, lang: Lang, path: String) -> Response {
     let page = Page {
         lang,
         path,
-        title: "OpenCommune".to_string(),
+        title: "Tractanda".to_string(),
         description: lang.words().site.to_string(),
         json_ld: None,
         facts: String::new(),

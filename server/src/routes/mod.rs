@@ -57,6 +57,20 @@ pub fn router() -> Router<AppState> {
             .route(
                 &format!("{base}/suche"),
                 get(move |State(s): State<AppState>| pages::search(s, lang)),
+            )
+            .route(
+                &format!("{base}/api"),
+                get(move |State(s): State<AppState>| pages::api(s, lang)),
+            )
+            .route(
+                &format!("{base}/lizenzen"),
+                get(move |State(s): State<AppState>| pages::licences(s, lang)),
+            )
+            .route(
+                &format!("{base}/{{*rest}}"),
+                get(move |State(s): State<AppState>, Path(rest): Path<String>| {
+                    pages::missing(s, lang, rest)
+                }),
             );
     }
     router

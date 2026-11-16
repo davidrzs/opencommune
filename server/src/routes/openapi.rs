@@ -126,10 +126,10 @@ pub fn build(public_url: &str) -> Value {
     json!({
         "openapi": "3.1.0",
         "info": {
-            "title": "OpenCommune API",
+            "title": "Tractanda API",
             "version": env!("CARGO_PKG_VERSION"),
             "description": format!(
-                "Read-only JSON API of OpenCommune, the open archive of the documents Swiss \
+                "Read-only JSON API of Tractanda, the open archive of the documents Swiss \
                  communes publish on their websites. No key, no account. The data is free to use \
                  under CC0 1.0; a citation is appreciated.\n\n\
                  Titles, bodies, dates and sections come from an automatic classification by a \

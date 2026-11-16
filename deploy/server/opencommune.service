@@ -1,5 +1,5 @@
 [Unit]
-Description=OpenCommune web server (website, JSON API, MCP)
+Description=Tractanda web server (website, JSON API, MCP)
 After=network.target
 
 [Service]
@@ -8,10 +8,11 @@ Environment=BIND=127.0.0.1:8000
 Environment=DATABASE_PATH=/opt/opencommune/data/opencommune.db
 Environment=STATIC_DIR=/opt/opencommune/site
 Environment=USAGE_PATH=/var/lib/opencommune/usage.sqlite3
-Environment=MCP_ALLOWED_HOSTS=opencommune.ch,www.opencommune.ch,localhost,127.0.0.1
-Environment=PUBLIC_URL=https://www.opencommune.ch
-# Search engines may index the pages only once this is true.
-Environment=SEARCH_INDEXING=false
+Environment=MCP_ALLOWED_HOSTS=www.tractanda.ch,tractanda.ch,opencommune.ch,www.opencommune.ch,localhost,127.0.0.1
+Environment=PUBLIC_URL=https://www.tractanda.ch
+# Search engines may index the pages; the commune pages only once the second switch is true.
+Environment=SEARCH_INDEXING=true
+Environment=SEARCH_INDEX_COMMUNES=false
 DynamicUser=yes
 StateDirectory=opencommune
 ProtectSystem=strict

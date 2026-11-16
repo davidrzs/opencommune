@@ -55,6 +55,7 @@ async fn run() -> Result<(), Box<dyn std::error::Error>> {
     let site = Site::new(
         &config.public_url,
         config.search_indexing,
+        config.search_index_communes,
         &config.static_dir,
     );
     let state = AppState {

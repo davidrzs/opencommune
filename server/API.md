@@ -25,6 +25,7 @@ DATABASE_PATH=data/opencommune.db STATIC_DIR=frontend/build server/target/releas
 | `MCP_ALLOWED_HOSTS` | `localhost,127.0.0.1,::1` | `Host` values `/mcp` accepts; add the public domains |
 | `PUBLIC_URL` | `http://` + `BIND` | the site's address in canonical links, the sitemap and `llms.txt` |
 | `SEARCH_INDEXING` | `false` | `true`: search engines may index the pages; `false`: every response says `noindex` |
+| `SEARCH_INDEX_COMMUNES` | `false` | `true`: the commune pages may be indexed too and join the sitemap; `false`: they say `noindex` |
 | `RUST_LOG` | `info,rmcp=warn` | log filter; `debug` logs one line per request (route template only) |
 
 `DATASET_PATH` is no longer read.
@@ -65,9 +66,13 @@ holdings`.
 `[{status, checked_at, robots_url, restricted_at, source_url, stale}]`, one entry per website,
 newest check first; `source_url` is the website, never a document; an entry is `stale` when its
 `restricted_at` (or `checked_at`) is 7 days old or more, computed at request time. 404 when the
-commune is not in the `communes` table. `holdings` is `[{year, family, documents}]`: per year and
-section family, how many of the commune's documents of that year have a section of that family;
-newest year first, then family. Documents without a year are not counted.
+commune is not in the `communes` table. `holdings` is
+`[{year, family, documents, pages, first_part_documents}]`, per year and section family, newest
+year first, then family: `documents`, how many of the commune's documents of that year have a
+section of that family (a document with sections of two families counts for both); `pages`, the
+pages of those sections, a page two sections share counted for the first; `first_part_documents`,
+the documents whose first section is of the family. `pages` and `first_part_documents` add up
+across the families of a year. Documents without a year are not counted.
 
 ### `GET /api/documents`
 
@@ -76,15 +81,17 @@ Parameters, all optional; filters combine with AND, and a blank text filter is n
 1. `commune`: a BFS id; the documents the commune links (`document_communes`).
 2. `section`: documents with at least one section of this type.
 3. `family`: documents with at least one section of this family.
-4. `body`: `documents.body_kind`.
-5. `year`: `documents.year` (the year of `date`, else the one year in `years`, else of
+4. `first_family`: documents whose first section is of this family; across the families these add
+   up to all documents (the commune page's chart counts documents this way).
+5. `body`: `documents.body_kind`.
+6. `year`: `documents.year` (the year of `date`, else the one year in `years`, else of
    `listing_date`).
-6. `q`: text the title contains. From 3 characters on, the title index `documents_fts` answers:
+7. `q`: text the title contains. From 3 characters on, the title index `documents_fts` answers:
    case and accents do not matter (`zurich` finds `Zürich`, and `Gemeinderat` also finds
    `Gemeinderäte`). Shorter text is matched with `LIKE`, case-insensitive for ASCII (SQLite
    `lower`), as trigrams need 3 characters. Either way `%`, `_` and `"` are plain characters.
-7. `limit`: 0 to 100, default 20; `0` gives the total and the facets only.
-8. `offset`: 0 or more, default 0.
+8. `limit`: 0 to 100, default 20; `0` gives the total and the facets only.
+9. `offset`: 0 or more, default 0.
 
 ```json
 {"total": 0, "offset": 0, "limit": 20,
@@ -97,7 +104,7 @@ Order: `year` descending with no year last, then `date` (else `listing_date`) de
 
 `Count` is `{value, count}`: how many of the matching documents have the value. Each facet is
 counted with every filter applied except its own (`years` without `year`, `sections` without
-`section`, `bodies` without `body`; `family` and `q` apply to every facet). Values are in ascending order, years newest first; a
+`section`, `bodies` without `body`; `family`, `first_family` and `q` apply to every facet). Values are in ascending order, years newest first; a
 NULL value is `"value": null` and comes last. `sections` counts documents, not sections: a document
 with two sections of a type counts once, and a document without sections is in no entry.
 
@@ -107,7 +114,8 @@ sections[{type, family, first_page, last_page, partly_unseen}], communes[{bfs_id
 original_url`. Every document is classified; files without an answer are not in the database.
 
 1. `years` and `languages` are the comma-separated columns as lists, `[]` when NULL; a part of
-   `years` that is not an integer is left out.
+   `years` that is not an integer is left out. No `date`, `listing_date` or year is later than the
+   day the database was built: the build leaves a later one out as a misreading.
 2. `title` and `body_name` are as printed, as the classifier read them, with private names written
    as `[name]`; null when the pages show none. `personal_data` is `true` or `false`; the website
    never shows it.
@@ -248,7 +256,7 @@ linkable URL, the first by BFS id. Only absolute http(s) URLs are used; 404 when
 Streamable HTTP, stateless (no session kept), JSON responses. Tools:
 
 1. `list_communes()`: as `/api/communes`, wrapped as `{"result": [...]}`.
-2. `search_documents(commune, section, family, body, year, q, offset, limit)`: the parameters and
+2. `search_documents(commune, section, family, first_family, body, year, q, offset, limit)`: the parameters and
    the result of `/api/documents`; an offset or limit out of range is a tool error with a reason.
 3. `get_document(sha256)`: as `/api/documents/{sha256}`; `{"error": "not found"}` when unknown.
 4. `search_text(q, commune, canton, year, from, to, section, family, body, offset, limit)`: the
@@ -277,14 +285,15 @@ visitor receives the same HTML.
 2. `/{lang}/gemeinden/{bfs_id}`: the commune's number of documents, website, documents per year
    and the first page of `/api/documents?commune=<bfs_id>` (the twenty newest documents, title and
    date, linked through `/original/<sha256>?commune=<bfs_id>`) (JSON-LD `AdministrativeArea`). 404
-   when the commune is not in the `communes` table.
-3. `/{lang}/ueber-uns`, `/{lang}/datenschutz`; `/{lang}/suche` (never indexed).
-4. `/robots.txt`: crawlers that collect training data (GPTBot, ClaudeBot, CCBot, Google-Extended
-   and others) may read nothing; all others may read the pages but not `/api/`, `/mcp`,
-   `/original/` or the search. Lists the sitemap when `SEARCH_INDEXING` is on.
-5. `/sitemap.xml`: the start, about and privacy pages and every commune of the `communes` table, in
-   the three languages.
-6. `/llms.txt`: a Markdown guide for AI agents (llmstxt.org) with the current totals, the MCP
+   when the commune is not in the `communes` table; `noindex` until `SEARCH_INDEX_COMMUNES` is on.
+3. `/{lang}/ueber-uns`, `/{lang}/datenschutz`, `/{lang}/api`, `/{lang}/lizenzen`; `/{lang}/suche`
+   (never indexed). Any other path under a language: the front end's error page, status 404.
+4. Every page carries Open Graph tags for link previews (title, description, address, locale).
+5. `/robots.txt`: every crawler, training crawlers included, may read the pages, but not `/api/`,
+   `/mcp`, `/original/` or the search. Lists the sitemap when `SEARCH_INDEXING` is on.
+6. `/sitemap.xml`: the start, about, privacy, API and licences pages and, with
+   `SEARCH_INDEX_COMMUNES`, every commune of the `communes` table, in the three languages.
+7. `/llms.txt`: a Markdown guide for AI agents (llmstxt.org) with the current totals, the MCP
    address and the API.
 
 ## Tables and indexes

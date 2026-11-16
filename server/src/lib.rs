@@ -1,4 +1,4 @@
-//! OpenCommune web server: the JSON API, MCP over streamable HTTP, the static front end and the
+//! Tractanda web server: the JSON API, MCP over streamable HTTP, the static front end and the
 //! pages crawlers read, all from the serving database the Python package builds, and full-text
 //! search from its index of page text when there is one. See `API.md` and `CONVENTIONS.md`.
 

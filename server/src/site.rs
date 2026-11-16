@@ -27,6 +27,15 @@ impl Lang {
         }
     }
 
+    /// The Open Graph locale.
+    pub fn locale(self) -> &'static str {
+        match self {
+            Lang::De => "de_CH",
+            Lang::Fr => "fr_CH",
+            Lang::It => "it_CH",
+        }
+    }
+
     pub fn words(self) -> &'static Words {
         match self {
             Lang::De => &DE,
@@ -66,6 +75,10 @@ pub struct Words {
     pub privacy: &'static str,
     pub privacy_text: &'static str,
     pub search: &'static str,
+    pub api: &'static str,
+    pub api_text: &'static str,
+    pub licences: &'static str,
+    pub licences_text: &'static str,
 }
 
 const DE: Words = Words {
@@ -76,14 +89,14 @@ const DE: Words = Words {
              sind automatisch nach Titel, Gremium und Abschnitten eingeordnet; diese Einordnung \
              hat noch niemand geprüft.",
     with_documents: "Gemeinden mit Dokumenten",
-    commune_line: "{name} ({canton}): {documents} Dokumente im offenen Archiv OpenCommune.",
+    commune_line: "{name} ({canton}): {documents} Dokumente im offenen Archiv Tractanda.",
     by_year: "Dokumente nach Jahr",
     no_year: "ohne Jahr",
     untitled: "Dokument ohne Titel",
     recent: "Neueste Dokumente",
     website: "Website der Gemeinde",
-    about: "Über OpenCommune",
-    about_text: "OpenCommune sammelt die öffentlichen Dokumente der Schweizer Gemeinden von ihren \
+    about: "Über Tractanda",
+    about_text: "Tractanda sammelt die öffentlichen Dokumente der Schweizer Gemeinden von ihren \
                  Websites, ordnet sie automatisch nach Art, Gremium und Abschnitten ein und \
                  verlinkt sie auf die Originale. Die Einträge sind offene Daten (CC0).",
     privacy: "Datenschutz",
@@ -91,6 +104,12 @@ const DE: Words = Words {
                    IP-Adressen und Suchbegriffe. Das Archiv nennt keine Privatpersonen: Dokumente \
                    tragen feste Bezeichnungen, Einbürgerungsunterlagen werden nicht aufgeführt.",
     search: "Suche",
+    api: "API und MCP-Server",
+    api_text: "Das Archiv ohne Schlüssel abfragen: eine JSON-API und ein MCP-Server für \
+               KI-Assistenten, mit Volltextsuche in den Seiten der Dokumente.",
+    licences: "Lizenzen und Dank",
+    licences_text: "Die Lizenzen von Code (MIT) und Daten (CC0 1.0) und die offene Software, die \
+                    Modelle und die Daten, auf denen Tractanda aufbaut.",
 };
 
 const FR: Words = Words {
@@ -101,14 +120,14 @@ const FR: Words = Words {
              classés automatiquement par titre, organe et sections ; personne n’a encore \
              vérifié ce classement.",
     with_documents: "Communes avec des documents",
-    commune_line: "{name} ({canton}) : {documents} documents dans l’archive ouverte OpenCommune.",
+    commune_line: "{name} ({canton}) : {documents} documents dans l’archive ouverte Tractanda.",
     by_year: "Documents par année",
     no_year: "sans année",
     untitled: "Document sans titre",
     recent: "Documents récents",
     website: "Site de la commune",
-    about: "À propos d’OpenCommune",
-    about_text: "OpenCommune rassemble les documents publics des communes suisses sur leurs \
+    about: "À propos de Tractanda",
+    about_text: "Tractanda rassemble les documents publics des communes suisses sur leurs \
                  sites, les classe automatiquement par type, organe et sections et renvoie aux \
                  originaux. Les entrées sont des données ouvertes (CC0).",
     privacy: "Protection des données",
@@ -117,6 +136,12 @@ const FR: Words = Words {
                    les documents portent des intitulés fixes et les documents de naturalisation ne \
                    sont pas répertoriés.",
     search: "Recherche",
+    api: "API et serveur MCP",
+    api_text: "Interroger l’archive sans clé : une API JSON et un serveur MCP pour les \
+               assistants d’IA, avec une recherche plein texte dans les pages des documents.",
+    licences: "Licences et remerciements",
+    licences_text: "Les licences du code (MIT) et des données (CC0 1.0), et les logiciels, \
+                    modèles et données ouverts sur lesquels Tractanda s’appuie.",
 };
 
 const IT: Words = Words {
@@ -127,14 +152,14 @@ const IT: Words = Words {
              classificati automaticamente per titolo, organo e sezioni; nessuno ha ancora \
              verificato questa classificazione.",
     with_documents: "Comuni con documenti",
-    commune_line: "{name} ({canton}): {documents} documenti nell’archivio aperto OpenCommune.",
+    commune_line: "{name} ({canton}): {documents} documenti nell’archivio aperto Tractanda.",
     by_year: "Documenti per anno",
     no_year: "senza anno",
     untitled: "Documento senza titolo",
     recent: "Documenti recenti",
     website: "Sito del comune",
-    about: "Informazioni su OpenCommune",
-    about_text: "OpenCommune raccoglie i documenti pubblici dei comuni svizzeri dai loro siti, li \
+    about: "Informazioni su Tractanda",
+    about_text: "Tractanda raccoglie i documenti pubblici dei comuni svizzeri dai loro siti, li \
                  classifica automaticamente per tipo, organo e sezioni e rimanda agli originali. \
                  Le voci sono dati aperti (CC0).",
     privacy: "Protezione dei dati",
@@ -143,6 +168,12 @@ const IT: Words = Words {
                    documenti portano denominazioni fisse e i documenti di naturalizzazione non \
                    sono elencati.",
     search: "Ricerca",
+    api: "API e server MCP",
+    api_text: "Interrogare l’archivio senza chiave: un’API JSON e un server MCP per gli \
+               assistenti IA, con ricerca a testo integrale nelle pagine dei documenti.",
+    licences: "Licenze e ringraziamenti",
+    licences_text: "Le licenze del codice (MIT) e dei dati (CC0 1.0), e il software, i modelli e \
+                    i dati aperti su cui si basa Tractanda.",
 };
 
 /// One page as the server sends it: what goes into `<head>` and the fact sheet.
@@ -163,20 +194,22 @@ pub struct Page {
 /// The page shell when the front end is not built: the pages carry only their facts.
 const NO_SHELL: &str = "<!doctype html><html lang=\"de\"><head></head><body></body></html>";
 
-/// What the page renderer needs: the public address, whether search engines may index the site,
-/// and where the front end's `index.html` is.
+/// What the page renderer needs: the public address, whether search engines may index the site
+/// and its commune pages, and where the front end's `index.html` is.
 #[derive(Clone)]
 pub struct Site {
     pub public_url: String,
     pub indexing: bool,
+    pub index_communes: bool,
     shell: Arc<Path>,
 }
 
 impl Site {
-    pub fn new(public_url: &str, indexing: bool, static_dir: &Path) -> Self {
+    pub fn new(public_url: &str, indexing: bool, index_communes: bool, static_dir: &Path) -> Self {
         Site {
             public_url: public_url.trim_end_matches('/').to_string(),
             indexing,
+            index_communes,
             shell: static_dir.join("index.html").into(),
         }
     }
@@ -195,13 +228,36 @@ impl Site {
 
     /// `shell` with the page's head tags and fact sheet.
     pub fn render(&self, shell: &str, page: &Page) -> String {
+        let url = self.url(page.lang, &page.path);
         let mut head = format!(
             "<title>{}</title>\n<meta name=\"description\" content=\"{}\">\n\
              <link rel=\"canonical\" href=\"{}\">\n",
             escape(&page.title),
             escape(&page.description),
-            escape(&self.url(page.lang, &page.path)),
+            escape(&url),
         );
+        // link previews (Open Graph), in the page's language
+        head.push_str(&format!(
+            "<meta property=\"og:type\" content=\"website\">\n\
+             <meta property=\"og:site_name\" content=\"Tractanda\">\n\
+             <meta property=\"og:title\" content=\"{}\">\n\
+             <meta property=\"og:description\" content=\"{}\">\n\
+             <meta property=\"og:url\" content=\"{}\">\n\
+             <meta property=\"og:image\" content=\"{}/icon-512.png\">\n\
+             <meta property=\"og:locale\" content=\"{}\">\n\
+             <meta name=\"twitter:card\" content=\"summary\">\n",
+            escape(&page.title),
+            escape(&page.description),
+            escape(&url),
+            escape(&self.public_url),
+            page.lang.locale(),
+        ));
+        for lang in Lang::ALL.into_iter().filter(|l| *l != page.lang) {
+            head.push_str(&format!(
+                "<meta property=\"og:locale:alternate\" content=\"{}\">\n",
+                lang.locale()
+            ));
+        }
         for lang in Lang::ALL {
             head.push_str(&format!(
                 "<link rel=\"alternate\" hreflang=\"{}\" href=\"{}\">\n",
