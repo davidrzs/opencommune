@@ -2,7 +2,10 @@
   import type { Snippet } from 'svelte';
   import { goto } from '$app/navigation';
   import { page } from '$app/state';
+  import ChevronDown from '@lucide/svelte/icons/chevron-down';
+  import Search from '@lucide/svelte/icons/search';
   import DocumentRow from './DocumentRow.svelte';
+  import { searchCopy } from './copy/search';
   import { FILTERS, TEXT_CAP, filtered, type Filters } from './documents';
   import { copy, fmt, href, label, type Lang } from './i18n';
   import {
@@ -16,7 +19,8 @@
   // API query the page loaded the list with, from `endpoint`. Results of /api/pages (a full-text
   // search) show each file's matching pages and offer the canton and commune filters.
   // `placeholder`, `button` and `help`: the text field's placeholder, its button and a help line
-  // under it. `communes`: every commune, to name the commune filter.
+  // under it. `communes`: every commune, to name the commune filter. Across every commune (the
+  // search page) the filters stand in a column left of the list; on a commune page above it.
   let {
     results,
     filters,
@@ -43,8 +47,12 @@
     communes?: Commune[];
   } = $props();
   let t = $derived(copy[lang]);
+  let more = $derived(searchCopy[lang]);
   let form: HTMLFormElement;
   let text = $derived('capped' in results ? results : null);
+  let wide = $derived(commune === undefined);
+  // the filter column on a phone: closed until asked for
+  let open = $state(false);
 
   // One selector per facet. Values in the vocabulary's order, else in the API's order (years
   // newest first, cantons by code, communes with the most files first); a value without a filter
@@ -147,225 +155,243 @@
     const search = String(query);
     return search ? `?${search}` : page.url.pathname;
   }
+  let set = $derived(selectors.filter((s) => filters[s.key]).length);
+  // "Page 2 of 5"
+  let pageOf = $derived(
+    more.pageOf
+      .replace('{n}', fmt(Math.floor(filters.offset / results.limit) + 1, lang))
+      .replace('{total}', fmt(Math.max(1, Math.ceil(results.total / results.limit)), lang))
+  );
+  const field =
+    'w-full rounded-md border border-input bg-white px-2 text-sm shadow-xs outline-none focus-visible:border-zinc-900 focus-visible:ring-3 focus-visible:ring-primary/15';
+  const pageButton =
+    'inline-flex h-9 items-center rounded-md border border-border bg-white px-3 font-medium shadow-xs hover:bg-muted';
+  const chip =
+    'inline-flex items-center gap-1.5 rounded-md bg-muted px-2 py-1 text-xs text-zinc-700';
+  const remove = 'rounded px-1 text-sm leading-none text-muted-foreground hover:text-foreground';
 </script>
 
-<p class="small-note list-note">
-  {t.classificationNote}
-  <a href={`${href('/ueber-uns', lang)}#klassifikation`}>{t.classificationLink}</a>
-</p>
-<form class="document-filters" method="GET" bind:this={form} onsubmit={submit}>
-  <div class="search-field">
-    <input
-      name="q"
-      aria-label={placeholder ?? t.docSearch}
-      placeholder={placeholder ?? t.docSearch}
-      aria-describedby={help ? 'search-help' : undefined}
-      maxlength="500"
-      value={filters.q}
-    /><button>{button ?? t.filter} ↗</button>
-  </div>
-  {#if help}<div class="search-help" id="search-help">{@render help()}</div>{/if}
-  {#if filters.family}<p class="active-filter active-family family-{filters.family}">
-      <input type="hidden" name="family" value={filters.family} /><i
-        class="swatch"
-        aria-hidden="true"
-      ></i>{t.familyLabel}
-      {label(lang, 'family', filters.family)}
-      <a href={link('family', '')} aria-label={t.removeFilter} title={t.removeFilter}>×</a>
-    </p>{/if}
-  {#if !text && commune === undefined && filters.commune}<p class="active-filter active-commune">
-      <input type="hidden" name="commune" value={filters.commune} />{t.communeFilter.replace(
-        '{name}',
-        communeName(filters.commune)
-      )}
-      <a href={link('commune', '')} aria-label={t.removeFilter} title={t.removeFilter}>×</a>
-    </p>{/if}
-  <div class="selectors">
-    {#each selectors as s (s.key)}<select
-        name={s.key}
-        aria-label={s.name}
-        value={filters[s.key]}
-        onchange={() => form.requestSubmit()}
-        ><option value="">{s.all}</option>{#each options(s.key, s.facet, s.order) as f}<option
-            value={f.value === null ? '' : String(f.value)}
-            disabled={f.value === null}
-            >{name(s.key, f.value)}{f.count === null ? '' : ` (${fmt(f.count, lang)})`}</option
-          >{/each}</select
-      >{/each}
-  </div>
-</form>
-<div class="result-count">
-  <span
-    >{fmt(results.total, lang)}
-    {results.total === 1 ? t.resultOne : t.result}</span
-  >{#if filtered(filters)}<a href={page.url.pathname}>{t.reset}</a>{/if}
-</div>
-{#if text?.capped}<p class="capped">{t.capped.replaceAll('{n}', fmt(TEXT_CAP, lang))}</p>{/if}
-{#each results.items as doc (doc.sha256)}<DocumentRow
-    {doc}
-    {lang}
-    {commune}
-    section={text ? '' : filters.section}
-    family={text ? '' : filters.family}
-    hits={'pages' in doc ? doc.pages : undefined}
-    matching={'matching_pages' in doc ? doc.matching_pages : undefined}
-  />{:else}<div class="empty-state">
-    <h2>{empty ?? t.noResults}</h2>
-    {#if filters.year}<p>{t.unknownDate}</p>{/if}{#if filtered(filters)}<a href={page.url.pathname}
-        >{t.reset}</a
-      >{/if}
-  </div>{/each}
-<nav class="pagination" aria-label={t.result}>
-  {#if filters.offset > 0}<a
-      href={link(
-        'offset',
-        filters.offset > results.limit ? String(filters.offset - results.limit) : ''
-      )}>← {t.prev}</a
-    >{/if}{#if filters.offset + results.limit < results.total}<a
-      href={link('offset', String(filters.offset + results.limit))}>{t.next} →</a
-    >{/if}
-</nav>
-<p class="as-data">
-  <span>{t.asData}</span>
-  <code>GET {endpoint}?{query}</code>
-  <a href={`${endpoint}?${query}`} target="_blank" rel="noreferrer">JSON ↗</a>
-  <a href={href('/api', lang)}>{t.apiLink}</a>
-</p>
+<div class={wide ? 'lg:grid lg:grid-cols-12 lg:gap-x-10' : ''}>
+  <form
+    class={[
+      'document-filters',
+      wide && 'lg:col-[1/-1] lg:row-[1/4] lg:grid lg:grid-cols-subgrid lg:grid-rows-subgrid'
+    ]}
+    method="GET"
+    bind:this={form}
+    onsubmit={submit}
+  >
+    <div class={wide ? 'lg:col-[1/-1] lg:row-[1]' : ''}>
+      <div class={['flex flex-col gap-2 sm:flex-row', !wide && 'max-w-2xl']}>
+        <div class="relative min-w-0 flex-1">
+          <Search
+            class={[
+              'pointer-events-none absolute top-1/2 -translate-y-1/2 text-zinc-400',
+              wide ? 'left-3.5 size-5' : 'left-3 size-4'
+            ]}
+            aria-hidden="true"
+          />
+          <input
+            name="q"
+            type="search"
+            aria-label={placeholder ?? t.docSearch}
+            placeholder={placeholder ?? t.docSearch}
+            aria-describedby={help ? 'search-help' : undefined}
+            maxlength="500"
+            value={filters.q}
+            class={[
+              'w-full min-w-0 rounded-lg border border-input bg-white pr-3 shadow-xs outline-none placeholder:text-muted-foreground focus-visible:border-zinc-900 focus-visible:ring-4 focus-visible:ring-primary/15',
+              wide ? 'h-11 pl-11 text-base' : 'h-9 pl-9 text-sm'
+            ]}
+          />
+        </div>
+        <button
+          class={[
+            'shrink-0 rounded-lg text-sm font-medium whitespace-nowrap shadow-xs outline-none focus-visible:ring-4',
+            wide
+              ? 'h-11 bg-primary px-6 text-primary-foreground hover:bg-brand-dark focus-visible:ring-primary/25'
+              : 'h-9 border border-border bg-white px-4 text-foreground hover:bg-muted focus-visible:ring-primary/15'
+          ]}>{button ?? t.filter}</button
+        >
+      </div>
+      {#if help}<div
+          class="search-help mt-2 max-w-3xl space-y-1 text-xs leading-5 text-muted-foreground"
+          id="search-help"
+        >
+          {@render help()}
+        </div>{/if}
+    </div>
 
-<style>
-  .list-note {
-    margin: 0 0 var(--space-xs);
-  }
-  .document-filters {
-    display: flex;
-    flex-direction: column;
-    gap: var(--space-md);
-    margin: var(--space-2xl) 0;
-  }
-  .search-field {
-    display: flex;
-    gap: var(--space-md);
-    align-items: center;
-  }
-  .search-field input {
-    width: 100%;
-    min-width: 0;
-    padding: var(--space-md) 0;
-    background: transparent;
-    border: 0;
-    border-bottom: var(--rule);
-    color: var(--ink);
-    font-size: var(--font-size-base);
-  }
-  .search-field button {
-    font-size: var(--font-size-md);
-    white-space: nowrap;
-  }
-  .selectors {
-    display: grid;
-    grid-template-columns: repeat(3, minmax(0, 1fr));
-    gap: var(--space-md);
-  }
-  .selectors select {
-    width: 100%;
-    min-width: 0;
-    font-size: var(--font-size-md);
-  }
-  .result-count {
-    font-size: var(--font-size-sm);
-    color: var(--muted);
-    display: flex;
-    justify-content: space-between;
-    gap: var(--space-md);
-    margin-bottom: var(--space-md);
-  }
-  .result-count a {
-    text-decoration: underline;
-  }
-  .search-help {
-    font-size: var(--font-size-sm);
-    line-height: var(--line-height-relaxed);
-    color: var(--muted);
-    max-width: var(--measure);
-  }
-  .capped {
-    font-size: var(--font-size-sm);
-    line-height: var(--line-height-relaxed);
-    color: var(--notice);
-    margin-bottom: var(--space-md);
-  }
-  .active-filter {
-    display: flex;
-    align-items: center;
-    gap: var(--space-xs);
-    font-size: var(--font-size-md);
-  }
-  .active-filter a {
-    color: var(--muted);
-    padding: 0 var(--space-2xs);
-  }
-  .active-filter a:hover {
-    color: var(--accent);
-  }
-  .swatch {
-    width: var(--legend-key);
-    height: var(--legend-key);
-    background: var(--family);
-  }
-  .as-data {
-    display: flex;
-    flex-wrap: wrap;
-    align-items: baseline;
-    gap: var(--space-xs) var(--space-lg);
-    font-size: var(--font-size-sm);
-    color: var(--muted);
-    border-top: var(--rule);
-    padding-top: var(--space-lg);
-  }
-  .as-data code {
-    font-family: var(--font-family-mono);
-    background: var(--band);
-    color: var(--ink);
-    padding: var(--space-3xs) var(--space-xs);
-    overflow-wrap: anywhere;
-  }
-  .as-data a {
-    color: var(--ink);
-    text-decoration: underline;
-    text-underline-offset: var(--underline-offset);
-  }
-  .as-data a:hover {
-    color: var(--accent);
-  }
-  .empty-state {
-    padding: var(--space-5xl) 0;
-  }
-  .empty-state h2 {
-    font-size: var(--font-size-xl);
-    font-weight: var(--weight-book);
-  }
-  .empty-state p,
-  .empty-state a {
-    font-size: var(--font-size-base);
-    margin-top: var(--space-lg);
-    display: block;
-  }
-  .pagination {
-    display: flex;
-    justify-content: flex-end;
-    gap: var(--space-3xl);
-    padding: var(--space-2xl) 0;
-    font-size: var(--font-size-base);
-  }
-  @media (max-width: 600px) {
-    .selectors {
-      grid-template-columns: minmax(0, 1fr);
-    }
-    .search-field button {
-      padding: var(--space-md) var(--space-lg);
-    }
-    .pagination {
-      padding: var(--space-lg) 0;
-    }
-  }
-</style>
+    <div class={wide ? 'mt-4 lg:col-[1/4] lg:row-[3] lg:mt-0 lg:self-start lg:pt-6' : 'mt-2'}>
+      {#if wide}<button
+          type="button"
+          class="inline-flex h-9 items-center gap-1.5 rounded-md border border-border bg-white px-3 text-sm font-medium shadow-xs hover:bg-muted lg:hidden"
+          aria-expanded={open}
+          aria-controls="document-selectors"
+          onclick={() => (open = !open)}
+          >{more.filters}{#if set}<span class="text-muted-foreground">({fmt(set, lang)})</span
+            >{/if}<ChevronDown
+            class={['size-4 text-muted-foreground transition-transform', open && 'rotate-180']}
+            aria-hidden="true"
+          /></button
+        >{/if}
+      <div
+        id="document-selectors"
+        class={wide
+          ? ['mt-3 space-y-4 lg:mt-0 lg:block', !open && 'hidden']
+          : 'grid max-w-2xl grid-cols-1 gap-2 sm:grid-cols-3'}
+        role="group"
+        aria-label={more.filters}
+      >
+        {#each selectors as s (s.key)}<div class={wide ? 'space-y-1.5' : ''}>
+            <label for="filter-{s.key}" class={wide ? 'block text-sm font-semibold' : 'sr-only'}
+              >{s.name}</label
+            ><select
+              id="filter-{s.key}"
+              name={s.key}
+              class="{field} h-9"
+              value={filters[s.key]}
+              onchange={() => form.requestSubmit()}
+              ><option value="">{s.all}</option>{#each options(s.key, s.facet, s.order) as f}<option
+                  value={f.value === null ? '' : String(f.value)}
+                  disabled={f.value === null}
+                  >{name(s.key, f.value)}{f.count === null
+                    ? ''
+                    : ` (${fmt(f.count, lang)})`}</option
+                >{/each}</select
+            >
+          </div>{/each}
+      </div>
+    </div>
+
+    <div
+      class={[
+        'flex flex-wrap items-end justify-between gap-x-6 gap-y-2 border-b border-border pb-4',
+        wide ? 'mt-6 lg:col-[1/-1] lg:row-[2]' : 'mt-4'
+      ]}
+    >
+      <div class="min-w-0">
+        <p
+          class={[
+            'result-count font-semibold tracking-tight [overflow-wrap:anywhere]',
+            wide ? 'text-xl' : 'text-base'
+          ]}
+        >
+          <span>{fmt(results.total, lang)} {results.total === 1 ? t.resultOne : t.result}</span
+          >{#if filters.q}{` ${more.about.replace('{q}', filters.q)}`}{/if}
+        </p>
+        <p class="mt-1 text-sm text-muted-foreground">
+          {#if filters.q}{`${text ? more.inText : more.inTitles} · `}{/if}{text
+            ? more.bestFirst
+            : more.newestFirst}
+        </p>
+        {#if filters.family || filters.first_family || (!text && wide && filters.commune)}<div
+            class="mt-2 flex flex-wrap gap-2"
+          >
+            {#each [['family', t.familyLabel], ['first_family', more.firstFamily]] as const as [key, name]}{#if filters[key]}<p
+                  class="active-filter active-family {chip}"
+                >
+                  <input type="hidden" name={key} value={filters[key]} /><i
+                    class="size-2 rounded-full"
+                    style:background-color="var(--family-{filters[key]})"
+                    aria-hidden="true"
+                  ></i>{name}
+                  {label(lang, 'family', filters[key])}
+                  <a
+                    class={remove}
+                    href={link(key, '')}
+                    aria-label={t.removeFilter}
+                    title={t.removeFilter}>×</a
+                  >
+                </p>{/if}{/each}
+            {#if !text && wide && filters.commune}<p class="active-filter active-commune {chip}">
+                <input
+                  type="hidden"
+                  name="commune"
+                  value={filters.commune}
+                />{t.communeFilter.replace('{name}', communeName(filters.commune))}
+                <a
+                  class={remove}
+                  href={link('commune', '')}
+                  aria-label={t.removeFilter}
+                  title={t.removeFilter}>×</a
+                >
+              </p>{/if}
+          </div>{/if}
+      </div>
+      {#if filtered(filters)}<a
+          class="text-sm text-muted-foreground underline-offset-4 hover:text-foreground hover:underline"
+          href={page.url.pathname}>{t.reset}</a
+        >{/if}
+    </div>
+  </form>
+
+  <div class={wide ? 'lg:col-[4/-1] lg:row-[3]' : ''}>
+    {#if text?.capped}<p
+        class="capped mt-4 rounded-md bg-muted px-3 py-2 text-sm leading-6 text-zinc-700"
+      >
+        {t.capped.replaceAll('{n}', fmt(TEXT_CAP, lang))}
+      </p>{/if}
+    {#each results.items as doc (doc.sha256)}<DocumentRow
+        {doc}
+        {lang}
+        {commune}
+        section={text ? '' : filters.section}
+        family={text ? '' : filters.family || filters.first_family}
+        hits={'pages' in doc ? doc.pages : undefined}
+        matching={'matching_pages' in doc ? doc.matching_pages : undefined}
+        q={filters.q}
+        fullText={!!text}
+      />{:else}<div class="empty-state py-10">
+        <h2 class="text-base font-medium">{empty ?? t.noResults}</h2>
+        {#if filters.year}<p class="mt-2 text-sm text-muted-foreground">{t.unknownDate}</p>{/if}
+        {#if filtered(filters)}<a
+            class="mt-3 inline-block text-sm text-primary underline-offset-4 hover:underline"
+            href={page.url.pathname}>{t.reset}</a
+          >{/if}
+      </div>{/each}
+    {#if filters.offset > 0 || filters.offset + results.limit < results.total}<nav
+        class="pagination mt-6 flex flex-wrap items-center gap-2 text-sm"
+        aria-label={more.pages}
+      >
+        {#if filters.offset > 0}<a
+            class={pageButton}
+            href={link(
+              'offset',
+              filters.offset > results.limit ? String(filters.offset - results.limit) : ''
+            )}>← {t.prev}</a
+          >{/if}
+        <span class="px-1 text-muted-foreground">{pageOf}</span>
+        {#if filters.offset + results.limit < results.total}<a
+            class={pageButton}
+            href={link('offset', String(filters.offset + results.limit))}>{t.next} →</a
+          >{/if}
+      </nav>{/if}
+    <p class="list-note mt-6 rounded-lg bg-zinc-50 px-4 py-3 text-sm leading-6 text-zinc-600">
+      {t.classificationNote}
+      <a
+        class="font-medium text-foreground underline underline-offset-4"
+        href={`${href('/ueber-uns', lang)}#klassifikation`}>{t.classificationLink}</a
+      >
+    </p>
+    <p
+      class="as-data mt-6 flex flex-wrap items-baseline gap-x-3 gap-y-1 border-t border-border pt-4 text-xs text-muted-foreground"
+    >
+      <span>{t.asData}</span>
+      <code
+        class="rounded bg-muted px-1.5 py-0.5 font-mono text-foreground [overflow-wrap:anywhere]"
+        >GET {endpoint}?{query}</code
+      >
+      <a
+        class="text-foreground underline underline-offset-4 hover:text-primary"
+        href={`${endpoint}?${query}`}
+        target="_blank"
+        rel="noreferrer">JSON ↗</a
+      >
+      <a
+        class="text-foreground underline underline-offset-4 hover:text-primary"
+        href={href('/api', lang)}>{t.apiLink}</a
+      >
+    </p>
+  </div>
+</div>

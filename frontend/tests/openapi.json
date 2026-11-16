@@ -1,9 +1,9 @@
 {
   "openapi": "3.1.0",
   "info": {
-    "title": "OpenCommune API",
+    "title": "Tractanda API",
     "version": "0.1.0",
-    "description": "Read-only JSON API of OpenCommune, the open archive of the documents Swiss communes publish on their websites. No key, no account. The data is free to use under CC0 1.0; a citation is appreciated.\n\nTitles, bodies, dates and sections come from an automatic classification by a language model that no person has checked yet. Private people's names appear as [name].\n\nAI agents can use the same data over MCP: `http://127.0.0.1:8013/mcp` (streamable HTTP, tools `search_documents`, `get_document`, `list_communes`, `search_text`, `read_pages`).",
+    "description": "Read-only JSON API of Tractanda, the open archive of the documents Swiss communes publish on their websites. No key, no account. The data is free to use under CC0 1.0; a citation is appreciated.\n\nTitles, bodies, dates and sections come from an automatic classification by a language model that no person has checked yet. Private people's names appear as [name].\n\nAI agents can use the same data over MCP: `http://127.0.0.1:8013/mcp` (streamable HTTP, tools `search_documents`, `get_document`, `list_communes`, `search_text`, `read_pages`).",
     "license": {
       "name": "CC0 1.0 (the data)",
       "identifier": "CC0-1.0"

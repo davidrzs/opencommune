@@ -58,8 +58,18 @@ export type CommuneDetail = {
   documents: number;
   register: RegisterEntry | null;
   access: Access[];
-  // documents with at least one section of the family, per year; newest year first
-  holdings: { year: number; family: string; documents: number }[];
+  holdings: Holding[];
+};
+// a commune's holdings per year and section family; newest year first. `documents`: documents
+// with a section of the family (a document can count for several families). `pages`: the pages of
+// the family's sections, each page counted once; `first_part_documents`: documents by their first
+// section. The last two add up across the families of a year; servers before them leave them out.
+export type Holding = {
+  year: number;
+  family: string;
+  documents: number;
+  pages?: number;
+  first_part_documents?: number;
 };
 export const normalize = (s: string) =>
   s

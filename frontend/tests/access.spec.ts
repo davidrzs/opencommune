@@ -1,6 +1,6 @@
 import { test, expect } from '@playwright/test';
 
-test('coverage counts, hatching, keyboard access and empty commune pages', async ({ page }) => {
+test('coverage counts, hatching, map captions and empty commune pages', async ({ page }) => {
   const errors: string[] = [];
   page.on('pageerror', (error) => errors.push(error.message));
   await page.goto('/de');
@@ -17,11 +17,13 @@ test('coverage counts, hatching, keyboard access and empty commune pages', async
   await expect(page.locator('.atlas-map a[href="/de/gemeinden/3"] path[fill^="url"]')).toHaveCount(
     0
   );
-  await empty.focus();
+  // the map is outside the tab order: the finder and the list reach the communes by keyboard
+  await expect(empty).toHaveAttribute('tabindex', '-1');
+  await empty.hover();
   await expect(page.locator('.map-caption')).toContainText('Sammlung teilweise eingeschränkt');
   await page.screenshot({ path: 'test-results/access-home-desktop.png', fullPage: true });
-  await page.keyboard.press('Enter');
-  await expect(page.locator('h1')).toHaveText('Aeugst am Albis.');
+  await empty.click();
+  await expect(page.locator('h1')).toHaveText('Aeugst am Albis');
   await expect(page.locator('.access-notice')).toContainText('robots.txt');
   await page.locator('.access-notice summary').click();
   await expect(page.locator('.access-notice a').last()).toHaveAttribute(
@@ -50,7 +52,7 @@ test('coverage counts, hatching, keyboard access and empty commune pages', async
 
 test('about page keeps language, explains limits and offers email contact', async ({ page }) => {
   await page.goto('/de/ueber-uns');
-  await expect(page.locator('h1')).toHaveText('Über OpenCommune');
+  await expect(page.locator('h1')).toHaveText('Über Tractanda');
   await expect(page.locator('.about-page')).toContainText('ein Projekt von David Zollikofer');
   await expect(page.locator('#klassifikation')).toContainText(
     'Wie die Dokumente eingeordnet werden'
@@ -67,7 +69,7 @@ test('about page keeps language, explains limits and offers email contact', asyn
     })
   );
   await contact.click();
-  await expect(contact).toHaveAttribute('href', /^mailto:.*subject=OpenCommune/);
+  await expect(contact).toHaveAttribute('href', /^mailto:.*subject=Tractanda/);
   await expect(page.locator('.about-page .report-address')).toBeVisible();
   for (const language of ['FR', 'IT']) {
     await page.getByRole('link', { name: language, exact: true }).click();
@@ -82,4 +84,17 @@ test('about page keeps language, explains limits and offers email contact', asyn
   await page.setViewportSize({ width: 1440, height: 1000 });
   await page.goto('/de/ueber-uns');
   await page.screenshot({ path: 'test-results/about-desktop.png', fullPage: true });
+});
+
+test('the commune finder ignores accents, umlaut spellings and punctuation', async ({ page }) => {
+  await page.goto('/de');
+  await page.getByLabel('Gemeinde finden').fill('Äugst am');
+  await expect(page.locator('.commune-search [role="option"]')).toHaveText([/Aeugst am Albis/]);
+});
+
+test('the status line follows what the crawler saw last', async ({ page }) => {
+  // Affoltern is configured in the register, but its last check met rate limiting
+  await page.goto('/de/gemeinden/2');
+  await expect(page.locator('.status-line')).toContainText('Sammeln vorübergehend gestört');
+  await expect(page.locator('.status-line')).not.toContainText('Wird gesammelt');
 });

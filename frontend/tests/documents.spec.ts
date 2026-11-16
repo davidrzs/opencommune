@@ -8,7 +8,7 @@ test('commune page lists files with their contents, strips and data request', as
   const errors: string[] = [];
   page.on('pageerror', (error) => errors.push(error.message));
   await page.goto('/de/gemeinden/121');
-  await expect(page.locator('h1')).toHaveText('Wetzikon.');
+  await expect(page.locator('h1')).toHaveText('Wetzikon');
   await expect(page.locator('.list-note')).toContainText('nicht von Personen geprüft');
   await expect(page.locator('.result-count')).toHaveText(/^25\s+Ergebnisse/);
   const rows = page.locator('.document-row');
@@ -92,7 +92,7 @@ test('commune page lists files with their contents, strips and data request', as
   expect(errors).toEqual([]);
 });
 
-test('selectors, content view and holdings table', async ({ page }) => {
+test('selectors, content view and holdings chart', async ({ page }) => {
   const errors: string[] = [];
   page.on('pageerror', (error) => errors.push(error.message));
   await page.goto('/de/gemeinden/121');
@@ -136,22 +136,10 @@ test('selectors, content view and holdings table', async ({ page }) => {
   await expect(page).toHaveURL(/\?q=reglement$/);
   await expect(rows).toHaveCount(1);
 
-  // holdings: families as rows, years as columns, oldest left; a cell sets year and family
+  // holdings: a chart of pages per year, stacked by family; a segment sets year and family
   await page.goto('/de/gemeinden/121');
-  const table = page.locator('.holdings table');
-  await expect(table.locator('tbody th')).toHaveText([
-    'Sitzungen & Abstimmungen',
-    'Finanzen',
-    'Vorlagen',
-    'Regeln',
-    'Information',
-    'Übrige'
-  ]);
-  await expect(table.locator('thead th').nth(1)).toHaveText('2000');
-  await expect(table.locator('thead th').last()).toHaveText('2025');
-  const cell = table.getByRole('link', { name: 'Finanzen, 2024: 2 Dokumente' });
-  await expect(cell).toHaveText('2');
-  await cell.click();
+  await expect(page.locator('.holdings')).toContainText('Seiten pro Jahr');
+  await page.locator('.holdings [aria-label^="2024:"] [data-family="money"]').first().click();
   await expect(page).toHaveURL(/\/de\/gemeinden\/121\?year=2024&family=money$/);
   await expect(rows).toHaveCount(2);
   await expect(page.locator('.active-family')).toContainText('Familie: Finanzen');
@@ -159,15 +147,22 @@ test('selectors, content view and holdings table', async ({ page }) => {
     /Budget · S\. 9–12/,
     /Jahresrechnung · S\. 1–150/
   ]);
-  await expect(table.getByRole('link', { name: 'Finanzen, 2024: 2 Dokumente' })).toHaveClass(
-    /active/
-  );
   // the family stays when another selector changes, and goes with its ×
   await page.getByLabel('Teil', { exact: true }).selectOption('budget');
   await expect(page).toHaveURL(/section=budget&family=money&year=2024$/);
   await expect(rows).toHaveCount(1);
   await page.getByRole('link', { name: 'Filter entfernen' }).click();
   await expect(page).toHaveURL(/\?section=budget&year=2024$/);
+
+  // in documents a column counts each document once, by its first part, and so does the list
+  await page.goto('/de/gemeinden/121');
+  await page.locator('.holdings').getByRole('button', { name: 'Dokumente' }).click();
+  const year = page.locator('.holdings [aria-label^="2024:"]');
+  const counted = Number((await year.getAttribute('aria-label'))?.match(/Finanzen (\d+)/)?.[1]);
+  await year.locator('[data-family="money"]').first().click();
+  await expect(page).toHaveURL(/\/de\/gemeinden\/121\?year=2024&first_family=money$/);
+  await expect(page.locator('.active-family')).toContainText('Erster Teil: Finanzen');
+  await expect(rows).toHaveCount(counted);
 
   // a filtered view keeps its query in the other languages
   await page.goto('/de/gemeinden/121?section=budget&year=2025');
@@ -180,7 +175,8 @@ test('selectors, content view and holdings table', async ({ page }) => {
   await expect(rows.first().locator('.match')).toContainText('ouvrir à la p. 13');
   await expect(page.getByLabel('Partie', { exact: true })).toHaveValue('budget');
   await page.getByRole('link', { name: 'IT', exact: true }).click();
-  await expect(page.locator('.holdings tbody th').first()).toHaveText('Sedute e votazioni');
+  // the chart's legend in Italian
+  await expect(page.locator('.holdings')).toContainText('Sedute e votazioni');
   await expect(page.locator('.as-data span')).toHaveText('Questo elenco come dati:');
   await page.screenshot({ path: 'test-results/documents-commune-desktop.png', fullPage: true });
   await page.setViewportSize({ width: 390, height: 844 });

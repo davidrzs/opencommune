@@ -17,7 +17,7 @@ test('full-text search: matching pages, marks, filters, cap and paging', async (
   await box.fill('Steuerfuss');
   await box.press('Enter');
   await expect(page).toHaveURL(/\/de\/suche\?q=Steuerfuss$/);
-  await expect(page).toHaveTitle('Steuerfuss — Dokumente suchen — OpenCommune');
+  await expect(page).toHaveTitle('Steuerfuss — Dokumente suchen — Tractanda');
   await expect(page.locator('.result-count')).toHaveText(/^21\s+Ergebnisse/);
   await expect(page.locator('.capped')).toHaveText(
     /^Die Suche trifft 20.000 Seiten oder mehr\. .* der 20.000 besten Seiten\./
@@ -152,7 +152,7 @@ test('commune page search, title list of a commune, languages and phone', async 
 
   // without words: the commune's files by title, the commune as a removable filter
   await page.getByLabel('Im Text der Dokumente suchen …').fill('');
-  await page.getByRole('button', { name: 'Suchen ↗' }).click();
+  await page.getByRole('button', { name: 'Suchen', exact: true }).click();
   await expect(page).toHaveURL(/\/de\/suche\?commune=117$/);
   await expect(page.locator('.active-commune')).toContainText('Gemeinde: Hinwil');
   await expect(rows).toHaveCount(1);

@@ -1,13 +1,15 @@
 <script lang="ts">
   import PageHits from './PageHits.svelte';
   import ReportProblem from './ReportProblem.svelte';
-  import { originalLink } from './documents';
+  import { findWords, marked, originalLink } from './documents';
   import { copy, fmt, href, label, when, type Lang } from './i18n';
   import type { Document, PageHit, Section } from './types';
   // `commune`: the commune whose page lists the file; its link to the original is used, and the
   // file's communes are named only when there are several. `section` and `family`: the list's
   // filters; the sections they match get a line of their own. `hits` and `matching`: in a
-  // full-text search, the file's best matching pages and how many of its pages match.
+  // full-text search, the file's best matching pages and how many of its pages match. `q`: the
+  // words searched for, marked in the title; `fullText`: read as the full-text search reads them,
+  // else as the title search.
   let {
     doc,
     lang,
@@ -15,7 +17,9 @@
     section = '',
     family = '',
     hits,
-    matching = 0
+    matching = 0,
+    q = '',
+    fullText = false
   }: {
     doc: Document;
     lang: Lang;
@@ -24,6 +28,8 @@
     family?: string;
     hits?: PageHit[];
     matching?: number;
+    q?: string;
+    fullText?: boolean;
   } = $props();
   let t = $derived(copy[lang]);
   const pagesOf = (s: Section) => s.last_page - s.first_page + 1;
@@ -101,247 +107,150 @@
   let at = $derived(commune ?? doc.communes[0]?.bfs_id);
   const open = (page?: number) => originalLink(doc.original_url, at, page);
   let named = $derived(commune === undefined || doc.communes.length > 1);
+  // the title with the searched words marked
+  let titleRuns = $derived(marked(title, findWords(title, q, fullText)));
 </script>
 
-<article class="document-row">
-  <div class="document-date">{dated}</div>
-  <div>
-    <p class="document-meta">
-      {meta}{#if languages.length}<span class="document-languages" aria-label={t.languagesLabel}
-          >{#each languages as code}<span class="language" title={label(lang, 'language', code)}
-              >{code === 'other' ? label(lang, 'language', code) : code.toUpperCase()}</span
-            >{/each}</span
-        >{/if}
-    </p>
-    <h2>{title}</h2>
-    {#if doc.sections.length > 1 && contains}<p class="contains">{t.contains} {contains}</p>{/if}
-    {#if hits?.length}<PageHits
-        {hits}
-        {matching}
-        sections={doc.sections}
-        languages={doc.languages}
-        {lang}
-        {at}
-      />{/if}
-    {#each matches as s}<p class="match family-{s.family}">
-        <strong>{name(s)}</strong> · {range(s)} ·
-        <a href={open(s.first_page)} target="_blank" rel="noreferrer"
-          >{t.openAt.replace('{n}', fmt(s.first_page, lang))} ↗</a
-        >
-      </p>{/each}
-    {#if doc.sections.length > 1 && total > 0}<div class="strip" aria-hidden="true">
-        {#each doc.sections as s}<a
-            class="segment family-{s.family}"
-            class:unseen={s.partly_unseen}
+<article class="document-row border-b border-border py-5">
+  <p class="text-sm leading-6 text-muted-foreground">
+    {#if named && doc.communes.length}<span class="communes"
+        ><span class="sr-only">{`${doc.communes.length > 1 ? t.communes : t.commune}: `}</span
+        >{#each doc.communes as c, i}{i ? ', ' : ''}<a
+            class="font-medium text-foreground underline-offset-4 hover:underline"
+            href={href(`/gemeinden/${c.bfs_id}`, lang)}>{c.name}</a
+          >
+          <small class="text-sm">{c.canton}</small>{/each}</span
+      >{' · '}{/if}<span class="document-date">{dated}</span
+    >{#if meta || languages.length}{' · '}<span class="document-meta"
+        >{meta}{#if languages.length}<span class="ml-1.5" aria-label={t.languagesLabel}
+            >{#each languages as code}<span
+                class="language mr-1 inline-block cursor-help rounded border border-border px-1 text-xs leading-4 font-medium text-zinc-600"
+                title={label(lang, 'language', code)}
+                >{code === 'other' ? label(lang, 'language', code) : code.toUpperCase()}</span
+              >{/each}</span
+          >{/if}</span
+      >{/if}
+  </p>
+  <h2 class="mt-1 text-[15px] leading-snug font-medium [overflow-wrap:anywhere] text-foreground">
+    {#each titleRuns as run}{#if run.marked}<mark class="rounded-sm bg-primary/10 text-inherit"
+          >{run.text}</mark
+        >{:else}{run.text}{/if}{/each}
+  </h2>
+  {#if doc.sections.length > 1 && contains}<p class="contains mt-1 text-sm text-muted-foreground">
+      {t.contains}
+      {contains}
+    </p>{/if}
+  {#if hits?.length}<PageHits
+      {hits}
+      {matching}
+      sections={doc.sections}
+      languages={doc.languages}
+      {lang}
+      {at}
+    />{/if}
+  {#each matches as s}<p
+      class="match family-{s.family} mt-2 w-fit max-w-full rounded-md bg-zinc-50 px-3 py-1.5 text-sm"
+    >
+      <i class="mr-1.5 inline-block size-2 rounded-full bg-(--family)" aria-hidden="true"
+      ></i><strong class="font-medium">{name(s)}</strong>
+      · {range(s)} ·
+      <a
+        class="text-primary underline-offset-4 hover:underline"
+        href={open(s.first_page)}
+        target="_blank"
+        rel="noreferrer">{t.openAt.replace('{n}', fmt(s.first_page, lang))} ↗</a
+      >
+    </p>{/each}
+  {#if doc.sections.length > 1 && total > 0}<div
+      class="strip relative mt-3 h-1 max-w-2xl overflow-hidden rounded-full bg-muted"
+      aria-hidden="true"
+    >
+      {#each doc.sections as s}<a
+          class="segment family-{s.family} absolute inset-y-0 border-r-2 border-white bg-(--family) hover:opacity-70"
+          class:unseen={s.partly_unseen}
+          href={open(s.first_page)}
+          target="_blank"
+          rel="noreferrer"
+          tabindex="-1"
+          title={tip(s)}
+          aria-label={tip(s)}
+          style:left="{(100 * (s.first_page - 1)) / total}%"
+          style:width="{(100 * pagesOf(s)) / total}%"
+        ></a>{/each}
+    </div>{/if}
+  {#if doc.sections.length}<ul
+      class="sections mt-2.5 flex flex-wrap gap-1.5"
+      aria-label={t.sections}
+    >
+      {#each doc.sections as s}<li>
+          <a
+            class="family-{s.family} inline-flex items-center gap-1.5 rounded-md border border-border px-2 py-0.5 text-xs text-zinc-700 hover:border-zinc-400 hover:text-foreground"
             href={open(s.first_page)}
             target="_blank"
             rel="noreferrer"
-            tabindex="-1"
-            title={tip(s)}
-            aria-label={tip(s)}
-            style:left="{(100 * (s.first_page - 1)) / total}%"
-            style:width="{(100 * pagesOf(s)) / total}%"
-          ></a>{/each}
-      </div>{/if}
-    {#if doc.sections.length}<ul class="sections" aria-label={t.sections}>
-        {#each doc.sections as s}<li>
-            <a
-              class="family-{s.family}"
-              href={open(s.first_page)}
-              target="_blank"
-              rel="noreferrer"
-              title={label(lang, 'family', s.family)}
-              ><i class="swatch" aria-hidden="true"></i>{name(s)}
-              {range(s)}{#if s.partly_unseen}<span class="unseen-mark" title={t.partlyUnseenTip}
-                  >*<span class="sr-only">{t.partlyUnseen}</span></span
-                >{/if}</a
-            >
-          </li>{/each}
-      </ul>{/if}
-    {#if unseen}<p class="unseen-note" title={t.partlyUnseenTip}>
-        * {t.partlyUnseen}<span class="sr-only">. {t.partlyUnseenTip}</span>
-      </p>{/if}
-    {#if named && doc.communes.length}<p class="communes">
-        {doc.communes.length > 1 ? t.communes : t.commune}:
-        {#each doc.communes as c, i}{i ? ', ' : ''}<a href={href(`/gemeinden/${c.bfs_id}`, lang)}
-            >{c.name}</a
+            title={label(lang, 'family', s.family)}
+            ><i class="size-2 shrink-0 rounded-full bg-(--family)" aria-hidden="true"></i>{name(s)}
+            <span class="text-muted-foreground">{range(s)}</span>{#if s.partly_unseen}<span
+                class="unseen-mark -ml-1 cursor-help text-primary"
+                title={t.partlyUnseenTip}>*<span class="sr-only">{t.partlyUnseen}</span></span
+              >{/if}</a
           >
-          <small>{c.canton}</small>{/each}
-      </p>{/if}
-    {#if doc.original_url}<a class="text-link" href={open()} target="_blank" rel="noreferrer"
-        >{t.original} ↗</a
-      >{/if}
-    {#if doc.run_id}<a
-        class="run-link"
-        href={`${href('/ueber-uns', lang)}#run-${encodeURIComponent(doc.run_id)}`}>{t.runLink}</a
+        </li>{/each}
+    </ul>{/if}
+  {#if unseen}<p
+      class="unseen-note mt-2 cursor-help text-xs text-muted-foreground"
+      title={t.partlyUnseenTip}
+    >
+      * {t.partlyUnseen}<span class="sr-only">. {t.partlyUnseenTip}</span>
+    </p>{/if}
+  <div class="links mt-3 flex flex-wrap items-baseline gap-x-5 gap-y-1 text-sm">
+    {#if doc.original_url}<a
+        class="text-link font-medium text-primary underline-offset-4 hover:underline"
+        href={open()}
+        target="_blank"
+        rel="noreferrer">{t.original} ↗</a
       >{/if}
     <ReportProblem {lang} entry={doc.sha256} source={open()} />
+    {#if doc.run_id}<a
+        class="run-link text-muted-foreground hover:text-foreground"
+        href={`${href('/ueber-uns', lang)}#run-${encodeURIComponent(doc.run_id)}`}>{t.runLink}</a
+      >{/if}
   </div>
-  <span class="file-mark" aria-hidden="true">PDF</span>
 </article>
 
 <style>
-  .document-row {
-    border-top: var(--rule);
-    padding: var(--space-2xl) 0;
-    display: grid;
-    grid-template-columns: var(--date-width) minmax(0, 1fr) var(--file-mark-width);
-    gap: var(--space-2xl);
+  /* a section family's colour, by class on chips, strip segments, matching sections and pages */
+  .document-row :global(.family-deliberation) {
+    --family: var(--family-deliberation);
   }
-  .document-date {
-    font-size: var(--font-size-sm);
-    color: var(--muted);
-    line-height: var(--line-height-loose);
+  .document-row :global(.family-proposals) {
+    --family: var(--family-proposals);
   }
-  .document-meta {
-    font-size: var(--font-size-xs);
-    text-transform: uppercase;
-    letter-spacing: var(--letter-spacing-wider);
-    color: var(--muted);
+  .document-row :global(.family-information) {
+    --family: var(--family-information);
   }
-  .document-languages {
-    margin-left: var(--space-2xs);
+  .document-row :global(.family-money) {
+    --family: var(--family-money);
   }
-  .language {
-    display: inline-block;
-    border: var(--rule);
-    padding: 0 var(--space-2xs);
-    margin-left: var(--space-2xs);
-    color: var(--ink);
-    cursor: help;
+  .document-row :global(.family-rules) {
+    --family: var(--family-rules);
   }
-  h2 {
-    font-size: var(--font-size-xl);
-    font-weight: var(--weight-book);
-    line-height: var(--line-height-normal);
-    margin: var(--space-sm) 0 var(--space-md);
-    letter-spacing: var(--letter-spacing-snug);
-    overflow-wrap: anywhere;
+  .document-row :global(.family-other) {
+    --family: var(--family-other);
   }
-  .contains {
-    font-size: var(--font-size-md);
-    margin-bottom: var(--space-sm);
-  }
-  .match {
-    font-size: var(--font-size-md);
-    background: var(--band);
-    border-left: var(--marker-width) solid var(--family);
-    padding: var(--space-sm) var(--space-md);
-    margin-bottom: var(--space-sm);
-  }
-  .match strong {
-    font-weight: var(--weight-semibold);
-  }
-  .match a {
-    text-decoration: underline;
-    text-underline-offset: var(--underline-offset);
-  }
-  .match a:hover {
-    color: var(--accent);
-  }
-  .strip {
-    position: relative;
-    height: var(--strip-height);
-    background: var(--band);
-    margin: var(--space-sm) 0 var(--space-md);
-  }
-  .segment {
-    position: absolute;
-    top: 0;
-    bottom: 0;
-    background-color: var(--family);
-    border-right: var(--space-3xs) solid var(--paper);
-  }
+  /* pages of the section that the classifier did not all see */
   .segment.unseen {
-    background-image: var(--hatch-unseen);
+    background-image: repeating-linear-gradient(
+      135deg,
+      rgb(255 255 255 / 0.65) 0 2px,
+      transparent 2px 4px
+    );
   }
-  .segment:hover {
-    background-color: var(--ink);
+  .links :global(.report-action) {
+    font-size: inherit;
+    color: var(--muted-foreground);
   }
-  .sections {
-    list-style: none;
-    display: flex;
-    flex-wrap: wrap;
-    gap: var(--space-xs);
-    padding: 0;
-    margin: 0 0 var(--space-md);
-  }
-  .sections a {
-    display: inline-flex;
-    align-items: center;
-    gap: var(--space-xs);
-    font-size: var(--font-size-sm);
-    line-height: var(--line-height-normal);
-    border: var(--rule);
-    padding: var(--space-2xs) var(--space-sm);
-    color: var(--ink);
-  }
-  .sections a:hover {
-    border-color: var(--ink);
-  }
-  .swatch {
-    width: var(--legend-key);
-    height: var(--legend-key);
-    background: var(--family);
-  }
-  .unseen-mark {
-    color: var(--accent);
-    cursor: help;
-  }
-  .unseen-note,
-  .communes {
-    font-size: var(--font-size-sm);
-    line-height: var(--line-height-relaxed);
-    color: var(--muted);
-    margin-bottom: var(--space-md);
-  }
-  .unseen-note {
-    cursor: help;
-  }
-  .communes a {
-    color: var(--ink);
-    text-decoration: underline;
-    text-underline-offset: var(--underline-offset);
-  }
-  .communes small {
-    margin-left: var(--space-3xs);
-  }
-  .run-link,
-  .document-row :global(.report-action) {
-    margin-left: var(--space-lg);
-  }
-  .run-link {
-    font-size: var(--font-size-sm);
-    color: var(--muted);
-    text-decoration: underline;
-    text-underline-offset: var(--underline-offset);
-  }
-  .run-link:hover {
-    color: var(--accent);
-  }
-  .file-mark {
-    font-size: var(--font-size-2xs);
-    border: var(--line-width) solid var(--line-mid);
-    width: var(--file-mark-width);
-    height: var(--file-mark-height);
-    display: grid;
-    place-items: center;
-    color: var(--faint);
-  }
-  @media (max-width: 900px) {
-    .document-row {
-      grid-template-columns: var(--date-width) minmax(0, 1fr);
-      gap: var(--space-lg);
-    }
-    .file-mark {
-      display: none;
-    }
-  }
-  @media (max-width: 600px) {
-    .document-row {
-      grid-template-columns: minmax(0, 1fr);
-      gap: var(--space-sm);
-      padding: var(--space-xl) 0;
-    }
+  .links :global(.report-action a:hover) {
+    color: var(--foreground);
   }
 </style>

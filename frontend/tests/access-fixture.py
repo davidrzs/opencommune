@@ -169,6 +169,8 @@ def matches(doc, filters, leave_out=None):
             return False
         if key == "family" and value not in [s["family"] for s in doc["sections"]]:
             return False
+        if key == "first_family" and [s["family"] for s in doc["sections"][:1]] != [value]:
+            return False
         if key == "body" and doc["body_kind"] != value:
             return False
         if key == "year" and str(doc["year"]) != value:
@@ -377,15 +379,33 @@ def detail(bfs, name, status, observations):
 
 
 def holdings(bfs):
-    """Documents with a section of the family, per year; newest year first, then family."""
+    """Per year and family, newest year first: the documents with a section of the family, the
+    family's pages (a page two sections share counts for the first) and the documents whose first
+    section is of the family, as the server gives them."""
     counts = {}
     for d in DOCUMENTS:
         if d["year"] is None or bfs not in [c["bfs_id"] for c in d["communes"]]:
             continue
-        for family in {s["family"] for s in d["sections"]}:
-            counts[(d["year"], family)] = counts.get((d["year"], family), 0) + 1
+        counted = set()
+        for position, s in enumerate(d["sections"]):
+            c = counts.setdefault((d["year"], s["family"]), {"docs": set(), "pages": 0, "first": 0})
+            c["docs"].add(d["sha256"])
+            low, high = sorted((s["first_page"], s["last_page"]))
+            own = {p for p in range(low, high + 1) if not d["page_count"] or p <= d["page_count"]}
+            c["pages"] += len(own - counted)
+            counted |= own
+            c["first"] += position == 0
     order = sorted(counts, key=lambda k: (-k[0], k[1]))
-    return [dict(year=y, family=f, documents=counts[(y, f)]) for y, f in order]
+    return [
+        dict(
+            year=y,
+            family=f,
+            documents=len(counts[(y, f)]["docs"]),
+            pages=counts[(y, f)]["pages"],
+            first_part_documents=counts[(y, f)]["first"],
+        )
+        for y, f in order
+    ]
 
 
 RUNS = [

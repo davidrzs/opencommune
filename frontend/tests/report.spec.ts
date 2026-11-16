@@ -20,7 +20,7 @@ test('report opens a contextual draft without exposing the address in initial HT
   const draft = new URL((await report.getAttribute('href'))!);
   expect(draft.protocol).toBe('mailto:');
   expect(draft.pathname).toBe('zdavid@ethz.ch');
-  expect(draft.searchParams.get('subject')).toBe('OpenCommune: Problem melden');
+  expect(draft.searchParams.get('subject')).toBe('Tractanda: Problem melden');
   expect(draft.searchParams.get('body')).toContain('/de/gemeinden/121');
   expect(draft.searchParams.get('body')).toContain('Eintrag:');
   expect(draft.searchParams.get('body')).toContain('Quelle:');

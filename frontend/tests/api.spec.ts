@@ -27,13 +27,13 @@ test('API page: MCP snippet and a self-hosted reference that sends requests only
   // the MCP address and a configuration built from this page's origin
   await expect(page.locator('.mcp p code')).toHaveText(`${origin}/mcp`);
   const snippet = JSON.parse((await page.locator('.snippet code').textContent()) ?? '');
-  expect(snippet).toEqual({ mcpServers: { opencommune: { url: `${origin}/mcp` } } });
+  expect(snippet).toEqual({ mcpServers: { tractanda: { url: `${origin}/mcp` } } });
   await page.locator('.snippet button').click();
   await expect(page.locator('.snippet button')).toHaveText('Kopiert');
   expect(JSON.parse(await page.evaluate(() => navigator.clipboard.readText()))).toEqual(snippet);
 
   // the reference, from /api/openapi.json, with Scalar's German interface
-  await expect(page.locator('.scalar-app').getByText('OpenCommune API').first()).toBeVisible({
+  await expect(page.locator('.scalar-app').getByText('Tractanda API').first()).toBeVisible({
     timeout: 20000
   });
   await expect(page.locator('a[href^="https://client.scalar.com"]:visible')).toHaveCount(0);
@@ -54,12 +54,10 @@ test('API page: MCP snippet and a self-hosted reference that sends requests only
   await expect(page.locator('.index-intro h2')).toBeVisible();
   const tokens = await page.evaluate(() => {
     const root = getComputedStyle(document.documentElement);
-    return ['--line-height-snug', '--letter-spacing-tight', '--letter-spacing-widest'].map((t) =>
-      root.getPropertyValue(t).trim()
-    );
+    return ['--brand', '--radius', '--foreground'].map((t) => root.getPropertyValue(t).trim());
   });
-  // the built CSS writes 0.12em as .12em
-  expect(tokens).toEqual(['1.3', '-1.6px', '.12em']);
+  // the built CSS writes 0.5rem as .5rem
+  expect(tokens).toEqual(['#b3121c', '.5rem', '#18181b']);
   expect(errors).toEqual([]);
 });
 
@@ -81,13 +79,13 @@ test('other pages do not load the reference', async ({ page, request }) => {
 test('API page in French and Italian, and on a phone', async ({ page }) => {
   await page.goto('/fr/api');
   await expect(page.locator('.api-page')).toContainText('sans clé ni compte');
-  await expect(page.locator('.scalar-app').getByText('OpenCommune API').first()).toBeVisible({
+  await expect(page.locator('.scalar-app').getByText('Tractanda API').first()).toBeVisible({
     timeout: 20000
   });
   await page.getByRole('link', { name: 'IT', exact: true }).click();
   await expect(page).toHaveURL(/\/it\/api$/);
   await expect(page.locator('.api-page')).toContainText('senza chiave e senza account');
-  await expect(page.locator('.scalar-app').getByText('OpenCommune API').first()).toBeVisible({
+  await expect(page.locator('.scalar-app').getByText('Tractanda API').first()).toBeVisible({
     timeout: 20000
   });
   await page.setViewportSize({ width: 390, height: 844 });

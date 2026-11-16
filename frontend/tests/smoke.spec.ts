@@ -6,7 +6,7 @@ test('map, commune navigation, document list, original sources and language cont
   page.on('pageerror', (e) => errors.push(e.message));
   await page.goto('/de');
   await expect(
-    page.getByRole('heading', { name: 'Die Schweiz. Gemeinde für Gemeinde.' })
+    page.getByRole('heading', { name: 'Die Dokumente der Schweizer Gemeinden' })
   ).toBeVisible();
   await expect(page.locator('.atlas-map svg a').first()).toHaveAttribute(
     'href',
@@ -16,7 +16,7 @@ test('map, commune navigation, document list, original sources and language cont
   await page.screenshot({ path: 'test-results/home-desktop.png', fullPage: true });
   await page.getByLabel('Gemeinde finden').fill('Wetzikon');
   await page.locator('.suggestions a').first().click();
-  await expect(page.getByRole('heading', { name: 'Wetzikon.' })).toBeVisible();
+  await expect(page.getByRole('heading', { name: 'Wetzikon', level: 1 })).toBeVisible();
   await expect(page.locator('.document-row .text-link').first()).toHaveAttribute(
     'href',
     /^\/original\/[0-9a-f]{64}\?commune=121$/
@@ -42,7 +42,7 @@ test('map, commune navigation, document list, original sources and language cont
   await page.setViewportSize({ width: 390, height: 844 });
   await page.goto('/it');
   await expect(
-    page.getByRole('heading', { name: 'La Svizzera. Comune per comune.' })
+    page.getByRole('heading', { name: 'I documenti dei comuni svizzeri' })
   ).toBeVisible();
   expect(
     await page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth)

@@ -1,11 +1,11 @@
 export const about = {
   de: {
-    title: 'Über OpenCommune',
+    title: 'Über Tractanda',
     intro: 'Eine Datenbasis, um die Demokratie in Schweizer Gemeinden besser zu untersuchen.',
     purposeTitle: 'Warum dieses Archiv?',
     purpose:
       'Gemeinden entscheiden über Schulen, Ortsplanung, Infrastruktur und vieles mehr. Die Unterlagen dazu liegen verstreut auf einzelnen Gemeindewebsites. Wer demokratische Prozesse über mehrere Gemeinden oder Jahre hinweg untersuchen und vergleichen möchte, muss sie bisher aufwendig zusammentragen.',
-    aim: 'OpenCommune sammelt diese Dokumente und erschliesst ihre Inhalte. Damit wollen wir eine gemeinsame Datenbasis schaffen, die Forschung, journalistische Arbeit und den öffentlichen Einblick in kommunale Entscheidungen erleichtert.',
+    aim: 'Tractanda sammelt diese Dokumente und erschliesst ihre Inhalte. Damit wollen wir eine gemeinsame Datenbasis schaffen, die Forschung, journalistische Arbeit und den öffentlichen Einblick in kommunale Entscheidungen erleichtert.',
     sourcesTitle: 'Woher kommen die Daten?',
     sources:
       'Die Dokumente stammen aus öffentlich zugänglichen Veröffentlichungen der Gemeinden und ihrer Parlamente. Die jeweiligen Quellen sind bei den Dokumenten verlinkt.',
@@ -17,9 +17,9 @@ export const about = {
       'Ein Sprachmodell sieht die Seiten jedes Dokuments als Bilder. Es bestimmt die Dokumentart, die Teile mit ihren Seiten, das Gremium und das Jahr. Niemand prüft diese Angaben einzeln. Jeder Lauf hat einen festen Prompt und feste Einstellungen; was sie für die Daten bedeuten, steht beim Lauf.',
     model: 'Modell',
     limits:
-      'OpenCommune ist im Aufbau. Eine Gemeinde zählt zum Archiv, sobald mindestens ein Dokument vorliegt. Umfang und Zeiträume unterscheiden sich entsprechend. Fehlende Dokumente bedeuten nicht, dass es keine entsprechenden Sitzungen oder Entscheidungen gab. Vergleiche müssen diese Lücken berücksichtigen.',
+      'Tractanda ist im Aufbau. Eine Gemeinde zählt zum Archiv, sobald mindestens ein Dokument vorliegt. Umfang und Zeiträume unterscheiden sich entsprechend. Fehlende Dokumente bedeuten nicht, dass es keine entsprechenden Sitzungen oder Entscheidungen gab. Vergleiche müssen diese Lücken berücksichtigen.',
     teamTitle: 'Wer steht dahinter?',
-    team: 'OpenCommune ist ein Projekt von David Zollikofer.',
+    team: 'Tractanda ist ein Projekt von David Zollikofer.',
     contact:
       'Fragen, Hinweise auf fehlende Quellen, Korrekturen oder Anliegen zu Personendaten nehmen wir per E-Mail entgegen. Wir freuen uns auch über den Austausch mit Forschenden, Medienschaffenden und Gemeinden.',
     email: 'David eine E-Mail schreiben',
@@ -36,12 +36,12 @@ export const about = {
       'Die Website setzt keine Cookies und lädt nichts von Dritten nach. Für die Nutzungsstatistik zählt der Server Aufrufe pro Tag und Seitentyp; IP-Adressen, Suchbegriffe und vollständige Adressen der aufgerufenen Seiten speichert er nicht. Die Zahl der Besuchenden pro Tag wird mit einem täglich wechselnden Schlüssel geschätzt, sodass niemand über Tage hinweg wiedererkannt werden kann. Wer «Do Not Track» oder «Global Privacy Control» sendet, fliesst nicht in diese Schätzung ein. Die Zählungen pro Tag werden dauerhaft aufbewahrt; sie enthalten keine Angaben zu Personen.'
   },
   fr: {
-    title: 'À propos d’OpenCommune',
+    title: 'À propos de Tractanda',
     intro: 'Une base de données pour mieux étudier la démocratie dans les communes suisses.',
     purposeTitle: 'Pourquoi ces archives ?',
     purpose:
       'Les communes prennent des décisions sur les écoles, l’aménagement du territoire, les infrastructures et bien d’autres sujets. Les documents correspondants sont dispersés sur leurs sites web. Étudier et comparer les processus démocratiques entre communes ou au fil des années exige donc un important travail de collecte.',
-    aim: 'OpenCommune rassemble ces documents et en rend le contenu accessible. Nous souhaitons créer une base de données commune qui facilite la recherche, le travail journalistique et l’accès du public aux décisions communales.',
+    aim: 'Tractanda rassemble ces documents et en rend le contenu accessible. Nous souhaitons créer une base de données commune qui facilite la recherche, le travail journalistique et l’accès du public aux décisions communales.',
     sourcesTitle: 'D’où proviennent les données ?',
     sources:
       'Les documents proviennent des publications accessibles au public des communes et de leurs parlements. Les sources sont indiquées par des liens associés aux documents.',
@@ -53,9 +53,9 @@ export const about = {
       'Un modèle de langage voit les pages de chaque document sous forme d’images. Il détermine le type de document, les parties avec leurs pages, l’organe et l’année. Personne ne vérifie ces indications une à une. Chaque exécution utilise un prompt et des réglages fixes ; ce qu’ils impliquent pour les données est indiqué pour chaque exécution.',
     model: 'Modèle',
     limits:
-      'OpenCommune est en cours de développement. Une commune est comptée dans les archives dès qu’au moins un document est disponible. Le nombre de documents et les périodes couvertes varient donc. L’absence de documents ne signifie pas qu’aucune séance ou décision n’a eu lieu. Toute comparaison doit tenir compte de ces lacunes.',
+      'Tractanda est en cours de développement. Une commune est comptée dans les archives dès qu’au moins un document est disponible. Le nombre de documents et les périodes couvertes varient donc. L’absence de documents ne signifie pas qu’aucune séance ou décision n’a eu lieu. Toute comparaison doit tenir compte de ces lacunes.',
     teamTitle: 'Qui porte le projet ?',
-    team: 'OpenCommune est un projet de David Zollikofer.',
+    team: 'Tractanda est un projet de David Zollikofer.',
     contact:
       'Vous pouvez nous écrire pour poser une question, signaler une source manquante, demander une correction ou nous faire part d’un problème concernant des données personnelles. Nous souhaitons aussi échanger avec les milieux de la recherche, les journalistes et les communes.',
     email: 'Écrire un e-mail à David',
@@ -72,12 +72,12 @@ export const about = {
       'Le site n’utilise pas de cookies et ne charge rien de tiers. Pour les statistiques d’utilisation, le serveur compte les accès par jour et par type de page ; il n’enregistre ni adresses IP, ni termes de recherche, ni adresses complètes des pages consultées. Le nombre de visiteurs par jour est estimé à l’aide d’une clé qui change chaque jour, de sorte que personne ne peut être reconnu d’un jour à l’autre. Les navigateurs qui envoient « Do Not Track » ou « Global Privacy Control » ne sont pas pris en compte dans cette estimation. Les décomptes par jour sont conservés sans limite de durée ; ils ne contiennent aucune donnée personnelle.'
   },
   it: {
-    title: 'Informazioni su OpenCommune',
+    title: 'Informazioni su Tractanda',
     intro: 'Una base di dati per studiare meglio la democrazia nei comuni svizzeri.',
     purposeTitle: 'Perché questo archivio?',
     purpose:
       'I comuni prendono decisioni su scuole, pianificazione del territorio, infrastrutture e molti altri temi. I relativi documenti sono sparsi sui singoli siti comunali. Studiare e confrontare i processi democratici tra comuni o nel corso degli anni richiede quindi un notevole lavoro di raccolta.',
-    aim: 'OpenCommune raccoglie questi documenti e ne rende accessibili i contenuti. Vogliamo creare una base di dati comune che faciliti la ricerca, il lavoro giornalistico e l’accesso pubblico alle decisioni comunali.',
+    aim: 'Tractanda raccoglie questi documenti e ne rende accessibili i contenuti. Vogliamo creare una base di dati comune che faciliti la ricerca, il lavoro giornalistico e l’accesso pubblico alle decisioni comunali.',
     sourcesTitle: 'Da dove provengono i dati?',
     sources:
       'I documenti provengono dalle pubblicazioni accessibili al pubblico dei comuni e dei loro parlamenti. Le fonti sono indicate nei collegamenti associati ai documenti.',
@@ -89,9 +89,9 @@ export const about = {
       'Un modello linguistico vede le pagine di ogni documento come immagini. Determina il tipo di documento, le parti con le loro pagine, l’organo e l’anno. Nessuno verifica queste indicazioni una per una. Ogni esecuzione usa un prompt e impostazioni fissi; che cosa significano per i dati è indicato per ogni esecuzione.',
     model: 'Modello',
     limits:
-      'OpenCommune è in fase di sviluppo. Un comune viene conteggiato nell’archivio non appena è disponibile almeno un documento. La quantità di documenti e i periodi coperti variano quindi. L’assenza di documenti non significa che non si siano tenute sedute o prese decisioni. I confronti devono tenere conto di queste lacune.',
+      'Tractanda è in fase di sviluppo. Un comune viene conteggiato nell’archivio non appena è disponibile almeno un documento. La quantità di documenti e i periodi coperti variano quindi. L’assenza di documenti non significa che non si siano tenute sedute o prese decisioni. I confronti devono tenere conto di queste lacune.',
     teamTitle: 'Chi c’è dietro il progetto?',
-    team: 'OpenCommune è un progetto di David Zollikofer.',
+    team: 'Tractanda è un progetto di David Zollikofer.',
     contact:
       'Potete scriverci per domande, segnalazioni di fonti mancanti, correzioni o questioni relative ai dati personali. Ci interessa anche il confronto con ricercatori, giornalisti e comuni.',
     email: 'Scrivi un’e-mail a David',

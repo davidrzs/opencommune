@@ -17,7 +17,7 @@ repos:
         exclude: ^tests/fixtures/
       - id: detect-private-key
       - id: check-added-large-files
-        args: [--maxkb=600] # ch-map.json is 552 KB
+        args: [--maxkb=600] # ch-map.json is 577 KB
         exclude: ^data/(communes|linked-sources)\.yaml$ # the source lists are large text configuration
   - repo: local
     hooks:

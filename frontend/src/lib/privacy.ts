@@ -9,12 +9,12 @@ export const privacy: Record<
     title: 'Datenschutz',
     updated: 'Stand: 15. November 2026',
     intro:
-      'Diese Seite erklärt, welche Daten OpenCommune beim Besuch der Website, bei der Nutzung der API und des MCP-Servers verarbeitet, und wie mit Personen umgegangen wird, die in den Dokumenten der Gemeinden vorkommen.',
+      'Diese Seite erklärt, welche Daten Tractanda beim Besuch der Website, bei der Nutzung der API und des MCP-Servers verarbeitet, und wie mit Personen umgegangen wird, die in den Dokumenten der Gemeinden vorkommen.',
     sections: [
       {
         title: 'Verantwortlich',
         paragraphs: [
-          'OpenCommune ist ein Projekt von David Zollikofer. Fragen und Anliegen zum Datenschutz nehmen wir per E-Mail entgegen.'
+          'Tractanda ist ein Projekt von David Zollikofer. Fragen und Anliegen zum Datenschutz nehmen wir per E-Mail entgegen.'
         ]
       },
       {
@@ -29,7 +29,7 @@ export const privacy: Record<
         title: 'API und MCP-Server',
         paragraphs: [
           'Anfragen an die API und an den MCP-Server werden wie Seitenaufrufe nur gezählt, pro Tag und Abfrage; Suchbegriffe werden nicht gespeichert, nur ob eine Suche Treffer hatte.',
-          'Wer OpenCommune über einen KI-Assistenten wie Claude oder ChatGPT nutzt, gibt seine Fragen dort ein. Für diese Eingaben gilt die Datenschutzerklärung des jeweiligen Anbieters; OpenCommune erhält nur die Abfrage, die der Assistent an den MCP-Server schickt.'
+          'Wer Tractanda über einen KI-Assistenten wie Claude oder ChatGPT nutzt, gibt seine Fragen dort ein. Für diese Eingaben gilt die Datenschutzerklärung des jeweiligen Anbieters; Tractanda erhält nur die Abfrage, die der Assistent an den MCP-Server schickt.'
         ]
       },
       {
@@ -49,7 +49,7 @@ export const privacy: Record<
       {
         title: 'Links zu anderen Websites',
         paragraphs: [
-          'Links führen zu den Websites der Gemeinden, zu GitHub und zu Hugging Face. Für diese Websites gelten deren eigene Datenschutzerklärungen.'
+          'Links führen zu den Websites der Gemeinden, zu GitHub und zu Hugging Face, auf der Seite «Lizenzen und Dank» auch zu den Projekten, auf denen Tractanda aufbaut. Für diese Websites gelten deren eigene Datenschutzerklärungen.'
         ]
       }
     ],
@@ -59,12 +59,12 @@ export const privacy: Record<
     title: 'Protection des données',
     updated: 'État au 15 novembre 2026',
     intro:
-      'Cette page explique quelles données OpenCommune traite lors de la visite du site, de l’utilisation de l’API et du serveur MCP, et comment sont traitées les personnes mentionnées dans les documents des communes.',
+      'Cette page explique quelles données Tractanda traite lors de la visite du site, de l’utilisation de l’API et du serveur MCP, et comment sont traitées les personnes mentionnées dans les documents des communes.',
     sections: [
       {
         title: 'Responsable',
         paragraphs: [
-          'OpenCommune est un projet de David Zollikofer. Les questions relatives à la protection des données peuvent nous être adressées par e-mail.'
+          'Tractanda est un projet de David Zollikofer. Les questions relatives à la protection des données peuvent nous être adressées par e-mail.'
         ]
       },
       {
@@ -79,7 +79,7 @@ export const privacy: Record<
         title: 'API et serveur MCP',
         paragraphs: [
           'Comme les pages, les requêtes à l’API et au serveur MCP sont seulement comptées, par jour et par requête ; les termes de recherche ne sont pas enregistrés, seulement le fait qu’une recherche a donné des résultats.',
-          'Qui utilise OpenCommune à travers un assistant IA comme Claude ou ChatGPT y saisit ses questions. La déclaration de protection des données du fournisseur concerné s’applique à ces saisies ; OpenCommune ne reçoit que la requête que l’assistant envoie au serveur MCP.'
+          'Qui utilise Tractanda à travers un assistant IA comme Claude ou ChatGPT y saisit ses questions. La déclaration de protection des données du fournisseur concerné s’applique à ces saisies ; Tractanda ne reçoit que la requête que l’assistant envoie au serveur MCP.'
         ]
       },
       {
@@ -99,7 +99,7 @@ export const privacy: Record<
       {
         title: 'Liens vers d’autres sites',
         paragraphs: [
-          'Des liens mènent aux sites des communes, à GitHub et à Hugging Face. Leurs propres déclarations de protection des données s’y appliquent.'
+          'Des liens mènent aux sites des communes, à GitHub et à Hugging Face et, sur la page « Licences et remerciements », aux projets sur lesquels Tractanda s’appuie. Leurs propres déclarations de protection des données s’y appliquent.'
         ]
       }
     ],
@@ -109,12 +109,12 @@ export const privacy: Record<
     title: 'Protezione dei dati',
     updated: 'Stato: 15 novembre 2026',
     intro:
-      'Questa pagina spiega quali dati OpenCommune tratta durante la visita del sito e l’uso dell’API e del server MCP, e come vengono trattate le persone menzionate nei documenti dei comuni.',
+      'Questa pagina spiega quali dati Tractanda tratta durante la visita del sito e l’uso dell’API e del server MCP, e come vengono trattate le persone menzionate nei documenti dei comuni.',
     sections: [
       {
         title: 'Responsabile',
         paragraphs: [
-          'OpenCommune è un progetto di David Zollikofer. Domande sulla protezione dei dati possono esserci inviate per e-mail.'
+          'Tractanda è un progetto di David Zollikofer. Domande sulla protezione dei dati possono esserci inviate per e-mail.'
         ]
       },
       {
@@ -129,7 +129,7 @@ export const privacy: Record<
         title: 'API e server MCP',
         paragraphs: [
           'Come le pagine, le richieste all’API e al server MCP vengono solo contate, per giorno e per richiesta; i termini di ricerca non vengono registrati, solo se una ricerca ha dato risultati.',
-          'Chi usa OpenCommune tramite un assistente IA come Claude o ChatGPT inserisce lì le sue domande. A questi dati si applica l’informativa sulla privacy del rispettivo fornitore; OpenCommune riceve solo la richiesta che l’assistente invia al server MCP.'
+          'Chi usa Tractanda tramite un assistente IA come Claude o ChatGPT inserisce lì le sue domande. A questi dati si applica l’informativa sulla privacy del rispettivo fornitore; Tractanda riceve solo la richiesta che l’assistente invia al server MCP.'
         ]
       },
       {
@@ -149,7 +149,7 @@ export const privacy: Record<
       {
         title: 'Link ad altri siti',
         paragraphs: [
-          'I link portano ai siti dei comuni, a GitHub e a Hugging Face. Per questi siti valgono le loro informative sulla privacy.'
+          'I link portano ai siti dei comuni, a GitHub e a Hugging Face e, nella pagina «Licenze e ringraziamenti», ai progetti su cui si basa Tractanda. Per questi siti valgono le loro informative sulla privacy.'
         ]
       }
     ],
