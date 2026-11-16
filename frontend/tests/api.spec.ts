@@ -51,7 +51,7 @@ test('API page: MCP snippet and a self-hosted reference that sends requests only
 
   // leaving the page: Scalar's styles do not change the site's own tokens
   await page.getByRole('link', { name: 'Gemeinden', exact: true }).click();
-  await expect(page.locator('.index-intro h2')).toBeVisible();
+  await expect(page.locator('.coverage-count')).toBeVisible();
   const tokens = await page.evaluate(() => {
     const root = getComputedStyle(document.documentElement);
     return ['--brand', '--radius', '--foreground'].map((t) => root.getPropertyValue(t).trim());

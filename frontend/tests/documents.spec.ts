@@ -187,7 +187,7 @@ test('selectors, content view and holdings chart', async ({ page }) => {
   expect(errors).toEqual([]);
 });
 
-test('search lists every commune, start page counts each file once', async ({ page }) => {
+test('search lists every commune; the start page gives no document total', async ({ page }) => {
   const errors: string[] = [];
   page.on('pageerror', (error) => errors.push(error.message));
   await page.goto('/de/suche');
@@ -209,10 +209,11 @@ test('search lists every commune, start page counts each file once', async ({ pa
   await expect(rows).toHaveCount(2);
   await page.screenshot({ path: 'test-results/documents-search-desktop.png', fullPage: true });
 
-  // 26 commune links, 25 files
+  // the start page counts communes only, below a thousand exactly
   await page.goto('/de');
-  await expect(page.locator('.index-intro h2')).toHaveText('25 Dokumente aus 2 Gemeinden');
+  await expect(page.locator('h1 + p')).toContainText('aus 2 Gemeinden');
+  await expect(page.locator('main section').first()).not.toContainText(/\d Dokumente/);
   await page.goto('/fr');
-  await expect(page.locator('.index-intro h2')).toHaveText('25 documents de 2 communes');
+  await expect(page.locator('h1 + p')).toContainText('de 2 communes');
   expect(errors).toEqual([]);
 });

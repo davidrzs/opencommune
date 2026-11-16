@@ -12,7 +12,9 @@ test('map, commune navigation, document list, original sources and language cont
     'href',
     /\/de\/gemeinden\/\d+/
   );
-  await expect(page.locator('.index-intro h2')).toContainText('Dokumente aus');
+  await expect(page.locator('.coverage-count')).toContainText(
+    'Gemeinden mit gesammelten Dokumenten'
+  );
   await page.screenshot({ path: 'test-results/home-desktop.png', fullPage: true });
   await page.getByLabel('Gemeinde finden').fill('Wetzikon');
   await page.locator('.suggestions a').first().click();

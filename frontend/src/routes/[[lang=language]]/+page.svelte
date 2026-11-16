@@ -5,18 +5,17 @@
   import { page } from '$app/state';
   import Map from '$lib/Map.svelte';
   import CommuneSearch from '$lib/CommuneSearch.svelte';
-  import ReportProblem from '$lib/ReportProblem.svelte';
   import { Button } from '$lib/components/ui/button';
   import { Badge } from '$lib/components/ui/badge';
   import { type Commune, hasDocuments } from '$lib/types';
   import Search from '@lucide/svelte/icons/search';
-  import Check from '@lucide/svelte/icons/check';
   import Copy from '@lucide/svelte/icons/copy';
   import ArrowUpRight from '@lucide/svelte/icons/arrow-up-right';
   import FileText from '@lucide/svelte/icons/file-text';
   import CodeXml from '@lucide/svelte/icons/code-xml';
   import hfIcon from '$lib/icons/huggingface.svg';
   import ghIcon from '$lib/icons/github.svg';
+  import { onMount } from 'svelte';
   let { data } = $props();
   let lang = $derived((page.params.lang || 'de') as Lang);
   let t = $derived(copy[lang]);
@@ -24,7 +23,13 @@
   const number = (n: number) => fmt(n, lang);
   let communes = $derived(data.communes as Commune[]);
   let collected = $derived(communes.filter(hasDocuments));
-  let lead = $derived(s.lead.replace('{communes}', number(collected.length)));
+  // the count in the lead, rounded down to the thousand: "über 2'000"
+  let rounded = $derived(
+    collected.length >= 1000
+      ? s.over.replace('{n}', number(Math.floor(collected.length / 1000) * 1000))
+      : number(collected.length)
+  );
+  let lead = $derived(s.lead.replace('{communes}', rounded));
 
   // the search of every document's text (the search page reads ?q=)
   let q = $state('');
@@ -36,7 +41,7 @@
   }
 
   // the list of communes, most documents first
-  const FIRST = 10;
+  const FIRST = 8;
   let canton = $state('');
   let visibleCount = $state(FIRST);
   let shown = $derived(
@@ -57,8 +62,20 @@
       .catch(() => {});
   }
 
+  // the film plays muted in a loop, and stays still for people who ask for less motion
+  let film = $state<HTMLVideoElement>();
+  let playing = $state(false);
+  function toggleFilm() {
+    if (!film) return;
+    if (film.paused) film.play().catch(() => {});
+    else film.pause();
+  }
+  onMount(() => {
+    if (!matchMedia('(prefers-reduced-motion: reduce)').matches) film?.play().catch(() => {});
+  });
+
   const card =
-    'flex flex-col rounded-xl border border-border p-5 outline-none focus-visible:ring-3 focus-visible:ring-ring/50';
+    'flex flex-col rounded-xl border border-border bg-white p-5 outline-none focus-visible:ring-3 focus-visible:ring-ring/50';
   const cardLink = `${card} hover:border-zinc-300 hover:bg-zinc-50`;
 </script>
 
@@ -66,12 +83,17 @@
   ><title>Tractanda — {s.pageTitle}</title><meta name="description" content={lead} /></svelte:head
 >
 
-<section class="mx-auto max-w-7xl px-4 pt-10 pb-12 sm:px-6 sm:pt-14">
-  <div class="grid items-start gap-10 lg:grid-cols-12">
-    <div class="min-w-0 lg:col-span-5">
-      <h1 class="max-w-2xl text-3xl font-semibold tracking-tight sm:text-4xl">{s.title}</h1>
-      <p class="mt-3 max-w-2xl text-base text-zinc-600 sm:text-lg">{lead}</p>
-      <form class="mt-7 max-w-2xl" role="search" action={href('/suche', lang)} onsubmit={search}>
+<!-- What the archive is, the search and the film: text 5 parts, film 7, both centred vertically -->
+<section class="mx-auto max-w-7xl px-4 py-14 sm:px-6 lg:py-24">
+  <div class="grid items-center gap-10 lg:grid-cols-[5fr_7fr] lg:gap-16">
+    <div class="min-w-0">
+      <h1
+        class="text-4xl leading-[1.08] font-semibold tracking-tight text-balance lg:text-[2.875rem]"
+      >
+        {s.title}
+      </h1>
+      <p class="mt-6 text-lg leading-relaxed text-pretty text-zinc-600">{lead}</p>
+      <form class="mt-10" role="search" action={href('/suche', lang)} onsubmit={search}>
         <label for="start-q" class="text-sm font-medium text-foreground">{s.searchLabel}</label>
         <div class="mt-2 flex flex-col gap-2 sm:flex-row">
           <div class="relative flex-1">
@@ -86,98 +108,128 @@
               autocomplete="off"
               bind:value={q}
               placeholder={s.searchPlaceholder}
-              class="h-11 w-full rounded-lg border border-input bg-white pr-3 pl-11 text-base shadow-xs outline-none placeholder:text-zinc-400 focus-visible:border-zinc-900 focus-visible:ring-4 focus-visible:ring-ring/15"
+              class="h-12 w-full rounded-lg border border-input bg-white pr-3 pl-11 text-base shadow-xs outline-none placeholder:text-zinc-400 focus-visible:border-zinc-900 focus-visible:ring-4 focus-visible:ring-ring/15"
             />
           </div>
-          <Button type="submit" class="h-11 px-6 shadow-xs hover:bg-brand-dark"
+          <Button type="submit" class="h-12 px-6 shadow-xs hover:bg-brand-dark"
             >{t.searchButton}</Button
           >
         </div>
-        <div class="mt-3 flex flex-wrap items-center gap-2 text-sm">
-          <span class="mr-1 text-muted-foreground">{s.examples}</span>
-          {#each s.exampleQueries as example}<a
+        <p class="examples mt-4 text-sm text-muted-foreground">
+          {s.examples}
+          {#each s.exampleQueries as example, i}{i === 0
+              ? ' '
+              : i === s.exampleQueries.length - 1
+                ? ` ${s.or} `
+                : ', '}<a
               href={searchHref(example)}
-              class="rounded-md border border-border px-2.5 py-1 text-zinc-700 outline-none hover:bg-zinc-50 hover:text-foreground focus-visible:ring-3 focus-visible:ring-ring/50"
+              class="rounded-sm font-medium text-zinc-800 underline decoration-zinc-300 underline-offset-4 outline-none hover:decoration-zinc-900 focus-visible:ring-2 focus-visible:ring-ring"
               >{example}</a
             >{/each}
-        </div>
+        </p>
       </form>
-      <div class="index-intro mt-6 max-w-2xl text-sm text-muted-foreground">
-        {#await data.files then files}{#if files !== null}<h2 class="inline font-normal">
-              {t.archiveTotal
-                .replace('{documents}', number(files))
-                .replace('{communes}', number(collected.length))}
-            </h2>
-            <span aria-hidden="true">·</span>{/if}{/await}
-        {s.machineNote}
-      </div>
+      <p class="mt-10 text-sm leading-6 text-muted-foreground">{s.machineNote}</p>
     </div>
-    <div class="min-w-0 lg:col-span-7">
-      <CommuneSearch {communes} />
-      <div class="mt-4"><Map {communes} /></div>
-    </div>
-  </div>
-</section>
-
-<section id="gemeinden" class="border-t border-border">
-  <div class="mx-auto max-w-7xl px-4 py-12 sm:px-6">
-    <div class="max-w-3xl">
-      <div class="flex flex-wrap items-center justify-between gap-3">
-        <h2 class="text-xl font-semibold tracking-tight">{t.discover}</h2>
-        <label
-          ><span class="sr-only">{t.cantonLabel}</span><select
-            bind:value={canton}
-            onchange={() => (visibleCount = FIRST)}
-            class="h-9 rounded-md border border-input bg-white px-2 text-sm shadow-xs outline-none focus-visible:ring-4 focus-visible:ring-ring/15"
-            ><option value="">{t.allCantons}</option>{#each cantons as c}<option>{c}</option
-              >{/each}</select
-          ></label
+    <figure class="film min-w-0">
+      <div class="relative overflow-hidden rounded-xl border border-border bg-zinc-50">
+        <!-- the film has no sound; the caption says what it shows -->
+        <video
+          bind:this={film}
+          class="block aspect-video w-full object-cover"
+          src="/film/tractanda-de.mp4"
+          poster="/film/tractanda-de-poster.jpg"
+          muted
+          loop
+          playsinline
+          preload="metadata"
+          aria-label={s.filmCaption}
+          onplay={() => (playing = true)}
+          onpause={() => (playing = false)}
+        ></video>
+        <button
+          type="button"
+          onclick={toggleFilm}
+          class="absolute right-3 bottom-3 rounded-md bg-white/90 px-2.5 py-1 text-xs font-medium text-zinc-700 shadow-xs ring-1 ring-border outline-none hover:bg-white focus-visible:ring-2 focus-visible:ring-ring"
+          >{playing ? s.pause : s.play}</button
         >
       </div>
-      <p class="coverage-count mt-1 text-muted-foreground">
+      <figcaption class="mt-3 text-sm text-muted-foreground">{s.filmCaption}</figcaption>
+    </figure>
+  </div>
+</section>
+
+<!-- The communes: the map beside the finder and the list -->
+<section id="gemeinden" class="border-t border-border">
+  <div class="mx-auto max-w-7xl px-4 py-14 sm:px-6 lg:py-24">
+    <div class="max-w-2xl">
+      <h2 class="text-2xl font-semibold tracking-tight">{t.discover}</h2>
+      <p class="coverage-count mt-2 text-muted-foreground">
         <strong class="font-medium text-foreground">{number(collected.length)}</strong>
         {t.withDocuments}. {t.coverageNote}
+        {s.pickNote}
       </p>
-      <div class="communes-list -mx-2 mt-5 divide-y divide-border border-y border-border">
-        {#each shown.slice(0, visibleCount) as c (c.bfs_id)}<a
-            class="commune-row flex items-center justify-between gap-3 rounded-md px-2 py-2.5 text-sm text-foreground outline-none hover:bg-zinc-50 focus-visible:ring-3 focus-visible:ring-ring/50"
-            href={href(`/gemeinden/${c.bfs_id}`, lang)}
-            ><span class="min-w-0 flex-1 truncate"
-              >{c.name} <small class="text-[13px] text-muted-foreground">{c.canton}</small></span
-            ><span class="shrink-0 text-[13px] text-muted-foreground"
-              >{c.documents ? docs(c.documents, lang) : t.missing}</span
-            ><ArrowUpRight class="size-3.5 shrink-0 text-zinc-400" aria-hidden="true" /></a
-          >{/each}
-      </div>
-      <div class="mt-4 flex flex-wrap items-center justify-between gap-x-6 gap-y-3 text-sm">
-        <p class="text-muted-foreground">
-          <!-- the heading counts the communes with documents; a second total here would differ -->
-          {#if canton}{s.communeCount.replace('{n}', number(shown.length))} ·
-          {/if}{s.byCount}
-        </p>
-        <div class="flex flex-wrap items-center gap-x-6 gap-y-3">
-          {#if visibleCount < shown.length}
-            <Button
-              variant="outline"
-              class="load-more h-9 px-3"
-              onclick={() => (visibleCount += 50)}>{t.moreCommunes}</Button
-            >
-          {/if}
-          <a
-            class="text-link font-medium text-foreground underline decoration-zinc-300 underline-offset-4 hover:decoration-zinc-900"
-            href={href('/suche', lang)}>{t.topicLink}</a
+    </div>
+    <div class="mt-10 grid items-start gap-10 lg:grid-cols-[7fr_5fr] lg:gap-16">
+      <div class="min-w-0"><Map {communes} /></div>
+      <!-- on a phone the finder comes first: the map is small there -->
+      <div class="order-first min-w-0 lg:order-none">
+        <CommuneSearch {communes} />
+        <div class="mt-10 flex items-center justify-between gap-3">
+          <h3 class="text-sm font-medium">{s.mostDocuments}</h3>
+          <label
+            ><span class="sr-only">{t.cantonLabel}</span><select
+              bind:value={canton}
+              onchange={() => (visibleCount = FIRST)}
+              class="h-8 rounded-md border border-input bg-white px-2 text-sm shadow-xs outline-none focus-visible:ring-4 focus-visible:ring-ring/15"
+              ><option value="">{t.allCantons}</option>{#each cantons as c}<option>{c}</option
+                >{/each}</select
+            ></label
           >
+        </div>
+        <div class="communes-list -mx-2 mt-2 divide-y divide-border border-y border-border">
+          {#each shown.slice(0, visibleCount) as c (c.bfs_id)}<a
+              class="commune-row flex items-center justify-between gap-3 rounded-md px-2 py-2.5 text-sm text-foreground outline-none hover:bg-zinc-50 focus-visible:ring-3 focus-visible:ring-ring/50"
+              href={href(`/gemeinden/${c.bfs_id}`, lang)}
+              ><span class="min-w-0 flex-1 truncate"
+                >{c.name} <small class="text-[13px] text-muted-foreground">{c.canton}</small></span
+              ><span class="shrink-0 text-[13px] text-muted-foreground"
+                >{c.documents ? docs(c.documents, lang) : t.missing}</span
+              ><ArrowUpRight class="size-3.5 shrink-0 text-zinc-400" aria-hidden="true" /></a
+            >{/each}
+        </div>
+        <div class="mt-4 flex flex-wrap items-center justify-between gap-x-6 gap-y-3 text-sm">
+          <p class="text-muted-foreground">
+            <!-- the heading counts the communes with documents; a second total here would differ -->
+            {#if canton}{s.communeCount.replace('{n}', number(shown.length))} ·
+            {/if}{s.byCount}
+          </p>
+          <div class="flex flex-wrap items-center gap-x-6 gap-y-3">
+            {#if visibleCount < shown.length}
+              <Button
+                variant="outline"
+                class="load-more h-9 px-3"
+                onclick={() => (visibleCount += 50)}>{t.moreCommunes}</Button
+              >
+            {/if}
+            <a
+              class="text-link font-medium text-foreground underline decoration-zinc-300 underline-offset-4 hover:decoration-zinc-900"
+              href={href('/suche', lang)}>{t.topicLink}</a
+            >
+          </div>
         </div>
       </div>
     </div>
   </div>
 </section>
 
-<section id="offen" class="border-t border-border">
-  <div class="mx-auto max-w-7xl px-4 py-12 sm:px-6">
-    <h2 class="text-xl font-semibold tracking-tight">{s.openTitle}</h2>
-    <p class="mt-1 text-zinc-600">{s.openIntro}</p>
-    <div class="mt-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+<!-- Code, data, paper and API, on a grey band -->
+<section id="offen" class="border-t border-border bg-zinc-50">
+  <div class="mx-auto max-w-7xl px-4 py-14 sm:px-6 lg:py-24">
+    <div class="max-w-2xl">
+      <h2 class="text-2xl font-semibold tracking-tight">{s.openTitle}</h2>
+      <p class="mt-2 text-zinc-600">{s.openIntro}</p>
+    </div>
+    <div class="mt-10 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
       <a href={SOURCE_URL} class={cardLink}>
         <img src={ghIcon} alt="" class="size-5" />
         <span class="mt-4 inline-flex items-center gap-1 font-medium"
@@ -206,7 +258,7 @@
         <span class="mt-1 text-sm text-zinc-600">{s.apiText}</span>
       </a>
     </div>
-    <p class="mt-6 text-sm text-muted-foreground">{s.mcpLabel}</p>
+    <p class="mt-8 text-sm text-muted-foreground">{s.mcpLabel}</p>
     <div
       class="mt-2 flex min-w-0 items-center justify-between gap-3 rounded-lg bg-zinc-950 py-2 pr-2 pl-4 font-mono text-sm text-zinc-100"
     >
@@ -220,32 +272,5 @@
       >
       <span class="sr-only" aria-live="polite">{copied ? s.copied : ''}</span>
     </div>
-  </div>
-</section>
-
-<section id="sammeln" class="border-t border-border">
-  <div class="mx-auto grid max-w-7xl gap-8 px-4 py-12 sm:px-6 lg:grid-cols-12">
-    <div class="lg:col-span-5">
-      <h2 class="text-xl font-semibold tracking-tight">{s.collectTitle}</h2>
-      <p class="mt-1 max-w-md text-zinc-600">{s.collectIntro}</p>
-      <a
-        class="mt-3 inline-block text-sm font-medium text-foreground underline decoration-zinc-300 underline-offset-4 hover:decoration-zinc-900"
-        href={href('/ueber-uns', lang)}>{s.aboutLink}</a
-      >
-    </div>
-    <ul class="space-y-3 text-zinc-700 lg:col-span-7">
-      {#each s.rules as rule, i}<li class="flex gap-3">
-          <Check
-            class="mt-1 size-4 shrink-0 text-brand"
-            strokeWidth={2.4}
-            aria-hidden="true"
-          /><span
-            >{rule}{#if i === 4}{' '}<span
-                class="[&_a]:font-medium [&_a]:text-foreground [&_a]:underline [&_a]:decoration-zinc-300 [&_a]:underline-offset-4 [&_a:hover]:decoration-zinc-900"
-                ><ReportProblem {lang} /></span
-              >{/if}</span
-          >
-        </li>{/each}
-    </ul>
   </div>
 </section>
