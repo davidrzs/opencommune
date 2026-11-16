@@ -14,9 +14,9 @@ Environment=PUBLIC_URL=https://www.tractanda.ch
 Environment=FORMER_HOSTS=tractanda.ch,opencommune.ch,www.opencommune.ch
 # USAGE_TOKEN for the operator's report GET /api/usage, readable by root only (see README.md).
 EnvironmentFile=-/etc/opencommune/secrets.env
-# Search engines may index the pages; the commune pages only once the second switch is true.
+# Search engines may index the pages, the commune pages included.
 Environment=SEARCH_INDEXING=true
-Environment=SEARCH_INDEX_COMMUNES=false
+Environment=SEARCH_INDEX_COMMUNES=true
 DynamicUser=yes
 StateDirectory=opencommune
 ProtectSystem=strict
