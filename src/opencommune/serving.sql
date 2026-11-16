@@ -36,13 +36,13 @@ CREATE TABLE IF NOT EXISTS documents (
     title TEXT,                     -- the title as printed, as the classifier read it; private names written as [name]
     body_name TEXT,                 -- the body as printed, as the classifier read it; private names written as [name]
     first_seen TEXT NOT NULL,       -- ISO date of the first download
-    listing_date TEXT,              -- ISO date the commune's listing gives, if any
+    listing_date TEXT,              -- ISO date the commune's listing gives, if any and not after the build day
     page_count INTEGER,
     run_id TEXT NOT NULL REFERENCES runs (id), -- the run that gave the fields below
     kind TEXT,                      -- meeting_booklet | bulletin | standalone
     body_kind TEXT,                 -- parliament | citizens_assembly | executive | commission | commune | other_public_body | private | unknown
-    date TEXT,                      -- ISO date the classifier read, if any
-    years TEXT,                     -- comma-separated years the document concerns, as the classifier read them
+    date TEXT,                      -- ISO date the classifier read, if any and not after the build day
+    years TEXT,                     -- comma-separated years the document concerns, as the classifier read them, none after the build year
     year INTEGER,                   -- the year of date; else the one year in years; else of listing_date; else NULL
     languages TEXT,                 -- comma-separated: de, fr, it, rm, en, other
     personal_data INTEGER NOT NULL, -- 1 when the classifier saw personal data, else 0; never shown
@@ -80,6 +80,7 @@ CREATE TABLE IF NOT EXISTS sections (
     first_page INTEGER NOT NULL,
     last_page INTEGER NOT NULL,
     partly_unseen INTEGER NOT NULL, -- 1 when the section spans pages the classifier never saw
+    pages INTEGER NOT NULL,         -- pages of the document the section counts: its range, less pages an earlier section counts
     PRIMARY KEY (sha256, position)
 ) WITHOUT ROWID;
 CREATE INDEX IF NOT EXISTS sections_family ON sections (family, sha256);

@@ -54,7 +54,7 @@ def serving_db(path, documents=DOCUMENTS, sections=SECTIONS):
             "personal_data) VALUES (?, '2026-01-01', ?, 'cls', ?, ?, 0)",
             documents,
         )
-        db.executemany("INSERT INTO sections VALUES (?, ?, ?, ?, ?, ?, 0)", sections)
+        db.executemany("INSERT INTO sections VALUES (?, ?, ?, ?, ?, ?, 0, 0)", sections)
         db.commit()
     return path
 

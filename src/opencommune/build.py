@@ -101,8 +101,8 @@ def run(serving_path: Path, database_path: Path, process_path: Path) -> dict[str
             with db:
                 db.executescript(files(__package__).joinpath("serving.sql").read_text())
                 register = load_register()
-                _communes(db, database_path)
-                _documents(db, database_path, process_path, register)
+                _communes(db, database_path, register)
+                _documents(db, database_path, process_path)
                 _register(db, register)
                 # The title index reads `documents` (serving.sql), so it comes last.
                 db.execute("INSERT INTO documents_fts (documents_fts) VALUES ('rebuild')")
@@ -116,13 +116,24 @@ def run(serving_path: Path, database_path: Path, process_path: Path) -> dict[str
     return counts
 
 
-def _communes(db, database_path: Path) -> None:
+def _communes(db, database_path: Path, register) -> None:
+    """The configured communes, then every other commune of the register: each Swiss commune has a
+    page, also one that refuses the crawler or has published nothing yet."""
     with closing(sqlite3.connect(f"file:{database_path}?mode=ro", uri=True)) as main:
         rows = main.execute(
             "SELECT bfs_id, name, canton, nullif(language, ''), website, vendor, "
             "publicity_regime, lat, lon FROM communes"
         ).fetchall()
     db.executemany("INSERT INTO communes VALUES (?,?,?,?,?,?,?,?,?)", rows)
+    configured = {row[0] for row in rows}
+    db.executemany(
+        "INSERT INTO communes (bfs_id, name, canton, website, vendor) VALUES (?,?,?,?,?)",
+        [
+            (e.bfs_id, e.name, e.canton, e.website, e.vendor)
+            for e in register
+            if e.bfs_id not in configured
+        ],
+    )
 
 
 def _first_seen() -> dict[str, str]:
@@ -164,7 +175,7 @@ def _year(date: str | None, years: list, listing_date: str | None) -> int | None
     return int(listing_date[:4]) if listing_date else None
 
 
-def _documents(db, database_path: Path, process_path: Path, register) -> None:
+def _documents(db, database_path: Path, process_path: Path) -> None:
     record = records.load(CLASSIFICATION)
     with closing(sqlite3.connect(f"file:{database_path}?mode=ro", uri=True)) as main:
         catalogue = main.execute("SELECT sha256, source_date FROM pdf_catalog").fetchall()
@@ -180,19 +191,11 @@ def _documents(db, database_path: Path, process_path: Path, register) -> None:
             )
         }
 
-    # A file can be linked by a register commune that is not configured: it joins `communes`.
     known = {row[0] for row in db.execute("SELECT bfs_id FROM communes")}
-    by_id = {e.bfs_id: e for e in register}
-    for bfs in sorted({bfs for sha, bfs, _ in links if sha in answers} - known):
-        e = by_id.get(bfs)
-        if e is not None:
-            db.execute(
-                "INSERT INTO communes (bfs_id, name, canton, website, vendor) VALUES (?,?,?,?,?)",
-                (e.bfs_id, e.name, e.canton, e.website, e.vendor),
-            )
-            known.add(bfs)
-
     first_seen = _first_seen()
+    # Nothing is dated after the day of the build: a later date or year is a misreading (a target
+    # year, a typo) and would otherwise sort first in every list.
+    today = dt.date.today()
     models: set[str] = set()
     listed: set[str] = set()
     for sha, listing_date in catalogue:
@@ -203,7 +206,13 @@ def _documents(db, database_path: Path, process_path: Path, register) -> None:
         models.add(model or record.settings.model)
         listed.add(sha)
         date = _iso_date(answer.get("date"))
-        years = answer.get("years") or []
+        if date and date > today.isoformat():
+            date = None
+        years = [
+            y for y in answer.get("years") or [] if not (isinstance(y, int) and y > today.year)
+        ]
+        if listing_date and listing_date > today.isoformat():
+            listing_date = None
         db.execute(
             "INSERT INTO documents VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)",
             (
@@ -227,13 +236,15 @@ def _documents(db, database_path: Path, process_path: Path, register) -> None:
         shown = None
         if pages and sent is not None and sent < pages:
             shown = {i + 1 for i in pages_to_send(pages, record.settings.max_pages)}
+        counted: set[int] = set()  # pages an earlier section of this document already counts
         for position, section in enumerate(answer.get("sections") or [], 1):
             first, last = section["first_page"], section["last_page"]
-            unseen = shown is not None and any(
-                p not in shown for p in range(min(first, last), max(first, last) + 1)
-            )
+            span = range(min(first, last), max(first, last) + 1)
+            unseen = shown is not None and any(p not in shown for p in span)
+            own = {p for p in span if p >= 1 and (not pages or p <= pages)} - counted
+            counted |= own
             db.execute(
-                "INSERT INTO sections VALUES (?,?,?,?,?,?,?)",
+                "INSERT INTO sections VALUES (?,?,?,?,?,?,?,?)",
                 (
                     sha,
                     position,
@@ -242,6 +253,7 @@ def _documents(db, database_path: Path, process_path: Path, register) -> None:
                     first,
                     last,
                     int(unseen),
+                    len(own),
                 ),
             )
     db.executemany(

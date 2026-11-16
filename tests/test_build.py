@@ -115,7 +115,7 @@ def test_build_writes_the_serving_database_from_scratch(tmp_path, monkeypatch):
 
     counts = build.run(serving, main, process)
     assert counts == {
-        "communes": 2,
+        "communes": 3,
         "runs": 1,
         "documents": 2,
         "document_communes": 3,
@@ -185,6 +185,8 @@ def test_build_writes_the_serving_database_from_scratch(tmp_path, monkeypatch):
         "WHERE d.sha256 = ? ORDER BY c.name",
         (SAMPLED,),
     ).fetchall() == [("Alpha",), ("Beta",)]
+    # every commune of the register has a row, also one without documents
+    assert db.execute("SELECT name FROM communes WHERE bfs_id = 3").fetchone() == ("Gamma",)
     run_id, settings_json, note, documents = db.execute(
         "SELECT id, settings, note, documents FROM runs"
     ).fetchone()
@@ -199,3 +201,58 @@ def test_build_writes_the_serving_database_from_scratch(tmp_path, monkeypatch):
     ).fetchone()
     assert row == (1, "https://alpha.example/", "rate_limited", 1)
     db.close()
+
+
+def test_a_date_or_year_after_the_build_day_is_left_out(tmp_path, monkeypatch):
+    main, process = corpus(tmp_path, monkeypatch)
+    misread = {**ANSWER, "date": "2204-10-25", "years": [2024, 2204]}
+    with Store(process) as store, store.transaction():
+        store.add_answer(
+            PENDING, build.CLASSIFICATION, "cls-2", misread, {}, model="m", pages=2, pages_sent=2
+        )
+    with sqlite3.connect(main) as db:
+        db.execute("UPDATE pdf_catalog SET source_date = '2999-01-01' WHERE sha256 = ?", (PENDING,))
+    serving = tmp_path / "serving.db"
+
+    build.run(serving, main, process)
+
+    db = sqlite3.connect(serving)
+    # the date, the year 2204 and the listing date are left out; the one year left counts
+    assert db.execute(
+        "SELECT date, years, year, listing_date FROM documents WHERE sha256 = ?", (PENDING,)
+    ).fetchone() == (None, "2024", 2024, None)
+
+
+def test_each_page_counts_once_for_the_first_section_that_covers_it(tmp_path, monkeypatch):
+    main, process = corpus(tmp_path, monkeypatch)
+    overlapping = {
+        **ANSWER,
+        "sections": [
+            {"type": "proposal", "first_page": 1, "last_page": 31},
+            {"type": "decisions", "first_page": 31, "last_page": 32},
+            {"type": "notice", "first_page": 30, "last_page": 40},
+        ],
+    }
+    with Store(process) as store, store.transaction():
+        store.add_answer(
+            PENDING,
+            build.CLASSIFICATION,
+            "cls-2",
+            overlapping,
+            {},
+            model="m",
+            pages=33,
+            pages_sent=33,
+        )
+    serving = tmp_path / "serving.db"
+
+    build.run(serving, main, process)
+
+    db = sqlite3.connect(serving)
+    # page 31 belongs to the proposal; the notice keeps only page 33, the last page of the file
+    assert db.execute(
+        "SELECT type, pages FROM sections WHERE sha256 = ? ORDER BY position", (PENDING,)
+    ).fetchall() == [("proposal", 31), ("decisions", 1), ("notice", 1)]
+    assert db.execute(
+        "SELECT pages FROM sections WHERE sha256 = ? ORDER BY position", (SAMPLED,)
+    ).fetchall() == [(10,), (11,)]
