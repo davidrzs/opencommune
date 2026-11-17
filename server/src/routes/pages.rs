@@ -132,7 +132,8 @@ fn llms_search(base: &str) -> String {
          OCR reaches them.\n\
          - The text is machine-extracted (the PDF's text layer, or OCR) and no person has checked \
          it. Names, street addresses and e-mail addresses are replaced by `［name］`, `［address］` \
-         and `［email］`. Cite the document and the page.\n\n"
+         and `［email］`, dates of birth and mobile numbers by `［date］` and `［phone］`. Cite the \
+         document and the page.\n\n"
     )
 }
 

@@ -115,6 +115,45 @@ def test_a_page_is_left_out_until_the_privacy_check_has_read_its_text(tmp_path):
         assert db.execute("SELECT sha256, page FROM pages").fetchall() == [(A, 6), (D, 1)]
 
 
+def test_a_name_found_on_one_page_is_replaced_on_the_other_pages_of_the_document(tmp_path):
+    pages = [
+        (A, 1, "ocr:q", "Crédit d'engagement pour Hans Muster"),
+        (A, 2, "layer:d", "Der Gemeinderat beschliesst den Steuerfuss auf Antrag Muster."),
+        (A, 6, "layer:d", "Antrag Tempo 30 von Hans Muster auf der Hauptstrasse"),
+        (D, 1, "layer:d", "Beschluss Nr. 123/2026 Muster"),
+    ]
+    serving = serving_db(tmp_path / "serving.db")
+    with closing(sqlite3.connect(serving)) as db, db:
+        db.execute(
+            "INSERT INTO communes (bfs_id, name, canton) VALUES (1, 'Rüti bei Lyssach', 'BE')"
+        )
+    text = text_db(tmp_path / "text.db", pages)
+
+    def first_page_only(text):  # the check finds the name on page 1 alone
+        start = text.find("Hans Muster")
+        return [["private_person", start, start + 11, 0.9]] if text.startswith("Crédit") else []
+
+    privacy = privacy_db(tmp_path / "privacy.db", serving, text, first_page_only)
+    out = tmp_path / "fulltext.db"
+    counts = fulltext.run(out, serving, text, privacy)
+    assert counts["marks"] == {"private_person": 3}
+    with closing(sqlite3.connect(out)) as db:
+        texts = db.execute("SELECT text FROM page_fts ORDER BY rowid").fetchall()
+    name = redact.MARKS["private_person"]
+    assert texts == [
+        (f"Crédit d'engagement pour {name}",),
+        (f"Der Gemeinderat beschliesst den Steuerfuss auf Antrag {name}.",),
+        (f"Antrag Tempo 30 von {name} auf der Hauptstrasse",),
+        ("Beschluss Nr. 123/2026 Muster",),  # another document
+    ]
+    assert fulltext._commune_words(serving) == {"Rüti", "bei", "Lyssach"}
+    with closing(sqlite3.connect(serving)) as db, db:
+        db.execute(
+            "INSERT INTO communes (bfs_id, name, canton) VALUES (2, 'Châtel-Saint-Denis', 'FR')"
+        )
+    assert fulltext._commune_words(serving) >= {"Châtel-Saint-Denis", "Châtel", "Saint", "Denis"}
+
+
 def test_build_fulltext_writes_into_the_data_directory(tmp_path, monkeypatch):
     monkeypatch.setattr(settings, "data_dir", tmp_path)
     serving = serving_db(tmp_path / "serving.db")

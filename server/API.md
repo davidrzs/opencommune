@@ -140,7 +140,9 @@ Full-text search in the text of the pages. It needs the full-text index; without
 at least 20 characters of text. It leaves out bulletins and the documents of private bodies. Pages
 without a text layer come in as OCR reaches them. The text is redacted: names, street addresses and
 e-mail addresses are replaced by the marks `［name］`, `［address］` and `［email］` (`［secret］` for
-passwords and keys), in snippets and in `/api/documents/{sha256}/pages` alike.
+passwords and keys), also where they are mentioned again later in the document, and dates of birth
+and mobile numbers by `［date］` and `［phone］`, in snippets and in `/api/documents/{sha256}/pages`
+alike.
 
 Parameters; the filters are optional and combine with AND, and a blank text filter is no filter:
 

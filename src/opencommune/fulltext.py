@@ -19,6 +19,7 @@ import sqlite3
 from collections import Counter
 from contextlib import closing
 from datetime import UTC, datetime
+from itertools import groupby
 from pathlib import Path
 
 from . import scope
@@ -77,7 +78,8 @@ def run(fulltext_path: Path, serving_path: Path, text_path: Path, privacy_path: 
         with closing(sqlite3.connect(tmp)) as db, closing(store.read_only(privacy_path)) as privacy:
             with db:
                 db.executescript(SCHEMA)
-                counts = _index(db, scope.pages(serving_path, text_path), privacy)
+                keep = _commune_words(serving_path)
+                counts = _index(db, scope.pages(serving_path, text_path), privacy, keep)
                 log.info("fulltext: merging the index")
                 db.execute("INSERT INTO page_fts (page_fts) VALUES ('optimize')")
                 rows = {**record, **{k: json.dumps(v) for k, v in counts.items()}, "rules": RULES}
@@ -90,49 +92,70 @@ def run(fulltext_path: Path, serving_path: Path, text_path: Path, privacy_path: 
     return counts
 
 
+def _commune_words(serving_path: Path) -> frozenset[str]:
+    """The words of every commune's name in the serving database and the parts of those with a
+    hyphen (Châtel-Saint-Denis: Châtel, Saint, Denis): never taken for a person's name."""
+    with closing(sqlite3.connect(f"file:{serving_path}?mode=ro", uri=True)) as db:
+        names = [name for (name,) in db.execute("SELECT name FROM communes")]
+    words = {word for name in names for word in redact.WORD.findall(name)}
+    return frozenset(words | {part for word in words for part in word.split("-") if part})
+
+
 def _sha256(path: Path) -> str:
     with path.open("rb") as file:
         return hashlib.file_digest(file, "sha256").hexdigest()
 
 
-def _index(db: sqlite3.Connection, pages_in_scope, privacy: sqlite3.Connection) -> dict:
+def _index(
+    db: sqlite3.Connection,
+    pages_in_scope,
+    privacy: sqlite3.Connection,
+    keep: frozenset[str] = frozenset(),
+) -> dict:
     """Write the usable pages the privacy check has read, redacted, into `pages` and `page_fts`;
-    return the counts."""
+    return the counts. A document's pages are redacted together, so that what the check found on
+    one page is replaced on the others too (`redact.mentions`); `keep`: words that are never
+    names there."""
     pages = {"in_sections": 0, "no_text": 0, "too_short": 0, "not_checked": 0, "indexed": 0}
     by_type = {kind: {"pages": 0, "indexed": 0} for kind in scope.TYPES}
     marks: Counter = Counter()
     documents: set[str] = set()
     rows: list[tuple] = []
     texts: list[tuple] = []
-    document, found = None, {}
-    for page in pages_in_scope:
-        pages["in_sections"] += 1
-        for kind in page.types:
-            by_type[kind]["pages"] += 1
-        if page.raw is None:
-            pages["no_text"] += 1
-            continue
-        if not page.usable:
-            pages["too_short"] += 1
-            continue
-        if page.sha256 != document:
-            document, found = page.sha256, store.checked(privacy, page.sha256)
-        text = page.text
-        spans = found.get((page.page, hashlib.sha256(text.encode()).hexdigest()))
-        if spans is None:
-            pages["not_checked"] += 1
-            continue
-        text, marked = redact.redact(text, spans)
-        marks.update(marked)
-        pages["indexed"] += 1
-        for kind in page.types:
-            by_type[kind]["indexed"] += 1
-        documents.add(page.sha256)
-        rows.append((pages["indexed"], page.sha256, page.page, page.source, page.run))
-        texts.append((pages["indexed"], text))
-        if len(rows) >= BATCH:
-            _insert(db, rows, texts)
-            log.debug("fulltext: %d pages of %d documents", pages["indexed"], len(documents))
+    for sha256, document in groupby(pages_in_scope, key=lambda page: page.sha256):
+        found = None
+        checked = []
+        for page in document:
+            pages["in_sections"] += 1
+            for kind in page.types:
+                by_type[kind]["pages"] += 1
+            if page.raw is None:
+                pages["no_text"] += 1
+                continue
+            if not page.usable:
+                pages["too_short"] += 1
+                continue
+            if found is None:
+                found = store.checked(privacy, sha256)
+            text = page.text
+            spans = found.get((page.page, hashlib.sha256(text.encode()).hexdigest()))
+            if spans is None:
+                pages["not_checked"] += 1
+                continue
+            checked.append((page, text, spans))
+        others = redact.mentions(((text, spans) for _, text, spans in checked), keep)
+        for page, text, spans in checked:
+            text, marked = redact.redact(text, spans, others)
+            marks.update(marked)
+            pages["indexed"] += 1
+            for kind in page.types:
+                by_type[kind]["indexed"] += 1
+            documents.add(sha256)
+            rows.append((pages["indexed"], sha256, page.page, page.source, page.run))
+            texts.append((pages["indexed"], text))
+            if len(rows) >= BATCH:
+                _insert(db, rows, texts)
+                log.debug("fulltext: %d pages of %d documents", pages["indexed"], len(documents))
     _insert(db, rows, texts)
     return {
         "documents": len(documents),

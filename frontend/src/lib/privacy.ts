@@ -36,7 +36,7 @@ export const privacy: Record<
         title: 'Personen in den Dokumenten',
         paragraphs: [
           'Das Archiv beruht auf öffentlich zugänglichen Dokumenten der Gemeinden und ihrer Parlamente und verlinkt auf das Original bei der Gemeinde. In den Titeln erscheinen Namen von Privatpersonen als [name].',
-          'Für die Volltextsuche ersetzt ein automatisches Verfahren Namen, Strassenadressen und E-Mail-Adressen im Text der Seiten durch Platzhalter. Dabei können einzelne Angaben übersehen werden.',
+          'Für die Volltextsuche ersetzt ein automatisches Verfahren Namen, Strassenadressen, E-Mail-Adressen, Geburtsdaten und Handynummern im Text der Seiten durch Platzhalter, auch dort, wo ein Name im selben Dokument erneut vorkommt. Dabei können einzelne Angaben übersehen werden.',
           'Wer eine Angabe zu einer Person findet, die nicht hierher gehört, kann uns schreiben. Wir prüfen jede Meldung und entfernen die Angabe, wo nötig.'
         ]
       },
@@ -86,7 +86,7 @@ export const privacy: Record<
         title: 'Personnes mentionnées dans les documents',
         paragraphs: [
           'L’archive repose sur des documents publics des communes et de leurs parlements et renvoie à l’original sur le site de la commune. Dans les titres, les noms de personnes privées apparaissent sous la forme [name].',
-          'Pour la recherche en texte intégral, un procédé automatique remplace les noms, les adresses postales et les adresses e-mail dans le texte des pages par des marques. Certaines indications peuvent lui échapper.',
+          'Pour la recherche en texte intégral, un procédé automatique remplace les noms, les adresses postales, les adresses e-mail, les dates de naissance et les numéros de mobile dans le texte des pages par des marques, y compris là où un nom revient plus loin dans le même document. Certaines indications peuvent lui échapper.',
           'Si vous trouvez une information sur une personne qui n’a pas sa place ici, écrivez-nous. Nous examinons chaque signalement et retirons l’information si nécessaire.'
         ]
       },
@@ -136,7 +136,7 @@ export const privacy: Record<
         title: 'Persone menzionate nei documenti',
         paragraphs: [
           'L’archivio si basa su documenti pubblici dei comuni e dei loro parlamenti e rimanda all’originale sul sito del comune. Nei titoli i nomi di persone private appaiono come [name].',
-          'Per la ricerca a testo integrale un procedimento automatico sostituisce nel testo delle pagine nomi, indirizzi stradali e indirizzi e-mail con dei segnaposto. Alcune indicazioni possono sfuggirgli.',
+          'Per la ricerca a testo integrale un procedimento automatico sostituisce nel testo delle pagine nomi, indirizzi stradali, indirizzi e-mail, date di nascita e numeri di cellulare con dei segnaposto, anche dove un nome ricompare più avanti nello stesso documento. Alcune indicazioni possono sfuggirgli.',
           'Se trovate un’informazione su una persona che non dovrebbe trovarsi qui, scriveteci. Esaminiamo ogni segnalazione e rimuoviamo l’informazione se necessario.'
         ]
       },

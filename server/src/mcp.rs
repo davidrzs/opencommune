@@ -65,7 +65,8 @@ the documents of those pages. Next, read the pages around a hit with read_pages 
 document and the page. The page text is machine-extracted (the PDF's text layer, or OCR) and no \
 person has checked yet whether it is complete or right; titles, dates and sections come from an \
 automatic classification. Names, street addresses and e-mail addresses in the text are replaced \
-by the marks ［name］, ［address］ and ［email］ (［secret］ for passwords and keys).";
+by the marks ［name］, ［address］ and ［email］ (［secret］ for passwords and keys), dates of birth \
+and mobile numbers by ［date］ and ［phone］.";
 
 const READ_PAGES_DESCRIPTION: &str = "Read the text of up to 10 pages of one document: `sha256` \
 (from search_text or search_documents), `from` (default 1) and `to` (default from + 9). Returns \
@@ -74,7 +75,8 @@ text recognition on the page image), `text` and `original_url` (opens the file a
 page outside the search has no text and a `reason` instead. The text is machine-extracted: \
 reading order, tables and hyphenation can be off, and no person has checked yet whether it is \
 complete or right. Names, street addresses and e-mail addresses are replaced by the marks ［name］, \
-［address］ and ［email］. Cite the page and its original_url.";
+［address］ and ［email］, dates of birth and mobile numbers by ［date］ and ［phone］. Cite the page \
+and its original_url.";
 
 #[derive(Deserialize, JsonSchema)]
 #[schemars(crate = "rmcp::schemars")]

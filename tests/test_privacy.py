@@ -183,3 +183,91 @@ def test_redaction_marks_names_addresses_and_emails_and_keeps_the_rest():
     assert redact.redact(text, []) == (text, {})
     with pytest.raises(ValueError, match="no rule"):
         redact.redact(text, [["passport", 0, 4, 0.9]])
+
+
+def test_what_the_check_found_once_is_replaced_wherever_else_it_stands_in_the_document():
+    name, address, email = (
+        redact.MARKS[label] for label in ("private_person", "private_address", "private_email")
+    )
+    first = (
+        "Baugesuch von Hans Muster, Dorfstrasse 4, hans@example.ch. "
+        "Gemeinderat Peter Keller (SVP) aus Wädenswil."
+    )
+    later = (
+        "Herr Muster zieht das Gesuch zurück; Musters Nachbar Hans Peter Muster auch.\n"
+        "Muster\nHans antwortet. Gemeinderat Keller stimmt zu. Die SVP und Wädenswil, "
+        "Dorfstrasse 4, hans@example.ch. Musterhaus bleibt."
+    )
+
+    def span(label, words):
+        start = first.index(words)
+        return [label, start, start + len(words), 0.9]
+
+    spans = [
+        span("private_person", "Hans Muster"),
+        span("private_address", "Dorfstrasse 4"),
+        span("private_email", "hans@example.ch"),
+        # a span that runs over a party and a commune: only the names count
+        span("private_person", "Peter Keller (SVP) aus Wädenswil"),
+    ]
+    others = redact.mentions([(first, spans), (later, [])], keep=frozenset({"Wädenswil"}))
+    assert redact.redact(first, spans, others) == (
+        f"Baugesuch von {name}, {address}, {email}. Gemeinderat {name}.",
+        {"private_person": 2, "private_address": 1, "private_email": 1},
+    )
+    redacted, marks = redact.redact(later, [], others)
+    assert redacted == (
+        f"Herr {name} zieht das Gesuch zurück; {name} Nachbar {name} {name} {name} auch.\n"
+        f"{name} antwortet. Gemeinderat {name} stimmt zu. Die SVP und Wädenswil, {address}, "
+        f"{email}. Musterhaus bleibt."
+    )
+    assert marks == {"private_person": 7, "private_address": 1, "private_email": 1}
+    assert redact.mentions([(later, [])]) == {}
+
+
+def test_dates_of_birth_the_names_before_them_and_mobile_numbers_are_found_by_their_form():
+    name, date, phone = (
+        redact.MARKS[label] for label in ("private_person", "birth_date", "mobile_phone")
+    )
+    text = (
+        "Gesuchsteller (geb. 12.03.1956), née le 3 mars 1950, Natel 079 123 45 67 oder "
+        "+41 79 123 45 68, Tel. 044 123 45 67, Konto 0790.3100.00, Total -123'076 23410.50, "
+        "Sitzung vom 12.03.2026, geboren am 1. Januar 1960.\n"
+        "Leopold, geboren am 3. Juni 1950; Schielke Ronald, geb. 4. Februar 1960; "
+        "Hans Muster (geb. 1956)."
+    )
+    redacted = (
+        f"{name} (geb. {date}), née le {date}, Natel {phone} oder {phone}, "
+        "Tel. 044 123 45 67, Konto 0790.3100.00, Total -123'076 23410.50, "
+        f"Sitzung vom 12.03.2026, geboren am {date}.\n"
+        f"{name}, geboren am {date}; {name}, geb. {date}; {name} (geb. 1956)."
+    )
+    marks = {"birth_date": 5, "mobile_phone": 2, "private_person": 4}
+    assert redact.redact(text, []) == (redacted, marks)
+
+
+def test_places_titles_and_ordinary_words_are_not_taken_for_names_elsewhere():
+    name, address = redact.MARKS["private_person"], redact.MARKS["private_address"]
+    first = "Mme Anne Page, Bahnhofstrasse 5, 3018 Bern, Luzern; Wald Forst-Zillis."
+    later = (
+        "Mme Dupont et Anne. Page 2 de la page. Bahnhofstrasse 5 bleibt. 3018 Bern, Luzern, "
+        "Forst-Zillis-Schamserberg."
+    )
+
+    def span(label, words):
+        start = first.index(words)
+        return [label, start, start + len(words), 0.9]
+
+    spans = [
+        span("private_person", "Mme Anne Page"),
+        span("private_address", "Bahnhofstrasse 5"),
+        span("private_address", "3018 Bern"),  # a postcode and a commune
+        span("private_address", "Luzern"),  # a place taken for an address
+        span("private_person", "Forst-Zillis"),
+    ]
+    keep = frozenset({"Bern", "Luzern", "Zillis-Reischen", "Zillis", "Reischen"})
+    others = redact.mentions([(first, spans), (later, [])], keep)
+    assert redact.redact(later, [], others)[0] == (
+        f"Mme Dupont et {name}. Page 2 de la page. {address} bleibt. 3018 Bern, Luzern, "
+        "Forst-Zillis-Schamserberg."
+    )
