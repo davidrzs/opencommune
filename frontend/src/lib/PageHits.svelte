@@ -48,7 +48,7 @@
             class="font-medium text-foreground underline-offset-4 hover:text-primary hover:underline"
             href={originalLink(hit.original_url, at)}
             target="_blank"
-            rel="noreferrer"
+            rel="nofollow noreferrer"
             title={t.openAt.replace('{n}', fmt(hit.page, lang))}
             >{t.pageAbbr} {fmt(hit.page, lang)} ↗</a
           >{#if hit.section_types.length}{' · '}<span class="inline-flex items-center gap-1.5"

@@ -1120,7 +1120,7 @@ async fn commune_pages_carry_their_facts_for_crawlers() {
     assert!(facts.starts_with("<h1>Zürich</h1><p>Zürich (ZH) : 4 documents"));
     assert!(facts.contains("<p>2024: 2 · 2023: 1 · sans année: 1</p>"));
     assert!(facts.contains(
-        "<li>12.06.2024: <a href=\"/original/aaaa?commune=261\">Protokoll Gemeindeversammlung 2024</a></li>"
+        "<li>12.06.2024: <a href=\"/original/aaaa?commune=261\" rel=\"nofollow\">Protokoll Gemeindeversammlung 2024</a></li>"
     ));
     // a newly deployed front end names new script files: the next page uses its shell at once
     let deployed = SHELL.replace("<head>", "<head><script src=\"/_app/new.js\"></script>");

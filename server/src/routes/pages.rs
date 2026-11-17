@@ -250,7 +250,8 @@ pub async fn commune(state: AppState, lang: Lang, id: String) -> Result<Response
         for d in &documents.items {
             let day = d.date.as_deref().or(d.listing_date.as_deref());
             facts.push_str(&format!(
-                "<li>{}<a href=\"{}?commune={}\">{}</a></li>",
+                // nofollow: robots.txt keeps crawlers off /original/, this tells those that read links
+                "<li>{}<a href=\"{}?commune={}\" rel=\"nofollow\">{}</a></li>",
                 day.map(|day| format!("{}: ", date(day)))
                     .unwrap_or_default(),
                 escape(&d.original_url),

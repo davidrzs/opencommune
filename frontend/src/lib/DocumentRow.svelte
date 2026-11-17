@@ -158,7 +158,7 @@
         class="text-primary underline-offset-4 hover:underline"
         href={open(s.first_page)}
         target="_blank"
-        rel="noreferrer">{t.openAt.replace('{n}', fmt(s.first_page, lang))} ↗</a
+        rel="nofollow noreferrer">{t.openAt.replace('{n}', fmt(s.first_page, lang))} ↗</a
       >
     </p>{/each}
   {#if doc.sections.length > 1 && total > 0}<div
@@ -170,7 +170,7 @@
           class:unseen={s.partly_unseen}
           href={open(s.first_page)}
           target="_blank"
-          rel="noreferrer"
+          rel="nofollow noreferrer"
           tabindex="-1"
           title={tip(s)}
           aria-label={tip(s)}
@@ -187,7 +187,7 @@
             class="family-{s.family} inline-flex items-center gap-1.5 rounded-md border border-border px-2 py-0.5 text-xs text-zinc-700 hover:border-zinc-400 hover:text-foreground"
             href={open(s.first_page)}
             target="_blank"
-            rel="noreferrer"
+            rel="nofollow noreferrer"
             title={label(lang, 'family', s.family)}
             ><i class="size-2 shrink-0 rounded-full bg-(--family)" aria-hidden="true"></i>{name(s)}
             <span class="text-muted-foreground">{range(s)}</span>{#if s.partly_unseen}<span
@@ -208,7 +208,7 @@
         class="text-link font-medium text-primary underline-offset-4 hover:underline"
         href={open()}
         target="_blank"
-        rel="noreferrer">{t.original} ↗</a
+        rel="nofollow noreferrer">{t.original} ↗</a
       >{/if}
     <ReportProblem {lang} entry={doc.sha256} source={open()} />
     {#if doc.run_id}<a
