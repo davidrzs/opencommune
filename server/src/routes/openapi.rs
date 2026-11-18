@@ -72,11 +72,12 @@ pub fn build(public_url: &str) -> Value {
         )},
         "/api/pages": {"get": operation(
             "searchText", "Full text",
-            "The documents whose pages contain the words, best match first, each with its best \
-             pages (three, or `pages_per_document`): a plain-text snippet, the matches in it and a \
-             link to the file at that page. `document` searches inside one document. Counts per \
-             year, section type, canton and commune. The search ranks at most the 20,000 best \
-             matching pages; `capped` says when more match. The text is machine-extracted and \
+            "The documents whose pages contain the words, best match first or by date (`sort`), \
+             each with its best pages (three, or `pages_per_document`): a plain-text snippet, the \
+             matches in it and a link to the file at that page. `q` takes words, \"phrases\", \
+             prefixes (`word*`), `OR`, `(groups)` and `NEAR(a b, 10)`. `document` searches inside \
+             one document. Counts per year, section type, canton and commune. The search takes \
+             at most the first 20,000 matching pages; `capped` says when more match. The text is machine-extracted and \
              unchecked; names, street addresses and e-mail addresses are replaced by marks such \
              as ［name］.",
             query::<TextSearch>(&mut input),

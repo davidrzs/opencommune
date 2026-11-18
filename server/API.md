@@ -122,7 +122,8 @@ original_url`. Every document is classified; files without an answer are not in 
    as `[name]`; null when the pages show none. `personal_data` is `true` or `false`; the website
    never shows it.
 3. `sections` are in the classifier's order (`position`); `communes` are by name.
-4. `original_url` is always `/original/<sha256>`, never a commune's URL. It answers 404 when no
+4. `original_url` is always `<PUBLIC_URL>/original/<sha256>`, a full link on this site (so that a
+   client that does not know the host can hand it on), never a commune's URL. It answers 404 when no
    commune gives the document a linkable URL. `?commune=<bfs_id>` picks that commune's link and
    `?page=<n>` adds `#page=<n>`, which PDF viewers open at that page.
 5. `title`, `body_name`, `body_kind`, `date`, `years`, `languages`, `personal_data` and `sections` come from an
@@ -146,32 +147,55 @@ alike.
 
 Parameters; the filters are optional and combine with AND, and a blank text filter is no filter:
 
-1. `q` (required): the words to find.
-   1. Every word must occur on the page, in any order.
+1. `q` (required): the words to find. Each page is searched on its own: words on two pages, or a
+   phrase across a page break, do not match.
+   1. Every word must occur on the page, in any order. `AND` between two words says the same.
    2. `"a phrase"` in double quotes must occur as written. An unclosed quote runs to the end.
    3. `word*` matches every word that begins with `word`; at least 3 letters or digits come
-      before the `*`. A `*` after a phrase makes its last word a prefix.
-   4. Case and accents do not matter: `ecole` finds `École`.
-   5. Punctuation inside a word separates words: `d'engagement` is the phrase `d engagement`, and
-      it also finds `d’engagement`.
-   6. There are no operators: `OR`, `NOT` and `NEAR` are words, `-` and `^` are punctuation. A word
-      without a letter or a digit is left out.
-   7. 400 when `q` has no word, more than 10 words and phrases, more than 500 characters, or a
-      prefix of fewer than 3 characters.
+      before the `*`. A `*` after a phrase makes its last word a prefix. There is no stemming:
+      `Kunstrasen` misses `Kunstrasens` and `Kunstrasenplatz`, which `Kunstrasen*` finds.
+   4. `OR` between words, phrases or groups: either may occur. The words around it bind more
+      tightly: `a b OR c` is `(a b) OR c`. `(…)` groups: `(Kunstrasen* OR Naturrasen*) Kredit`.
+      An unclosed parenthesis runs to the end. The documents are not translated: to search every
+      language, join each language's words with `OR`.
+   5. `NEAR(a b, N)`: the words or phrases at most `N` words apart (0 to 1000, default 10), on
+      the same page. Inside: words, phrases and prefixes only, at least two.
+   6. `OR`, `AND` and `NEAR` are operators in capitals only; `"OR"` in quotes, or `or`, is a word.
+   7. Case and accents do not matter: `ecole` finds `École`.
+   8. Punctuation inside a word separates words: `d'engagement` is the phrase `d engagement`, and
+      it also finds `d’engagement`. `^` and `:` are punctuation. A word without a letter or a
+      digit is left out.
+   9. 400, with a reason, for what would otherwise be searched other than as typed: a `*` other
+      than at the end of a word or phrase (`*rasen`: words that end in a word cannot be
+      searched), a word that starts with `-` (there is no exclusion), `NOT`, an `OR` or `AND`
+      without a word on each side, a `)` without its `(`, an empty group, and `NEAR` with fewer
+      than two words. 400 too when `q` has no word, more than 10 words and phrases, more than 500
+      characters, or a prefix of fewer than 3 characters.
 
-   The server reads `q` into words and phrases and writes each as a quoted FTS5 string; nothing a
-   user types reaches FTS5 as syntax.
+   The server reads `q` into a tree of words, phrases and operators and writes the FTS5 expression
+   itself, each word and phrase as a quoted FTS5 string; nothing a user types reaches FTS5 as
+   syntax.
 2. `commune`, `year`, `body`: the document, as in `/api/documents`.
 3. `canton`: a canton's code, such as `ZH`, in any case: documents linked by one of its communes.
 4. `from`, `to`: `YYYY-MM-DD`, inclusive: the document's `date`, else its `listing_date`. When one
    is set, documents with neither are left out.
-5. `section`, `family`: only pages inside a section of this type or family match. In
-   `/api/documents` these filters select documents; here they select pages.
-6. `document`: a document's `sha256`: only its pages match, to find where in a long document
+5. `section`, `family`: comma-separated: only pages inside a section of one of these types or
+   families match. In `/api/documents` these filters take one value and select documents; here
+   they select pages.
+6. `exclude_section`, `exclude_family`: comma-separated: pages inside a section of one of these
+   types or families do not match, as `exclude_section=accounts,budget`. A page inside two
+   sections is left out when either is.
+7. `language`: comma-separated language codes (`de`, `fr`, `it`, `rm`), in any case: documents
+   whose `languages` hold one of them.
+8. `document`: a document's `sha256`: only its pages match, to find where in a long document
    something is.
-7. `limit`: 0 to 50, default 10. `offset`: 0 or more, default 0.
-8. `pages_per_document`: 1 to 20, default 3: how many of each document's matching pages the
+9. `sort`: `relevance` (default), `newest` or `oldest`: the documents by their `date`, else their
+   `listing_date`, undated documents last; equal dates by relevance. 400 for another value.
+10. `limit`: 0 to 50, default 10. `offset`: 0 or more, default 0.
+11. `pages_per_document`: 1 to 20, default 3: how many of each document's matching pages the
    answer shows.
+12. `commune_facets`: 0 to 3000, default 20: how many communes the `communes` facet lists; 3000
+   lists them all.
 
 ```json
 {"total": 0, "capped": false, "offset": 0, "limit": 10,
@@ -181,7 +205,8 @@ Parameters; the filters are optional and combine with AND, and a blank text filt
 ```
 
 1. `items` are the documents with a matching page, best first: by the relevance of their best page
-   (FTS5 `bm25`), then by `sha256`.
+   (FTS5 `bm25`), then by `sha256`; with `sort`, by date, then likewise. A document's `pages` are
+   best first either way.
 2. `TextDocument` is the `Document` of `/api/documents` with `matching_pages` (how many of its pages
    match) and `pages`, its best matching pages (`pages_per_document`), best first:
    `{page, section_types, snippet, highlights, original_url}`.
@@ -194,19 +219,20 @@ Parameters; the filters are optional and combine with AND, and a blank text filt
    `…` marks left-out text, ` … ` the gap between two passages.
 5. `highlights`: `[[start, end], ...]`, the matched words in `snippet`, as offsets in characters
    (Unicode code points; in JavaScript, index `Array.from(snippet)`), `end` exclusive.
-6. `original_url`: `/original/<sha256>?page=<n>`, which opens the file at that page.
+6. `original_url`: `<PUBLIC_URL>/original/<sha256>?page=<n>`, which opens the file at that page.
 7. The facets count the documents of the result, with every filter applied. This differs from
    `/api/documents`, where each facet leaves out its own filter: that needs a search per facet,
    and a search of a common word costs most of a second. `years`: newest first, no year last.
    `sections`: by type; a document counts for each type that holds one of its matching pages.
    `cantons`: by code; a document linked by communes of two cantons counts for both.
-   `communes`: the 20 communes that link the most documents of the result, most first, then by
-   name.
-8. The cap: a search ranks at most the 20,000 best matching pages that pass the filters. When that
-   many match, `capped` is `true`. Then `total`, the facets and `matching_pages` count only the
+   `communes`: the 20 communes (or `commune_facets`) that link the most documents of the
+   result, most first, then by name.
+8. The cap: a search takes at most the first 20,000 matching pages that pass the filters: the
+   best, or with `sort` the newest or oldest. When that many match, `capped` is `true`. Then `total`, the facets and `matching_pages` count only the
    documents of those pages, and `offset` pages through only them. Common words reach the cap:
    `Gemeinde` is on about 430,000 of the 1.2 million pages, `Budget` on about 730,000. Without the
-   cap such a search takes 3 to 5 seconds.
+   cap such a search takes 3 to 5 seconds. Sorting by date looks up the date of every matching
+   page: for such a word it adds about half again to the time.
 9. The text is machine-extracted (the PDF's text layer, or OCR) and no person has checked it.
 
 ### `GET /api/documents/{sha256}/pages?from=<n>&to=<n>`
@@ -218,7 +244,7 @@ document, 400 when `from` is below 1, `to` is before `from` or the range has mor
 ```json
 {"sha256": "...", "page_count": 12,
  "pages": [{"page": 1, "section_types": ["minutes"], "source": "layer", "text": "...",
-            "reason": null, "original_url": "/original/<sha256>?page=1"}]}
+            "reason": null, "original_url": "<PUBLIC_URL>/original/<sha256>?page=1"}]}
 ```
 
 Every page of the range is listed. A page in the index has `source` (`layer`: the PDF's text
@@ -306,8 +332,9 @@ visitor receives the same HTML.
    (JSON-LD `Dataset`). `/` redirects to `/de`.
 2. `/{lang}/gemeinden/{bfs_id}`: the commune's number of documents, website, documents per year
    and the first page of `/api/documents?commune=<bfs_id>` (the twenty newest documents, title and
-   date, linked through `/original/<sha256>?commune=<bfs_id>`) (JSON-LD `AdministrativeArea`). 404
-   when the commune is not in the `communes` table; `noindex` until `SEARCH_INDEX_COMMUNES` is on.
+   date, linked through `<PUBLIC_URL>/original/<sha256>?commune=<bfs_id>`) (JSON-LD
+   `AdministrativeArea`). 404 when the commune is not in the `communes` table; `noindex` until
+   `SEARCH_INDEX_COMMUNES` is on.
 3. `/{lang}/ueber-uns`, `/{lang}/datenschutz`, `/{lang}/api`, `/{lang}/lizenzen`; `/{lang}/suche`
    (never indexed). Any other path under a language: the front end's error page, status 404.
 4. Every page carries Open Graph tags for link previews (title, description, address, locale).

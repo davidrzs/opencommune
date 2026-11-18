@@ -39,10 +39,11 @@ pub async fn sitemap(pool: &SqlitePool) -> sqlx::Result<Vec<i64>> {
 }
 
 /// A commune with the first page of its documents, as `/api/documents?commune=` gives it; None
-/// when the archive does not have the commune.
+/// when the archive does not have the commune. Links start with `base`.
 pub async fn commune(
     pool: &SqlitePool,
     bfs_id: i64,
+    base: &str,
 ) -> sqlx::Result<Option<(CommuneDetail, DocumentPage)>> {
     let Some(commune) = communes::detail(pool, bfs_id).await? else {
         return Ok(None);
@@ -51,6 +52,6 @@ pub async fn commune(
         commune: Some(bfs_id),
         ..Default::default()
     };
-    let documents = documents::search(pool, &search).await?;
+    let documents = documents::search(pool, &search, base).await?;
     Ok(Some((commune, documents)))
 }

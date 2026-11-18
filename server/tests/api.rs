@@ -537,7 +537,7 @@ async fn a_document_has_its_sections_communes_and_run() {
                 {"type": "minutes", "family": "deliberation", "first_page": 29, "last_page": 30, "partly_unseen": false}
             ],
             "communes": [{"bfs_id": 5938, "name": "Yverdon-les-Bains", "canton": "VD"}],
-            "original_url": "/original/bbbb",
+            "original_url": "https://example.test/original/bbbb",
             "run": {
                 "id": "classify-aaaa",
                 "stage": "classification",
@@ -1125,7 +1125,7 @@ async fn commune_pages_carry_their_facts_for_crawlers() {
     assert!(facts.starts_with("<h1>Zürich</h1><p>Zürich (ZH) : 4 documents"));
     assert!(facts.contains("<p>2024: 2 · 2023: 1 · sans année: 1</p>"));
     assert!(facts.contains(
-        "<li>12.06.2024: <a href=\"/original/aaaa?commune=261\" rel=\"nofollow\">Protokoll Gemeindeversammlung 2024</a></li>"
+        "<li>12.06.2024: <a href=\"https://example.test/original/aaaa?commune=261\" rel=\"nofollow\">Protokoll Gemeindeversammlung 2024</a></li>"
     ));
     // a newly deployed front end names new script files: the next page uses its shell at once
     let deployed = SHELL.replace("<head>", "<head><script src=\"/_app/new.js\"></script>");
@@ -1390,7 +1390,8 @@ async fn full_text_finds_documents_with_their_best_pages() {
     let item = &page["items"][0];
     assert_eq!(item["title"], "Protokoll Gemeindeversammlung 2024");
     assert_eq!(item["matching_pages"], 2);
-    assert_eq!(item["original_url"], "/original/aaaa");
+    // full links, so that a client without the host can hand them on
+    assert_eq!(item["original_url"], "https://example.test/original/aaaa");
     let best = &item["pages"][0];
     assert_eq!(
         keys(best),
@@ -1403,7 +1404,10 @@ async fn full_text_finds_documents_with_their_best_pages() {
         ]
     );
     assert_eq!(best["section_types"], json!(["minutes"]));
-    assert_eq!(best["original_url"], "/original/aaaa?page=2");
+    assert_eq!(
+        best["original_url"],
+        "https://example.test/original/aaaa?page=2"
+    );
     assert_eq!(
         best["snippet"],
         "Protokoll. Der Gemeinderat beantragt einen Investitionskredit von Fr. 2'980'000 für das \
@@ -1456,19 +1460,234 @@ async fn full_text_finds_documents_with_their_best_pages() {
             .iter()
             .all(|w| w.starts_with("Gemeinde"))
     );
-    // FTS5 syntax is text
+    // FTS5 syntax that is not ours is text
     for q in [
-        "NEAR(Tempo%2030)",
-        "Tempo%20OR%20xyz",
         "text:Tempo",
-        "Tempo%20-30",
         "Tempo%20^30",
+        "Tempo%20or%20xyz",
+        "%22Tempo%20OR%22",
     ] {
         let (status, _) = get(&f.router, &format!("/api/pages?q={q}")).await;
         assert_eq!(status, StatusCode::OK, "{q}");
     }
-    let (_, page) = get(&f.router, "/api/pages?q=Tempo%20OR%20xyz").await;
-    assert_eq!(page["total"], 0); // OR is a word that must occur
+    let (_, page) = get(&f.router, "/api/pages?q=Tempo%20or%20xyz").await;
+    assert_eq!(page["total"], 0); // or in small letters is a word that must occur
+}
+
+#[tokio::test]
+async fn full_text_takes_or_groups_and_near() {
+    let f = fulltext_fixture().await;
+    let found = |q: &'static str| {
+        let router = f.router.clone();
+        async move {
+            let (status, page) = get(&router, &format!("/api/pages?q={q}")).await;
+            assert_eq!(status, StatusCode::OK, "{q}");
+            let mut found: Vec<(String, Vec<i64>)> = hits(&page)
+                .into_iter()
+                .map(|(sha, mut pages)| {
+                    pages.sort();
+                    (sha.to_string(), pages)
+                })
+                .collect();
+            found.sort();
+            found
+        }
+    };
+    let hit = |sha: &str, pages: &[i64]| (sha.to_string(), pages.to_vec());
+    // one query across languages: the German pages and the French ones
+    assert_eq!(
+        found("Investitionskredit%20OR%20%22cr%C3%A9dit%20d'engagement%22").await,
+        vec![hit("aaaa", &[1, 2]), hit("bbbb", &[3, 29])]
+    );
+    // the words around OR bind more tightly: (Steuerfuss Budget) OR Tempo
+    assert_eq!(
+        found("Steuerfuss%20Budget%20OR%20Tempo").await,
+        vec![hit("aaaa", &[1, 12]), hit("cccc", &[5])]
+    );
+    // parentheses group: (Steuerfuss OR Tempo) Budget
+    assert_eq!(
+        found("(Steuerfuss%20OR%20Tempo)%20Budget").await,
+        vec![hit("aaaa", &[1]), hit("cccc", &[5])]
+    );
+    assert_eq!(
+        found("Investitionskredit%20AND%20Protokoll").await,
+        vec![hit("aaaa", &[2])]
+    );
+    // NEAR: "Investitionskredit für das Schulhaus" on page 1; seven words between on page 2
+    assert_eq!(
+        found("NEAR(Investitionskredit%20Schulhaus,%202)").await,
+        vec![hit("aaaa", &[1])]
+    );
+    assert_eq!(
+        found("NEAR(Investitionskredit%20Schulhaus)").await,
+        vec![hit("aaaa", &[1, 2])]
+    );
+    // both alternatives are highlighted in the snippet
+    let (_, page) = get(
+        &f.router,
+        "/api/pages?q=Steuerfuss%20OR%20Tempo&document=cccc",
+    )
+    .await;
+    assert_eq!(
+        highlighted(&page["items"][0]["pages"][0]),
+        ["Steuerfuss", "Tempo"]
+    );
+}
+
+#[tokio::test]
+async fn full_text_refuses_what_it_would_not_search_as_typed() {
+    let f = fulltext_fixture().await;
+    for (q, says) in [
+        ("*rasen", "can only end a word"),
+        ("Kunst*rasen", "can only end a word"),
+        ("Budget%20-Konto", "no exclusion"),
+        ("Budget%20NOT%20Konto", "NOT is not supported"),
+        ("Budget%20OR", "on each side"),
+        ("OR%20Budget", "on each side"),
+        ("Budget%20)", "without its ("),
+        ("NEAR(Budget)", "at least two"),
+    ] {
+        let (status, body) = get(&f.router, &format!("/api/pages?q={q}")).await;
+        assert_eq!(status, StatusCode::BAD_REQUEST, "{q}");
+        let detail = body["detail"].as_str().unwrap();
+        assert!(detail.contains(says), "{q}: {detail}");
+    }
+    let result = call_tool(&f.router, "search_text", json!({"q": "*rasen"})).await;
+    assert_eq!(result["isError"], true);
+    assert!(
+        result["content"][0]["text"]
+            .as_str()
+            .unwrap()
+            .contains("words that end in a word (*rasen) cannot be searched")
+    );
+}
+
+#[tokio::test]
+async fn full_text_filters_by_language_and_lists_of_sections_and_sorts_by_date() {
+    let f = fulltext_fixture().await;
+    let only = |uri: String| {
+        let router = f.router.clone();
+        async move {
+            let (status, page) = get(&router, &uri).await;
+            assert_eq!(status, StatusCode::OK, "{uri}");
+            hits(&page)
+                .into_iter()
+                .map(|(sha, pages)| (sha.to_string(), pages))
+                .collect::<Vec<_>>()
+        }
+    };
+    let shas = |found: Vec<(String, Vec<i64>)>| -> Vec<String> {
+        let mut shas: Vec<String> = found.into_iter().map(|h| h.0).collect();
+        shas.sort();
+        shas
+    };
+    let both = "/api/pages?q=Investitionskredit%20OR%20%22cr%C3%A9dit%20d'engagement%22";
+    // aaaa is in German, bbbb in French and German
+    assert_eq!(shas(only(format!("{both}&language=fr")).await), ["bbbb"]);
+    assert_eq!(shas(only(format!("{both}&language=FR")).await), ["bbbb"]);
+    assert_eq!(
+        shas(only(format!("{both}&language=de")).await),
+        ["aaaa", "bbbb"]
+    );
+    assert_eq!(shas(only(format!("{both}&language=it")).await).len(), 0);
+    assert_eq!(
+        shas(only(format!("{both}&language=it,%20fr")).await),
+        ["bbbb"]
+    );
+    assert_eq!(shas(only(format!("{both}&language=")).await).len(), 2); // blank: no filter
+    // several section types or families, and pages left out by type or family
+    let steuerfuss = "/api/pages?q=Steuerfuss";
+    assert_eq!(
+        shas(only(format!("{steuerfuss}&section=budget,invitation_agenda")).await),
+        ["aaaa", "cccc"]
+    );
+    assert_eq!(
+        shas(only(format!("{steuerfuss}&section=budget,%20minutes")).await),
+        ["cccc"]
+    );
+    assert_eq!(
+        shas(only(format!("{steuerfuss}&family=money,proposals")).await),
+        ["aaaa", "cccc"]
+    );
+    assert_eq!(
+        shas(only(format!("{steuerfuss}&exclude_section=budget")).await),
+        ["aaaa"]
+    );
+    assert_eq!(
+        shas(only(format!("{steuerfuss}&exclude_family=money")).await),
+        ["aaaa"]
+    );
+    assert_eq!(
+        shas(
+            only(format!(
+                "{steuerfuss}&exclude_section=budget,invitation_agenda"
+            ))
+            .await
+        )
+        .len(),
+        0
+    );
+    // exclusion applies to the page: aaaa's minutes page is left out, its agenda page stays
+    assert_eq!(
+        only("/api/pages?q=Investitionskredit&exclude_section=minutes".into()).await,
+        [("aaaa".to_string(), vec![1])]
+    );
+    let (_, page) = get(
+        &f.router,
+        "/api/pages?q=Investitionskredit&exclude_section=minutes",
+    )
+    .await;
+    assert_eq!(page["items"][0]["matching_pages"], 1);
+    // by date: aaaa is of 2024-06-12, cccc has only its listing date 2023-11-01
+    let order = |found: Vec<(String, Vec<i64>)>| -> Vec<String> {
+        found.into_iter().map(|h| h.0).collect()
+    };
+    assert_eq!(
+        order(only(format!("{steuerfuss}&sort=newest")).await),
+        ["aaaa", "cccc"]
+    );
+    assert_eq!(
+        order(only(format!("{steuerfuss}&sort=oldest")).await),
+        ["cccc", "aaaa"]
+    );
+    assert_eq!(
+        order(only(format!("{steuerfuss}&sort=oldest&limit=1&offset=1")).await),
+        ["aaaa"]
+    );
+    assert_eq!(
+        order(only(format!("{steuerfuss}&sort=")).await).len(),
+        2 // blank: by relevance
+    );
+    // a document's pages stay best first when the documents are sorted by date
+    let (_, page) = get(&f.router, "/api/pages?q=Gemeinde*&sort=newest").await;
+    assert_eq!(page["items"][0]["sha256"], "aaaa");
+    // the commune facet: 20 by default, more or fewer on request
+    let (_, page) = get(&f.router, &format!("{steuerfuss}&commune_facets=1")).await;
+    assert_eq!(
+        page["facets"]["communes"],
+        json!([{"bfs_id": 261, "name": "Zürich", "canton": "ZH", "count": 2}])
+    );
+    let (_, page) = get(&f.router, &format!("{steuerfuss}&commune_facets=0")).await;
+    assert_eq!(page["facets"]["communes"], json!([]));
+    assert_eq!(page["total"], 2);
+    for bad in ["sort=best", "commune_facets=-1", "commune_facets=3001"] {
+        let (status, body) = get(&f.router, &format!("{steuerfuss}&{bad}")).await;
+        assert_eq!(status, StatusCode::BAD_REQUEST, "{bad}");
+        assert!(body["detail"].is_string(), "{bad}");
+    }
+    // the MCP tool takes the same parameters
+    let result = call_tool(
+        &f.router,
+        "search_text",
+        json!({"q": "Steuerfuss", "sort": "oldest", "exclude_section": "accounts", "commune_facets": 1}),
+    )
+    .await;
+    let (_, api) = get(
+        &f.router,
+        &format!("{steuerfuss}&sort=oldest&exclude_section=accounts&commune_facets=1"),
+    )
+    .await;
+    assert_eq!(result["structuredContent"], api);
 }
 
 #[tokio::test]
@@ -1636,7 +1855,7 @@ async fn pages_are_read_with_their_text_or_a_reason() {
         (
             &json!("layer"),
             &Value::Null,
-            &json!("/original/aaaa?page=1")
+            &json!("https://example.test/original/aaaa?page=1")
         )
     );
     // the text as stored, line breaks and all
@@ -1852,13 +2071,18 @@ async fn openapi_describes_the_full_text_endpoints() {
             "year",
             "from",
             "to",
+            "language",
             "section",
             "family",
+            "exclude_section",
+            "exclude_family",
             "body",
             "document",
+            "sort",
             "offset",
             "limit",
-            "pages_per_document"
+            "pages_per_document",
+            "commune_facets"
         ]
     );
     assert_eq!(

@@ -204,8 +204,9 @@ where
 }
 
 /// `GET /api/documents`: one page of the documents that match, newest first, and the facets.
-/// The offset and limit are checked (`Search::check`).
-pub async fn search(pool: &SqlitePool, s: &Search) -> sqlx::Result<DocumentPage> {
+/// The offset and limit are checked (`Search::check`); links start with `base`, the site's public
+/// address.
+pub async fn search(pool: &SqlitePool, s: &Search, base: &str) -> sqlx::Result<DocumentPage> {
     let facets = Facets {
         years: facet(pool, s, Facet::Years).await?,
         sections: facet(pool, s, Facet::Sections).await?,
@@ -230,12 +231,16 @@ pub async fn search(pool: &SqlitePool, s: &Search) -> sqlx::Result<DocumentPage>
         offset: s.offset,
         limit: s.limit,
         facets,
-        items: complete(pool, rows).await?,
+        items: complete(pool, rows, base).await?,
     })
 }
 
-/// `GET /api/documents/{sha256}`: one document with its run.
-pub async fn get(pool: &SqlitePool, sha256: &str) -> sqlx::Result<Option<DocumentDetail>> {
+/// `GET /api/documents/{sha256}`: one document with its run; links start with `base`.
+pub async fn get(
+    pool: &SqlitePool,
+    sha256: &str,
+    base: &str,
+) -> sqlx::Result<Option<DocumentDetail>> {
     let mut qb = QueryBuilder::new(DOCUMENT_SELECT);
     qb.push(" WHERE d.sha256 = ").push_bind(sha256.to_string());
     let Some(row) = qb
@@ -250,14 +255,19 @@ pub async fn get(pool: &SqlitePool, sha256: &str) -> sqlx::Result<Option<Documen
             .bind(&row.run_id)
             .fetch_optional(pool)
             .await?;
-    Ok(complete(pool, vec![row])
+    Ok(complete(pool, vec![row], base)
         .await?
         .pop()
         .map(|document| DocumentDetail { document, run }))
 }
 
-/// The documents with these sha256, with their sections and communes, in no particular order.
-pub(crate) async fn by_sha256(pool: &SqlitePool, shas: &[String]) -> sqlx::Result<Vec<Document>> {
+/// The documents with these sha256, with their sections and communes, in no particular order;
+/// links start with `base`.
+pub(crate) async fn by_sha256(
+    pool: &SqlitePool,
+    shas: &[String],
+    base: &str,
+) -> sqlx::Result<Vec<Document>> {
     if shas.is_empty() {
         return Ok(Vec::new());
     }
@@ -269,11 +279,15 @@ pub(crate) async fn by_sha256(pool: &SqlitePool, shas: &[String]) -> sqlx::Resul
     }
     qb.push(")");
     let rows: Vec<DocumentRow> = qb.build_query_as().fetch_all(pool).await?;
-    complete(pool, rows).await
+    complete(pool, rows, base).await
 }
 
-/// The documents of `rows` with their sections and communes.
-async fn complete(pool: &SqlitePool, rows: Vec<DocumentRow>) -> sqlx::Result<Vec<Document>> {
+/// The documents of `rows` with their sections and communes; links start with `base`.
+async fn complete(
+    pool: &SqlitePool,
+    rows: Vec<DocumentRow>,
+    base: &str,
+) -> sqlx::Result<Vec<Document>> {
     if rows.is_empty() {
         return Ok(Vec::new());
     }
@@ -314,7 +328,7 @@ async fn complete(pool: &SqlitePool, rows: Vec<DocumentRow>) -> sqlx::Result<Vec
         .map(|r| {
             let s = sections.remove(&r.sha256).unwrap_or_default();
             let c = communes.remove(&r.sha256).unwrap_or_default();
-            Document::new(r, s, c)
+            Document::new(r, s, c, base)
         })
         .collect())
 }

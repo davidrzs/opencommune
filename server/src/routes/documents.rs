@@ -18,7 +18,7 @@ pub async fn list(
     Query(search): Query<Search>,
 ) -> Result<Response, ApiError> {
     search.check().map_err(ApiError::invalid)?;
-    let page = documents::search(&state.db, &search).await?;
+    let page = documents::search(&state.db, &search, &state.site.public_url).await?;
     let total = page.total;
     let mut response = Json(page).into_response();
     if search.is_search() {
@@ -31,7 +31,7 @@ pub async fn get(
     State(state): State<AppState>,
     Path(sha256): Path<String>,
 ) -> ApiResult<DocumentDetail> {
-    documents::get(&state.db, &sha256)
+    documents::get(&state.db, &sha256, &state.site.public_url)
         .await?
         .map(Json)
         .ok_or_else(|| ApiError::not_found("document not found"))

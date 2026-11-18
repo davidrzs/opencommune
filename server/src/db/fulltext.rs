@@ -2,8 +2,8 @@
 //!
 //! The index is `fulltext.db` (`src/opencommune/fulltext.py`), attached to every connection as the
 //! schema `fulltext`: `pages (id, sha256, page, source, run)` and `page_fts`, an FTS5 table whose
-//! rowid is `pages.id`. Section types, communes, years, bodies and dates come from the serving
-//! database, joined on sha256 and page.
+//! rowid is `pages.id`. Section types, communes, years, bodies, languages and dates come from the
+//! serving database, joined on sha256 and page.
 
 use std::collections::{HashMap, HashSet};
 
@@ -33,9 +33,14 @@ const MAX_TERMS: usize = 10;
 const MAX_QUERY_CHARS: usize = 500;
 /// The fewest letters or digits before `*`. A shorter prefix stands for too many words.
 const MIN_PREFIX: usize = 3;
+/// The largest distance in `NEAR(…, N)`, in words; a page has a few hundred.
+const MAX_NEAR: u32 = 1000;
 /// The matching pages shown per document, by default and at most.
 pub const DEFAULT_PAGES_PER_DOCUMENT: i64 = 3;
 pub const MAX_PAGES_PER_DOCUMENT: i64 = 20;
+/// The communes the commune facet lists, by default and at most (more than Switzerland has).
+pub const DEFAULT_COMMUNE_FACETS: i64 = 20;
+pub const MAX_COMMUNE_FACETS: i64 = 3000;
 /// A snippet's length in characters: one passage of this length, or two of half of it. A passage
 /// grows by up to `WORD_EDGE` characters at each end so as not to cut a word.
 const SNIPPET_CHARS: usize = 360;
@@ -51,7 +56,10 @@ const CLOSE: &str = "\u{2}\u{1}";
 pub struct TextSearch {
     /// The words to find in the page text. Every word must occur on the page; "a phrase" in
     /// double quotes must occur as written; a word ending in * matches the words that begin with
-    /// it (at least 3 letters before the *). Case and accents do not matter. No operators.
+    /// it (at least 3 letters before the *). OR between words, phrases or groups: either may
+    /// occur; it binds less tightly than the words around it, and (parentheses) group.
+    /// NEAR(a b, 10): the words at most 10 words apart (10 is the default). Case and accents do
+    /// not matter. Refused: a * other than at the end of a word, -word and NOT.
     pub q: String,
     /// A commune's BFS number: the documents it links.
     #[serde(default)]
@@ -68,18 +76,31 @@ pub struct TextSearch {
     /// The latest date (YYYY-MM-DD) of the document, inclusive.
     #[serde(default)]
     pub to: Option<String>,
-    /// A section type: only pages inside a section of this type match.
+    /// Languages, comma-separated (de, fr, it, rm): documents in one of them.
+    #[serde(default)]
+    pub language: Option<String>,
+    /// Section types, comma-separated: only pages inside a section of one of them match.
     #[serde(default)]
     pub section: Option<String>,
-    /// A section family: only pages inside a section of this family match.
+    /// Section families, comma-separated: only pages inside a section of one of them match.
     #[serde(default)]
     pub family: Option<String>,
+    /// Section types, comma-separated: pages inside a section of one of them do not match.
+    #[serde(default)]
+    pub exclude_section: Option<String>,
+    /// Section families, comma-separated: pages inside a section of one of them do not match.
+    #[serde(default)]
+    pub exclude_family: Option<String>,
     /// The kind of body behind the document.
     #[serde(default)]
     pub body: Option<String>,
     /// A document's sha256: search inside this document only.
     #[serde(default)]
     pub document: Option<String>,
+    /// The order of the documents: relevance (the default: best match first), newest or oldest
+    /// (by the document's date, else the listing date; undated documents last).
+    #[serde(default)]
+    pub sort: Option<String>,
     /// Documents to skip.
     #[serde(default)]
     pub offset: i64,
@@ -89,6 +110,10 @@ pub struct TextSearch {
     /// The matching pages to show per document, best first: 1 to 20, default 3.
     #[serde(default = "default_pages_per_document")]
     pub pages_per_document: i64,
+    /// The communes the commune facet lists, most documents first: 0 to 3000, default 20; 3000
+    /// lists them all.
+    #[serde(default = "default_commune_facets")]
+    pub commune_facets: i64,
 }
 
 fn default_limit() -> i64 {
@@ -97,6 +122,18 @@ fn default_limit() -> i64 {
 
 fn default_pages_per_document() -> i64 {
     DEFAULT_PAGES_PER_DOCUMENT
+}
+
+fn default_commune_facets() -> i64 {
+    DEFAULT_COMMUNE_FACETS
+}
+
+/// The order of the documents of a search.
+#[derive(Clone, Copy, PartialEq)]
+enum Sort {
+    Relevance,
+    Newest,
+    Oldest,
 }
 
 impl TextSearch {
@@ -113,12 +150,27 @@ impl TextSearch {
                 "pages_per_document must be between 1 and {MAX_PAGES_PER_DOCUMENT}"
             ));
         }
+        if !(0..=MAX_COMMUNE_FACETS).contains(&self.commune_facets) {
+            return Err(format!(
+                "commune_facets must be between 0 and {MAX_COMMUNE_FACETS}"
+            ));
+        }
         for (name, value) in [("from", &self.from), ("to", &self.to)] {
             if text(value).is_some_and(|v| !is_date(v)) {
                 return Err(format!("{name} must be a date: YYYY-MM-DD"));
             }
         }
+        self.sort()?;
         Query::parse(&self.q)
+    }
+
+    fn sort(&self) -> Result<Sort, String> {
+        match text(&self.sort) {
+            None | Some("relevance") => Ok(Sort::Relevance),
+            Some("newest") => Ok(Sort::Newest),
+            Some("oldest") => Ok(Sort::Oldest),
+            Some(_) => Err("sort must be relevance, newest or oldest".into()),
+        }
     }
 }
 
@@ -135,62 +187,290 @@ fn is_date(value: &str) -> bool {
         })
 }
 
+/// The values of a comma-separated parameter, blanks left out.
+fn values(value: &Option<String>) -> Vec<&str> {
+    value
+        .as_deref()
+        .unwrap_or("")
+        .split(',')
+        .map(str::trim)
+        .filter(|v| !v.is_empty())
+        .collect()
+}
+
+const STAR: &str = "a * can only end a word or a phrase: Kunstrasen* finds the words that begin \
+with Kunstrasen; words that end in a word (*rasen) cannot be searched";
+const MINUS: &str = "there is no exclusion with -: leave the - out to search the word, or use \
+exclude_section to leave out pages";
+const NOT: &str = "NOT is not supported: leave out pages with exclude_section or exclude_family; \
+to search the word, put it in quotes: \"NOT\"";
+const OPERAND: &str = "OR and AND need a word, a phrase or a group on each side; to search the \
+word, put it in quotes: \"OR\"";
+
 /// A search query as an FTS5 expression. Every word and phrase of the input is one quoted FTS5
-/// string, so nothing a user types is read as FTS5 syntax.
+/// string and the server writes the operators, so nothing a user types reaches FTS5 as syntax.
 pub struct Query(String);
 
+/// A piece of the query as typed.
+#[derive(Clone, Debug, PartialEq)]
+enum Token {
+    /// A word or a phrase as an FTS5 string, with `*` when it is a prefix.
+    Term(String),
+    Or,
+    And,
+    Open,
+    Close,
+    /// `NEAR(…)`: its words and phrases, and the distance.
+    Near(Vec<String>, Option<u32>),
+}
+
+/// The query as a tree: AND binds more tightly than OR.
+enum Node {
+    Term(String),
+    Near(Vec<String>, Option<u32>),
+    And(Vec<Node>),
+    Or(Vec<Node>),
+}
+
 impl Query {
-    /// Reads the search box's syntax: words, "phrases" and prefixes (`word*`, `"a phrase"*`).
-    /// A word without a letter or a digit is left out. An unclosed quote runs to the end.
+    /// Reads the search box's syntax: words, "phrases", prefixes (`word*`, `"a phrase"*`), OR,
+    /// AND, (groups) and `NEAR(…, N)`. OR, AND and NEAR are operators in capitals only. A word
+    /// without a letter or a digit is left out. An unclosed quote or parenthesis runs to the end.
     pub fn parse(input: &str) -> Result<Query, String> {
         if input.chars().count() > MAX_QUERY_CHARS {
             return Err(format!("q is longer than {MAX_QUERY_CHARS} characters"));
         }
-        let mut terms = Vec::new();
-        let mut chars = input.chars().peekable();
-        while let Some(&first) = chars.peek() {
-            if first.is_whitespace() {
+        let tokens = tokens(input)?;
+        let terms: usize = tokens
+            .iter()
+            .map(|t| match t {
+                Token::Term(_) => 1,
+                Token::Near(terms, _) => terms.len(),
+                _ => 0,
+            })
+            .sum();
+        if terms > MAX_TERMS {
+            return Err(format!("q has more than {MAX_TERMS} words and phrases"));
+        }
+        let mut parser = Parser { tokens, at: 0 };
+        let node = parser.any()?;
+        if parser.at < parser.tokens.len() {
+            return Err("a ) without its (".into());
+        }
+        Ok(Query(fts(&node, false)))
+    }
+}
+
+/// The input as tokens.
+fn tokens(input: &str) -> Result<Vec<Token>, String> {
+    let mut out = Vec::new();
+    let mut chars = input.chars().peekable();
+    while let Some(&first) = chars.peek() {
+        match first {
+            c if c.is_whitespace() => {
                 chars.next();
-                continue;
             }
-            let mut term = String::new();
-            let mut prefix = false;
-            if first == '"' {
+            '(' => {
                 chars.next();
-                term.extend(chars.by_ref().take_while(|c| *c != '"'));
+                out.push(Token::Open);
+            }
+            ')' => {
+                chars.next();
+                out.push(Token::Close);
+            }
+            '"' => {
+                chars.next();
+                let phrase: String = chars.by_ref().take_while(|c| *c != '"').collect();
+                let mut prefix = false;
                 while chars.next_if_eq(&'*').is_some() {
                     prefix = true;
                 }
-            } else {
-                while let Some(c) = chars.next_if(|c| !c.is_whitespace() && *c != '"') {
-                    term.push(c);
+                out.extend(term(&phrase, prefix)?.map(Token::Term));
+            }
+            _ => {
+                let mut word = String::new();
+                while let Some(c) =
+                    chars.next_if(|c| !c.is_whitespace() && !matches!(c, '"' | '(' | ')'))
+                {
+                    word.push(c);
                 }
-                while term.ends_with('*') {
-                    term.pop();
-                    prefix = true;
+                match word.as_str() {
+                    "OR" => out.push(Token::Or),
+                    "AND" => out.push(Token::And),
+                    "NOT" => return Err(NOT.into()),
+                    "NEAR" if chars.clone().find(|c| !c.is_whitespace()) == Some('(') => {
+                        chars.find(|c| *c == '(');
+                        out.push(near(&mut chars)?);
+                    }
+                    _ => {
+                        let mut minus = word.chars();
+                        if minus.next() == Some('-')
+                            && minus.next().is_some_and(char::is_alphanumeric)
+                        {
+                            return Err(MINUS.into());
+                        }
+                        let stem = word.trim_end_matches('*');
+                        let prefix = stem.len() < word.len();
+                        out.extend(term(stem, prefix)?.map(Token::Term));
+                    }
                 }
             }
-            let Some(last) = term
-                .split(|c: char| !c.is_alphanumeric())
-                .rfind(|w| !w.is_empty())
-            else {
-                continue;
-            };
-            if prefix && last.chars().count() < MIN_PREFIX {
-                return Err(format!(
-                    "a word before * needs at least {MIN_PREFIX} letters or digits"
-                ));
+        }
+    }
+    Ok(out)
+}
+
+/// A word or a phrase as an FTS5 string; None when it has no letter or digit.
+fn term(text: &str, prefix: bool) -> Result<Option<String>, String> {
+    if text.contains('*') {
+        return Err(STAR.into());
+    }
+    let Some(last) = text
+        .split(|c: char| !c.is_alphanumeric())
+        .rfind(|w| !w.is_empty())
+    else {
+        return Ok(None);
+    };
+    if prefix && last.chars().count() < MIN_PREFIX {
+        return Err(format!(
+            "a word before * needs at least {MIN_PREFIX} letters or digits"
+        ));
+    }
+    let star = if prefix { "*" } else { "" };
+    Ok(Some(format!("\"{}\"{star}", text.replace('"', "\"\""))))
+}
+
+/// The inside of `NEAR(` up to its `)`: words and phrases, then `, N` if given.
+fn near(chars: &mut std::iter::Peekable<std::str::Chars>) -> Result<Token, String> {
+    let mut inside = String::new();
+    let mut quoted = false;
+    for c in chars.by_ref() {
+        if c == ')' && !quoted {
+            break;
+        }
+        quoted ^= c == '"';
+        inside.push(c);
+    }
+    let mut distance = None;
+    if let Some((words, n)) = inside.rsplit_once(',') {
+        let n = n.trim();
+        if !n.is_empty() && n.chars().all(|c| c.is_ascii_digit()) {
+            match n.parse::<u32>() {
+                Ok(n) if n <= MAX_NEAR => distance = Some(n),
+                _ => {
+                    return Err(format!(
+                        "the distance in NEAR(…, N) is 0 to {MAX_NEAR} words"
+                    ));
+                }
             }
-            let star = if prefix { "*" } else { "" };
-            terms.push(format!("\"{}\"{star}", term.replace('"', "\"\"")));
+            inside = words.to_string();
         }
-        if terms.is_empty() {
-            return Err("q has no word to search for".into());
+    }
+    let mut terms = Vec::new();
+    for token in tokens(&inside)? {
+        match token {
+            Token::Term(t) => terms.push(t),
+            _ => return Err("NEAR(…) holds words and phrases only".into()),
         }
-        if terms.len() > MAX_TERMS {
-            return Err(format!("q has more than {MAX_TERMS} words and phrases"));
+    }
+    if terms.len() < 2 {
+        return Err("NEAR(…) needs at least two words or phrases".into());
+    }
+    Ok(Token::Near(terms, distance))
+}
+
+struct Parser {
+    tokens: Vec<Token>,
+    at: usize,
+}
+
+impl Parser {
+    fn peek(&self) -> Option<&Token> {
+        self.tokens.get(self.at)
+    }
+
+    /// Alternatives: `all (OR all)*`.
+    fn any(&mut self) -> Result<Node, String> {
+        let mut parts = vec![self.all()?];
+        while self.peek() == Some(&Token::Or) {
+            self.at += 1;
+            parts.push(self.all()?);
         }
-        Ok(Query(terms.join(" ")))
+        Ok(if parts.len() == 1 {
+            parts.remove(0)
+        } else {
+            Node::Or(parts)
+        })
+    }
+
+    /// What must all occur: `unit ([AND] unit)*`.
+    fn all(&mut self) -> Result<Node, String> {
+        let mut parts = Vec::new();
+        loop {
+            match self.peek() {
+                Some(Token::Term(_) | Token::Near(..) | Token::Open) => parts.push(self.unit()?),
+                Some(Token::And) if !parts.is_empty() => {
+                    self.at += 1;
+                    if !matches!(
+                        self.peek(),
+                        Some(Token::Term(_) | Token::Near(..) | Token::Open)
+                    ) {
+                        return Err(OPERAND.into());
+                    }
+                }
+                _ => break,
+            }
+        }
+        if parts.is_empty() {
+            return Err(match self.peek() {
+                None if self.at == 0 => "q has no word to search for".into(),
+                Some(Token::Close) if self.at > 0 && self.tokens[self.at - 1] == Token::Open => {
+                    "a group ( ) has no word".into()
+                }
+                Some(Token::Close) if self.at == 0 => "a ) without its (".into(),
+                _ => OPERAND.into(),
+            });
+        }
+        Ok(if parts.len() == 1 {
+            parts.remove(0)
+        } else {
+            Node::And(parts)
+        })
+    }
+
+    fn unit(&mut self) -> Result<Node, String> {
+        let token = self.tokens[self.at].clone();
+        self.at += 1;
+        Ok(match token {
+            Token::Term(t) => Node::Term(t),
+            Token::Near(terms, distance) => Node::Near(terms, distance),
+            _ => {
+                let inside = self.any()?;
+                // an unclosed group runs to the end
+                if self.peek() == Some(&Token::Close) {
+                    self.at += 1;
+                }
+                inside
+            }
+        })
+    }
+}
+
+/// The tree as an FTS5 expression, a group in parentheses. FTS5 needs AND before a parenthesis.
+fn fts(node: &Node, nested: bool) -> String {
+    let join = |parts: &[Node], operator: &str| {
+        let inner: Vec<String> = parts.iter().map(|p| fts(p, true)).collect();
+        let inner = inner.join(operator);
+        if nested { format!("({inner})") } else { inner }
+    };
+    match node {
+        Node::Term(t) => t.clone(),
+        Node::Near(terms, distance) => match distance {
+            Some(n) => format!("NEAR({}, {n})", terms.join(" ")),
+            None => format!("NEAR({})", terms.join(" ")),
+        },
+        Node::And(parts) => join(parts, " AND "),
+        Node::Or(parts) => join(parts, " OR "),
     }
 }
 
@@ -205,15 +485,31 @@ struct Summary {
     score: Option<f64>,
 }
 
-/// The query up to the matching pages: `hit` holds the best `CAP` pages that match and pass the
-/// filters, `doc` their documents with the best score and the number of pages, `item` the
-/// documents of the requested page of results.
-fn push_hits(qb: &mut QueryBuilder<Sqlite>, s: &TextSearch, query: &Query) {
-    qb.push(
-        "WITH hit AS MATERIALIZED (SELECT p.id, p.sha256, p.page, f.rank AS score \
+/// ` IN (?, ?, …)` with the values bound.
+fn push_in(qb: &mut QueryBuilder<Sqlite>, values: &[&str]) {
+    qb.push(" IN (");
+    let mut list = qb.separated(", ");
+    for value in values {
+        list.push_bind(value.to_string());
+    }
+    qb.push(")");
+}
+
+/// The query up to the matching pages: `hit` holds the first `CAP` pages, in the order asked for,
+/// that match and pass the filters; `doc` their documents with the best score, the number of pages
+/// and the date; `item` the documents of the requested page of results with their position.
+fn push_hits(qb: &mut QueryBuilder<Sqlite>, s: &TextSearch, query: &Query, sort: Sort) {
+    // the date is looked up for every matching page only when the documents are sorted by it
+    let day = if sort == Sort::Relevance {
+        "NULL"
+    } else {
+        "(SELECT coalesce(d.date, d.listing_date) FROM documents d WHERE d.sha256 = p.sha256)"
+    };
+    qb.push(format!(
+        "WITH hit AS MATERIALIZED (SELECT p.id, p.sha256, p.page, f.rank AS score, {day} AS day \
          FROM fulltext.page_fts f JOIN fulltext.pages p ON p.id = f.rowid \
-         WHERE f.page_fts MATCH ",
-    )
+         WHERE f.page_fts MATCH "
+    ))
     .push_bind(query.0.clone());
     if let Some(document) = text(&s.document) {
         // a document's pages have neighbouring ids (fulltext.py writes them in order), so the
@@ -227,8 +523,10 @@ fn push_hits(qb: &mut QueryBuilder<Sqlite>, s: &TextSearch, query: &Query) {
     }
     let (canton, body) = (text(&s.canton), text(&s.body));
     let (from, to) = (text(&s.from), text(&s.to));
+    let languages = values(&s.language);
     let on_document = s.commune.is_some()
         || s.year.is_some()
+        || !languages.is_empty()
         || [canton, body, from, to].iter().any(Option::is_some);
     if on_document {
         qb.push(" AND p.sha256 IN (SELECT d.sha256 FROM documents d WHERE 1");
@@ -248,6 +546,16 @@ fn push_hits(qb: &mut QueryBuilder<Sqlite>, s: &TextSearch, query: &Query) {
         if let Some(year) = s.year {
             qb.push(" AND d.year = ").push_bind(year);
         }
+        if !languages.is_empty() {
+            // `languages` is a comma-separated list such as "fr,de"
+            qb.push(" AND (0");
+            for language in languages {
+                qb.push(" OR instr(',' || coalesce(d.languages, '') || ',', ")
+                    .push_bind(format!(",{},", language.to_lowercase()))
+                    .push(") > 0");
+            }
+            qb.push(")");
+        }
         if let Some(body) = body {
             qb.push(" AND d.body_kind = ").push_bind(body.to_string());
         }
@@ -261,31 +569,53 @@ fn push_hits(qb: &mut QueryBuilder<Sqlite>, s: &TextSearch, query: &Query) {
         }
         qb.push(")");
     }
-    // the page lies inside a section of the type or family; the first test is cheap, the second
-    // looks at the pages
-    for (column, value) in [("type", text(&s.section)), ("family", text(&s.family))] {
-        if let Some(value) = value {
+    // the page lies inside a section of one of the types or families; the first test is cheap,
+    // the second looks at the pages
+    for (column, kept) in [("type", &s.section), ("family", &s.family)] {
+        let kept = values(kept);
+        if !kept.is_empty() {
             qb.push(format!(
-                " AND p.sha256 IN (SELECT sha256 FROM sections WHERE {column} = "
-            ))
-            .push_bind(value.to_string())
-            .push(format!(
+                " AND p.sha256 IN (SELECT sha256 FROM sections WHERE {column}"
+            ));
+            push_in(qb, &kept);
+            qb.push(format!(
                 ") AND EXISTS (SELECT 1 FROM sections s WHERE s.sha256 = p.sha256 \
-                 AND p.page BETWEEN s.first_page AND s.last_page AND s.{column} = "
-            ))
-            .push_bind(value.to_string())
-            .push(")");
+                 AND p.page BETWEEN s.first_page AND s.last_page AND s.{column}"
+            ));
+            push_in(qb, &kept);
+            qb.push(")");
+        }
+    }
+    // ... and in no section of the types or families left out
+    for (column, left_out) in [("type", &s.exclude_section), ("family", &s.exclude_family)] {
+        let left_out = values(left_out);
+        if !left_out.is_empty() {
+            qb.push(format!(
+                " AND NOT EXISTS (SELECT 1 FROM sections s WHERE s.sha256 = p.sha256 \
+                 AND p.page BETWEEN s.first_page AND s.last_page AND s.{column}"
+            ));
+            push_in(qb, &left_out);
+            qb.push(")");
         }
     }
     // `+` keeps FTS5 from ranking every match: SQLite ranks only the pages the filters keep
-    qb.push(" ORDER BY +f.rank LIMIT ")
+    let (pages, documents) = match sort {
+        Sort::Relevance => ("+f.rank", "score, sha256"),
+        Sort::Newest => (
+            "day DESC NULLS LAST, +f.rank",
+            "day DESC NULLS LAST, score, sha256",
+        ),
+        Sort::Oldest => ("day NULLS LAST, +f.rank", "day NULLS LAST, score, sha256"),
+    };
+    qb.push(format!(" ORDER BY {pages} LIMIT "))
         .push_bind(CAP)
-        .push(
-            "), doc AS MATERIALIZED (SELECT sha256, min(score) AS score, count(*) AS pages \
-             FROM hit GROUP BY sha256), \
-             item AS MATERIALIZED (SELECT sha256, score, pages FROM doc \
-             ORDER BY score, sha256 LIMIT ",
-        )
+        .push(format!(
+            "), doc AS MATERIALIZED (SELECT sha256, min(score) AS score, count(*) AS pages, \
+             max(day) AS day FROM hit GROUP BY sha256), \
+             item AS MATERIALIZED (SELECT sha256, score, pages, \
+             row_number() OVER (ORDER BY {documents}) AS position FROM doc \
+             ORDER BY position LIMIT "
+        ))
         .push_bind(s.limit)
         .push(" OFFSET ")
         .push_bind(s.offset)
@@ -294,7 +624,8 @@ fn push_hits(qb: &mut QueryBuilder<Sqlite>, s: &TextSearch, query: &Query) {
 
 /// Everything but the snippets in one statement, so that the index is searched once. The joins
 /// start from the matches (CROSS JOIN fixes the order): SQLite would otherwise scan the serving
-/// tables. It ends with the number of pages to show per document.
+/// tables. The number of communes follows, then the rest, then the number of pages to show per
+/// document.
 const SUMMARY: &str = "\
 SELECT 'hits' AS kind, NULL AS number, NULL AS text, NULL AS name, count(*) AS n, NULL AS score \
 FROM hit \
@@ -310,8 +641,9 @@ CROSS JOIN communes c ON c.bfs_id = dc.bfs_id GROUP BY c.canton \
 UNION ALL SELECT * FROM (SELECT 'commune', c.bfs_id, c.canton, c.name, count(*) AS n, NULL \
 FROM doc CROSS JOIN document_communes dc ON dc.sha256 = doc.sha256 \
 CROSS JOIN communes c ON c.bfs_id = dc.bfs_id GROUP BY c.bfs_id \
-ORDER BY n DESC, c.name, c.bfs_id LIMIT 20) \
-UNION ALL SELECT 'item', NULL, sha256, NULL, pages, score FROM item \
+ORDER BY n DESC, c.name, c.bfs_id LIMIT ";
+const SUMMARY_REST: &str = ") \
+UNION ALL SELECT 'item', position, sha256, NULL, pages, score FROM item \
 UNION ALL SELECT 'page', page, sha256, NULL, id, score FROM (SELECT h.*, row_number() OVER \
 (PARTITION BY h.sha256 ORDER BY h.score, h.page) AS position FROM hit h \
 WHERE h.sha256 IN (SELECT sha256 FROM item)) WHERE position <= ";
@@ -323,12 +655,21 @@ struct Best {
     score: f64,
 }
 
-/// `GET /api/pages`: one page of the documents whose pages match, best first, with their best
-/// pages and the facets. The parameters are checked (`TextSearch::check`).
-pub async fn search(pool: &SqlitePool, s: &TextSearch, query: &Query) -> sqlx::Result<TextPage> {
+/// `GET /api/pages`: one page of the documents whose pages match, in the order asked for, with
+/// their best pages and the facets. The parameters are checked (`TextSearch::check`); links start
+/// with `base`, the site's public address.
+pub async fn search(
+    pool: &SqlitePool,
+    s: &TextSearch,
+    query: &Query,
+    base: &str,
+) -> sqlx::Result<TextPage> {
     let mut qb = QueryBuilder::new("");
-    push_hits(&mut qb, s, query);
-    qb.push(SUMMARY).push_bind(s.pages_per_document);
+    push_hits(&mut qb, s, query, s.sort().unwrap_or(Sort::Relevance));
+    qb.push(SUMMARY)
+        .push_bind(s.commune_facets)
+        .push(SUMMARY_REST)
+        .push_bind(s.pages_per_document);
     let rows: Vec<Summary> = qb.build_query_as().fetch_all(pool).await?;
 
     let (mut hits, mut total) = (0, 0);
@@ -338,7 +679,8 @@ pub async fn search(pool: &SqlitePool, s: &TextSearch, query: &Query) -> sqlx::R
         cantons: Vec::new(),
         communes: Vec::new(),
     };
-    let mut items: Vec<(String, i64, f64)> = Vec::new();
+    // a document, its number of matching pages and its position in the result
+    let mut items: Vec<(String, i64, i64)> = Vec::new();
     let mut best: HashMap<String, Vec<Best>> = HashMap::new();
     for r in rows {
         match r.kind.as_str() {
@@ -362,7 +704,7 @@ pub async fn search(pool: &SqlitePool, s: &TextSearch, query: &Query) -> sqlx::R
                 canton: r.text.unwrap_or_default(),
                 count: r.n,
             }),
-            "item" => items.push((r.text.unwrap_or_default(), r.n, r.score.unwrap_or(0.0))),
+            "item" => items.push((r.text.unwrap_or_default(), r.n, r.number.unwrap_or(0))),
             _ => best
                 .entry(r.text.unwrap_or_default())
                 .or_default()
@@ -382,8 +724,8 @@ pub async fn search(pool: &SqlitePool, s: &TextSearch, query: &Query) -> sqlx::R
     facets
         .communes
         .sort_by(|a, b| (b.count, &a.name, a.bfs_id).cmp(&(a.count, &b.name, b.bfs_id)));
+    items.sort_by_key(|i| i.2);
     // bm25 scores are negative: the lowest is the best
-    items.sort_by(|a, b| a.2.total_cmp(&b.2).then_with(|| a.0.cmp(&b.0)));
     for pages in best.values_mut() {
         pages.sort_by(|a, b| a.score.total_cmp(&b.score).then(a.page.cmp(&b.page)));
     }
@@ -391,7 +733,7 @@ pub async fn search(pool: &SqlitePool, s: &TextSearch, query: &Query) -> sqlx::R
     let ids: Vec<i64> = best.values().flatten().map(|b| b.id).collect();
     let mut snippets = snippets(pool, query, &ids).await?;
     let shas: Vec<String> = items.iter().map(|i| i.0.clone()).collect();
-    let mut documents: HashMap<String, Document> = documents::by_sha256(pool, &shas)
+    let mut documents: HashMap<String, Document> = documents::by_sha256(pool, &shas, base)
         .await?
         .into_iter()
         .map(|d| (d.sha256.clone(), d))
@@ -412,7 +754,7 @@ pub async fn search(pool: &SqlitePool, s: &TextSearch, query: &Query) -> sqlx::R
                         section_types: section_types(&document.sections, b.page),
                         snippet,
                         highlights,
-                        original_url: page_url(&sha256, b.page),
+                        original_url: page_url(base, &sha256, b.page),
                     }
                 })
                 .collect();
@@ -673,12 +1015,14 @@ const NO_TEXT: &str = "No text yet: the page has no usable text layer, and OCR h
 reached it.";
 
 /// `GET /api/documents/{sha256}/pages`: the pages `from` to `to` (not past the document's last
-/// page), with their text when the index has it. None for an unknown document.
+/// page), with their text when the index has it. None for an unknown document. Links start with
+/// `base`, the site's public address.
 pub async fn read(
     pool: &SqlitePool,
     sha256: &str,
     from: i64,
     to: i64,
+    base: &str,
 ) -> sqlx::Result<Option<DocumentPages>> {
     // the same documents are left out as in fulltext.py
     let document: Option<(Option<i64>, bool)> = sqlx::query_as(
@@ -728,7 +1072,7 @@ pub async fn read(
                 source,
                 text,
                 reason: reason.map(str::to_string),
-                original_url: page_url(sha256, page),
+                original_url: page_url(base, sha256, page),
             }
         })
         .collect();
@@ -764,7 +1108,7 @@ mod tests {
         assert_eq!(parse("Steuerfuss").unwrap(), r#""Steuerfuss""#);
         assert_eq!(
             parse("  preventivo   2025 ").unwrap(),
-            r#""preventivo" "2025""#
+            r#""preventivo" AND "2025""#
         );
         assert_eq!(
             parse(r#""Investitionskredit für""#).unwrap(),
@@ -772,22 +1116,87 @@ mod tests {
         );
         assert_eq!(
             parse("crédit d'engagement").unwrap(),
-            r#""crédit" "d'engagement""#
+            r#""crédit" AND "d'engagement""#
         );
-        assert_eq!(parse("Tempo* 30").unwrap(), r#""Tempo"* "30""#);
+        assert_eq!(parse("Tempo* 30").unwrap(), r#""Tempo"* AND "30""#);
         assert_eq!(parse(r#""tempo dreis"*"#).unwrap(), r#""tempo dreis"*"#);
-        // FTS5 syntax is text
+        // FTS5 syntax is text; or, and, not and near in small letters are words
         assert_eq!(
-            parse("a OR b NOT text:c (d) NEAR(e f)").unwrap(),
-            r#""a" "OR" "b" "NOT" "text:c" "(d)" "NEAR(e" "f)""#
+            parse("a or b not text:c ^d near(e f) {g}").unwrap(),
+            r#""a" AND "or" AND "b" AND "not" AND "text:c" AND "^d" AND "near" AND ("e" AND "f") AND "{g}""#
         );
-        assert_eq!(parse(r#"x"y"#).unwrap(), r#""x" "y""#); // a quote starts a phrase
+        assert_eq!(parse(r#""OR" "NOT""#).unwrap(), r#""OR" AND "NOT""#);
+        assert_eq!(parse(r#"x"y"#).unwrap(), r#""x" AND "y""#); // a quote starts a phrase
         assert_eq!(
             parse(r#""unclosed phrase"#).unwrap(),
             r#""unclosed phrase""#
         );
-        assert_eq!(parse("Gemeinde - § 12").unwrap(), r#""Gemeinde" "12""#);
+        assert_eq!(parse("Gemeinde - § 12").unwrap(), r#""Gemeinde" AND "12""#);
         assert_eq!(parse("abc**").unwrap(), r#""abc"*"#);
+        assert_eq!(parse("Tempo-30 2,5").unwrap(), r#""Tempo-30" AND "2,5""#);
+    }
+
+    #[test]
+    fn or_and_groups_and_near_are_operators() {
+        assert_eq!(
+            parse(r#"Kunstrasen* OR "gazon synthétique" OR "campo sintetico""#).unwrap(),
+            r#""Kunstrasen"* OR "gazon synthétique" OR "campo sintetico""#
+        );
+        // AND binds more tightly than OR; parentheses group
+        assert_eq!(parse("a b OR c").unwrap(), r#"("a" AND "b") OR "c""#);
+        assert_eq!(
+            parse("(Kunstrasen* OR Naturrasen) Kredit").unwrap(),
+            r#"("Kunstrasen"* OR "Naturrasen") AND "Kredit""#
+        );
+        assert_eq!(
+            parse("Kredit AND (a OR (b c))").unwrap(),
+            r#""Kredit" AND ("a" OR ("b" AND "c"))"#
+        );
+        assert_eq!(parse("(a OR b").unwrap(), r#""a" OR "b""#); // runs to the end
+        assert_eq!(parse("((a))").unwrap(), r#""a""#);
+        assert_eq!(parse("(§) a").unwrap_err(), "a group ( ) has no word");
+        assert_eq!(
+            parse("NEAR(Kunstrasen* Kredit, 20)").unwrap(),
+            r#"NEAR("Kunstrasen"* "Kredit", 20)"#
+        );
+        assert_eq!(
+            parse(r#"Gemeinde NEAR ("Fr. 2,5" Kredit) OR x"#).unwrap(),
+            r#"("Gemeinde" AND NEAR("Fr. 2,5" "Kredit")) OR "x""#
+        );
+        assert_eq!(parse("NEAR(a b,0)").unwrap(), r#"NEAR("a" "b", 0)"#);
+        assert_eq!(parse("NEAR(a b").unwrap(), r#"NEAR("a" "b")"#);
+        assert_eq!(parse("NEAR").unwrap(), r#""NEAR""#);
+    }
+
+    #[test]
+    fn what_is_not_searched_as_typed_is_refused() {
+        for q in ["*rasen", "Kunst*rasen", r#""*rasen""#, "x *y"] {
+            assert_eq!(parse(q).unwrap_err(), STAR, "{q}");
+        }
+        for q in ["-Budget", "Tempo -30"] {
+            assert_eq!(parse(q).unwrap_err(), MINUS, "{q}");
+        }
+        assert_eq!(parse("Budget NOT Konto").unwrap_err(), NOT);
+        for q in [
+            "OR",
+            "OR x",
+            "x OR",
+            "x OR OR y",
+            "AND x",
+            "x AND",
+            "x AND OR y",
+            "(OR x)",
+        ] {
+            assert_eq!(parse(q).unwrap_err(), OPERAND, "{q}");
+        }
+        for q in ["x )", "(x))", ")"] {
+            assert_eq!(parse(q).unwrap_err(), "a ) without its (", "{q}");
+        }
+        for q in ["NEAR(x)", "NEAR(x (y))", "NEAR(x OR y)", "NEAR(a b, 1001)"] {
+            assert!(parse(q).is_err(), "{q}");
+        }
+        // the words inside NEAR count
+        assert!(parse(&format!("NEAR({}) x", "w ".repeat(MAX_TERMS))).is_err());
     }
 
     #[test]
@@ -802,6 +1211,7 @@ mod tests {
             "ge*",
             "d'e*",
             "\"tempo 3\"*",
+            "()",
         ] {
             assert!(Query::parse(q).is_err(), "{q:?}");
         }

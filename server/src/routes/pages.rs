@@ -114,17 +114,27 @@ fn llms_search(base: &str) -> String {
         "## Search the text of the pages\n\n\
          - `{base}/api/pages?q=Kunstrasen*%20Kredit&canton=ZH` (MCP: `search_text`): the documents \
          whose pages hold every word, best first, each with its best pages as plain-text snippets \
-         and a link to the file at that page. `\"a phrase\"` must occur as written; `word*` matches \
-         the words that begin with it (at least 3 letters before the `*`), which German compounds \
-         need: `Kunstrasen*` also finds `Kunstrasenplatz`. Case and accents do not matter; there \
-         are no operators. Filters: `commune` (BFS number), `canton`, `year`, `from` and `to` \
-         (YYYY-MM-DD), `section`, `family`, `body`, and `document` (a sha256: search inside one \
-         document). `limit` up to 50, `offset`, and `pages_per_document` 1 to 20 (default 3).\n\
-         - The search ranks at most the 20,000 best matching pages. When more match, `capped` is \
-         true and `total` and the facets count only those pages' documents: add a word or a \
-         filter.\n\
+         and a link to the file at that page. Each page is searched on its own. `\"a phrase\"` \
+         must occur as written; `word*` matches the words that begin with it (at least 3 letters \
+         before the `*`). There is no stemming, so German compounds and inflected forms need the \
+         `*`: `Kunstrasen*` also finds `Kunstrasenplatz` and `Kunstrasens`. `OR` between words, \
+         phrases or `(groups)`: either may occur; the words around it bind more tightly, so `a b \
+         OR c` is `(a b) OR c`. `NEAR(a b, 20)`: at most 20 words apart (default 10). Operators \
+         in capitals only. The documents are in German, French, Italian and Romansh, not \
+         translated: join each language's words with `OR`, as `Kunstrasen* OR \"gazon \
+         synthétique\"`. Case and accents do not matter. Refused with an error: a `*` other than \
+         at the end of a word, `-word` and `NOT`. Filters: `commune` (BFS number), `canton`, \
+         `year`, `from` and `to` (YYYY-MM-DD), `language` (de, fr, it, rm), `section` and \
+         `family` (comma-separated lists), `exclude_section` and `exclude_family` (such as \
+         `exclude_section=accounts,budget`), `body`, and `document` (a sha256: search inside one \
+         document). `sort`: `relevance` (default), `newest` or `oldest`. `limit` up to 50, \
+         `offset`, `pages_per_document` 1 to 20 (default 3), and `commune_facets` 0 to 3000 \
+         (default 20): how many communes the commune facet lists.\n\
+         - The search takes at most the first 20,000 matching pages (the best, or the newest or \
+         oldest with `sort`). When more match, `capped` is true and `total` and the facets count \
+         only those pages' documents: add a word or a filter.\n\
          - `{base}/api/documents/{{sha256}}/pages?from=1&to=10` (MCP: `read_pages`): the text of up \
-         to 10 pages at a time. An `original_url` is relative to {base} and redirects to the \
+         to 10 pages at a time. An `original_url` is a full link on {base} that redirects to the \
          commune's file at that page.\n\
          - The search covers the pages inside sections of these types: minutes, decisions, \
          vote_result, budget, accounts, proposal, invitation_agenda and member_request. It leaves \
@@ -228,7 +238,9 @@ pub async fn home(state: AppState, lang: Lang) -> Result<Response, ApiError> {
 pub async fn commune(state: AppState, lang: Lang, id: String) -> Result<Response, ApiError> {
     let path = format!("/gemeinden/{id}");
     let found = match id.parse::<i64>() {
-        Ok(bfs_id) if bfs_id > 0 => pages::commune(&state.db, bfs_id).await?,
+        Ok(bfs_id) if bfs_id > 0 => {
+            pages::commune(&state.db, bfs_id, &state.site.public_url).await?
+        }
         _ => None,
     };
     let Some((c, documents)) = found else {

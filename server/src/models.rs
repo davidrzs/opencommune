@@ -140,14 +140,20 @@ pub struct Document {
     pub sections: Vec<Section>,
     /// The communes that link the document, by name.
     pub communes: Vec<CommuneRef>,
-    /// `/original/<sha256>`, never a commune's URL.
+    /// `<public address>/original/<sha256>`: a link on this site, never a commune's URL.
     pub original_url: String,
 }
 
 impl Document {
-    pub fn new(r: DocumentRow, sections: Vec<Section>, communes: Vec<CommuneRef>) -> Self {
+    /// The document; `base` is the site's public address, which links start with.
+    pub fn new(
+        r: DocumentRow,
+        sections: Vec<Section>,
+        communes: Vec<CommuneRef>,
+        base: &str,
+    ) -> Self {
         Document {
-            original_url: format!("/original/{}", r.sha256),
+            original_url: format!("{base}/original/{}", r.sha256),
             sha256: r.sha256,
             title: r.title,
             body_name: r.body_name,
@@ -229,7 +235,8 @@ pub struct TextFacets {
     pub sections: Vec<Count<String>>,
     /// Documents per canton of the communes that link them.
     pub cantons: Vec<Count<String>>,
-    /// The 20 communes that link the most documents of the result.
+    /// The communes that link the most documents of the result, most first: 20, or
+    /// `commune_facets`.
     pub communes: Vec<CommuneCount>,
 }
 
@@ -246,7 +253,7 @@ pub struct PageHit {
     pub snippet: String,
     /// The matched words in `snippet`: `[start, end)` in characters (Unicode code points).
     pub highlights: Vec<[u32; 2]>,
-    /// `/original/<sha256>?page=<n>`: the file at this page.
+    /// `<public address>/original/<sha256>?page=<n>`: the file at this page.
     pub original_url: String,
 }
 
@@ -268,13 +275,14 @@ pub struct TextDocument {
 pub struct TextPage {
     /// The documents that match.
     pub total: i64,
-    /// True when more pages match than the search considers (its best 20,000): `total`,
-    /// `facets` and `matching_pages` then count only the documents of those pages.
+    /// True when more pages match than the search considers (its first 20,000: the best, or
+    /// the newest or oldest with `sort`): `total`, `facets` and `matching_pages` then count only
+    /// the documents of those pages.
     pub capped: bool,
     pub offset: i64,
     pub limit: i64,
     pub facets: TextFacets,
-    /// The documents, best match first.
+    /// The documents, best match first, or by date (`sort`).
     pub items: Vec<TextDocument>,
 }
 
@@ -292,7 +300,7 @@ pub struct PageText {
     pub text: Option<String>,
     /// Why the page has no text; null when it has.
     pub reason: Option<String>,
-    /// `/original/<sha256>?page=<n>`: the file at this page.
+    /// `<public address>/original/<sha256>?page=<n>`: the file at this page.
     pub original_url: String,
 }
 
@@ -305,9 +313,9 @@ pub struct DocumentPages {
     pub pages: Vec<PageText>,
 }
 
-/// The URL of a document's file, opened at a page.
-pub fn page_url(sha256: &str, page: i64) -> String {
-    format!("/original/{sha256}?page={page}")
+/// The URL of a document's file, opened at a page, on the site at `base`.
+pub fn page_url(base: &str, sha256: &str, page: i64) -> String {
+    format!("{base}/original/{sha256}?page={page}")
 }
 
 // --- runs --------------------------------------------------------------------------------------

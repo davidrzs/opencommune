@@ -19,7 +19,7 @@ pub async fn search(
         return Err(ApiError::unavailable(UNAVAILABLE));
     }
     let query = search.check().map_err(ApiError::invalid)?;
-    let page = fulltext::search(&state.db, &search, &query).await?;
+    let page = fulltext::search(&state.db, &search, &query, &state.site.public_url).await?;
     let total = page.total;
     let mut response = Json(page).into_response();
     // a first page is a search in the usage statistics; further pages are not
@@ -38,7 +38,7 @@ pub async fn pages(
         return Err(ApiError::unavailable(UNAVAILABLE));
     }
     let (from, to) = range.check().map_err(ApiError::invalid)?;
-    fulltext::read(&state.db, &sha256, from, to)
+    fulltext::read(&state.db, &sha256, from, to, &state.site.public_url)
         .await?
         .map(Json)
         .ok_or_else(|| ApiError::not_found("document not found"))

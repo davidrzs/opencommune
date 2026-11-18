@@ -119,14 +119,14 @@ export const copy = {
     unknownDate: 'Nicht datierte PDFs erscheinen ohne Jahresfilter.',
     textSearch: 'Im Text der Dokumente suchen …',
     textHelp:
-      'Alle Wörter müssen auf der Seite vorkommen. "Wörter in Anführungszeichen" suchen genau diese Folge. Wort* findet alle Wörter, die so beginnen.',
+      'Alle Wörter müssen auf der Seite vorkommen. "Wörter in Anführungszeichen" suchen genau diese Folge. Wort* findet alle Wörter, die so beginnen, auch Zusammensetzungen: Kunstrasen* findet Kunstrasenplatz. OR findet das eine oder das andere: Kunstrasen* OR "gazon synthétique". Klammern gruppieren; NEAR(Kunstrasen Kredit) findet Wörter nahe beieinander.',
     textScope:
       'Durchsucht werden Protokolle, Beschlüsse, Abstimmungsergebnisse, Budgets, Jahresrechnungen, Anträge, Traktandenlisten und Vorstösse. Der Text ist maschinell ausgelesen und nicht geprüft.',
     textUnavailable:
       'Die Suche im Text ist hier zurzeit nicht verfügbar. Gesucht wurde in den Titeln.',
     textInvalid: 'Diese Suche ist nicht möglich.',
     textInvalidWhy:
-      'Eine Suche braucht mindestens ein Wort und höchstens zehn Wörter oder Wortfolgen. Vor einem * stehen mindestens drei Buchstaben oder Ziffern.',
+      'Eine Suche braucht mindestens ein Wort und höchstens zehn Wörter oder Wortfolgen. Ein * steht nur am Wortende, nach mindestens drei Buchstaben oder Ziffern. Ausschliessen mit - oder NOT geht nicht, und OR braucht auf beiden Seiten ein Wort.',
     capped:
       'Die Suche trifft {n} Seiten oder mehr. Gezählt und gezeigt werden nur die Dokumente der {n} besten Seiten. Ein weiteres Wort oder ein Filter grenzt die Suche ein.',
     matchingPages: '{n} passende Seiten',
@@ -244,14 +244,14 @@ export const copy = {
     unknownDate: 'Les PDF non datés apparaissent sans filtre par année.',
     textSearch: 'Rechercher dans le texte des documents …',
     textHelp:
-      'Tous les mots doivent figurer sur la page. "Des mots entre guillemets" cherchent exactement cette suite. mot* trouve tous les mots qui commencent ainsi.',
+      'Tous les mots doivent figurer sur la page. "Des mots entre guillemets" cherchent exactement cette suite. mot* trouve tous les mots qui commencent ainsi. OR trouve l’un ou l’autre : "gazon synthétique" OR Kunstrasen*. Les parenthèses regroupent ; NEAR(gazon crédit) trouve des mots proches l’un de l’autre.',
     textScope:
       'La recherche couvre les procès-verbaux, décisions, résultats de scrutin, budgets, comptes, préavis, ordres du jour et interventions des membres. Le texte est extrait automatiquement et n’a pas été vérifié.',
     textUnavailable:
       'La recherche dans le texte n’est pas disponible ici pour le moment. La recherche a porté sur les titres.',
     textInvalid: 'Cette recherche n’est pas possible.',
     textInvalidWhy:
-      'Une recherche demande au moins un mot et au plus dix mots ou suites de mots. Avant un *, il faut au moins trois lettres ou chiffres.',
+      'Une recherche demande au moins un mot et au plus dix mots ou suites de mots. Un * ne se place qu’en fin de mot, après au moins trois lettres ou chiffres. On ne peut pas exclure avec - ou NOT, et OR demande un mot de chaque côté.',
     capped:
       'La recherche trouve {n} pages ou plus. Seuls les documents des {n} meilleures pages sont comptés et affichés. Un mot de plus ou un filtre affine la recherche.',
     matchingPages: '{n} pages correspondantes',
@@ -368,14 +368,14 @@ export const copy = {
     unknownDate: 'I PDF senza data appaiono senza filtro per anno.',
     textSearch: 'Cerca nel testo dei documenti …',
     textHelp:
-      'Tutte le parole devono comparire nella pagina. "Parole tra virgolette" cercano esattamente questa sequenza. parola* trova tutte le parole che iniziano così.',
+      'Tutte le parole devono comparire nella pagina. "Parole tra virgolette" cercano esattamente questa sequenza. parola* trova tutte le parole che iniziano così. OR trova l’una o l’altra: "campo sintetico" OR Kunstrasen*. Le parentesi raggruppano; NEAR(campo credito) trova parole vicine.',
     textScope:
       'La ricerca copre verbali, risoluzioni, risultati di scrutinio, preventivi, consuntivi, messaggi, ordini del giorno e atti parlamentari. Il testo è estratto automaticamente e non è stato verificato.',
     textUnavailable:
       'La ricerca nel testo non è disponibile qui al momento. La ricerca è stata fatta nei titoli.',
     textInvalid: 'Questa ricerca non è possibile.',
     textInvalidWhy:
-      'Una ricerca richiede almeno una parola e al massimo dieci parole o sequenze. Prima di un * servono almeno tre lettere o cifre.',
+      'Una ricerca richiede almeno una parola e al massimo dieci parole o sequenze. Un * va solo alla fine di una parola, dopo almeno tre lettere o cifre. Non si può escludere con - o NOT, e OR richiede una parola da ogni lato.',
     capped:
       'La ricerca trova {n} pagine o più. Sono contati e mostrati solo i documenti delle {n} pagine migliori. Un’altra parola o un filtro restringe la ricerca.',
     matchingPages: '{n} pagine corrispondenti',
@@ -491,14 +491,14 @@ export const copy = {
     unknownDate: 'Undated PDFs appear only without a year filter.',
     textSearch: 'Search the text of the documents …',
     textHelp:
-      'All words must appear on the page. "Words in quotes" search for exactly this sequence. word* finds all words that begin this way.',
+      'All words must appear on the page. "Words in quotes" search for exactly this sequence. word* finds all words that begin this way, compounds too: Kunstrasen* finds Kunstrasenplatz. OR finds either: Kunstrasen* OR "gazon synthétique". Parentheses group; NEAR(Kunstrasen Kredit) finds words close together.',
     textScope:
       'The search covers minutes, decisions, vote results, budgets, annual accounts, proposals, agendas and members’ motions. The text is read automatically and has not been checked.',
     textUnavailable:
       'Text search is not available here at the moment. The titles were searched instead.',
     textInvalid: 'This search is not possible.',
     textInvalidWhy:
-      'A search needs at least one word and at most ten words or phrases. A * must follow at least three letters or digits.',
+      'A search needs at least one word and at most ten words or phrases. A * can only end a word, after at least three letters or digits. There is no exclusion with - or NOT, and OR needs a word on each side.',
     capped:
       'The search matches {n} pages or more. Only the documents of the {n} best pages are counted and shown. Another word or a filter narrows the search.',
     matchingPages: '{n} matching pages',
