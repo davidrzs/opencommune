@@ -67,7 +67,10 @@ holdings`.
 `register` is the commune's entry as in `/api/register`, or null. `access` is
 `[{status, checked_at, robots_url, restricted_at, source_url, stale}]`, one entry per website,
 newest check first; `source_url` is the website, never a document; an entry is `stale` when its
-`restricted_at` (or `checked_at`) is 7 days old or more, computed at request time. 404 when the
+`restricted_at` (or `checked_at`) is 7 days old or more, computed at request time. The crawler keeps
+a problem until the same address answers again; an address that changes from run to run (one with
+the date in its query) never does, so a stale entry may be long resolved. It says nothing about
+when the commune was last crawled. 404 when the
 commune is not in the `communes` table. `holdings` is
 `[{year, family, documents, pages, first_part_documents}]`, per year and section family, newest
 year first, then family: `documents`, how many of the commune's documents of that year have a
@@ -317,7 +320,8 @@ Streamable HTTP, stateless (no session kept), JSON responses. Tools:
    result in a shorter form for a model: documents without `first_seen`, `pages_seen`, `run_id` and
    `personal_data`, and `sections` as labels: `minutes 2-11`, `vote_result 12`, `budget 1-200
    (partly unseen)`.
-4. `get_document(sha256)`: as `/api/documents/{sha256}`; `{"error": "not found"}` when unknown.
+4. `get_document(sha256)`: as `/api/documents/{sha256}`; an unknown sha256 is a tool error, as in
+   the other tools.
 5. `search_text(q, commune, canton, year, from, to, language, section, family, exclude_section,
    exclude_family, body, document, sort, offset, limit, pages_per_document, commune_facets)`: the
    parameters of `/api/pages`; a refused query is a tool error with the reason. The result in the

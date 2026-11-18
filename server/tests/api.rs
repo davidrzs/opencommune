@@ -1100,6 +1100,21 @@ async fn mcp_lists_the_tools_and_answers_a_search() {
         body["result"]["structuredContent"]["run"]["model"],
         "model-a"
     );
+    // an unknown document is a tool error, as in the other tools, not a result
+    let result = call_tool(&f.router, "get_document", json!({"sha256": "nope"})).await;
+    assert_eq!(result["isError"], true);
+    assert!(
+        result["content"][0]["text"]
+            .as_str()
+            .unwrap()
+            .starts_with("Error executing tool get_document: no document has this sha256")
+    );
+    // the descriptions name the brackets of the marks, which are not ASCII
+    for name in ["search_text", "read_pages"] {
+        let tool = tools.iter().find(|t| t["name"] == name).unwrap();
+        let description = tool["description"].as_str().unwrap();
+        assert!(description.contains("U+FF3B ［ and U+FF3D ］"), "{name}");
+    }
 
     // another Host is refused (DNS rebinding guard)
     let mut request = post(json!({"jsonrpc": "2.0", "id": 7, "method": "tools/list"}));
@@ -2181,6 +2196,7 @@ async fn mcp_searches_and_reads_the_text_as_the_api_does() {
     let instructions = body["result"]["instructions"].as_str().unwrap();
     assert!(instructions.contains("search_text, then read the pages around a hit with read_pages"));
     assert!(instructions.contains("machine-extracted"));
+    assert!(instructions.contains("full-width brackets (U+FF3B and U+FF3D, not ASCII [ ])"));
 
     // without an index both tools answer with an error that says so
     let f = fixture(false).await;

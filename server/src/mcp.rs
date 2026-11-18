@@ -36,9 +36,12 @@ crawler cannot read its listing yet) or not_examined. get_commune gives one comm
 const GET_COMMUNE_DESCRIPTION: &str = "One commune by its BFS number (from list_communes): name, \
 canton, language, website and the software behind it (vendor), coordinates, the number of \
 documents, `register` (the coverage register's entry: status, notes, and per body what the \
-commune publishes and whether the archive collects it), `access` (problems the crawler met on \
-its website, such as rate limits or robots.txt rules) and `holdings`: documents and pages per \
-year and section family. The holdings come from an automatic classification by a language \
+commune publishes and whether the archive collects it), `access` and `holdings`: documents and \
+pages per year and section family. `access` lists problems the crawler met on the commune's \
+websites (rate limits, robots.txt rules, technical errors), the latest per website. A problem \
+stays listed until the same address answers again, which an address that changes (one with the \
+date in it) never does: `stale` is true when the problem was last seen a week ago or more, and \
+it may well be gone. It does not say when the commune was last crawled. The holdings come from an automatic classification by a language \
 model that no person has checked yet.";
 
 const SEARCH_DESCRIPTION: &str = "Search the archive's documents, newest first. Every filter is \
@@ -53,7 +56,8 @@ commune's listing date. `q`: text the document's title contains, ignoring case (
 3 characters on); search_text searches the text of the pages. `limit` 0 to 100 (default 20) \
 and `offset` page through the results. Returns `total`, `facets` (documents per \
 year, section type and body, each counted with every filter except its own) and `items`: title \
-and body as printed (private names appear as [name]), dates, pages, sections as their type and \
+and body as printed (private names appear as [name], in ASCII brackets; the page text uses \
+full-width ［name］), dates, pages, sections as their type and \
 pages (as minutes 2-11, with (partly unseen) when the classifier saw only some of their pages), \
 the communes that link the document, and `original_url`, a full link on this site that redirects \
 to the file on the commune's website (add `?page=N` to open it at a page). get_document gives \
@@ -104,7 +108,8 @@ machine-extracted (the PDF's text layer, or OCR) and no person has checked yet w
 complete or right; titles, dates and sections come from an automatic classification. Names, \
 street addresses and e-mail addresses in the text are replaced by the marks ［name］, ［address］ \
 and ［email］ (［secret］ for passwords and keys), dates of birth and mobile numbers by ［date］ and \
-［phone］.";
+［phone］. The marks are in full-width brackets, U+FF3B ［ and U+FF3D ］, not ASCII [ and ]: match \
+them as written. Titles write private names as [name], in ASCII brackets.";
 
 const READ_PAGES_DESCRIPTION: &str = "Read the text of up to 10 pages of one document: `sha256` \
 (from search_text or search_documents), `from` (default 1) and `to` (default from + 9). Returns \
@@ -113,8 +118,8 @@ text recognition on the page image), `text` and `original_url` (a full link that
 at that page). A page outside the search has no text and a `reason` instead. The text is machine-extracted: \
 reading order, tables and hyphenation can be off, and no person has checked yet whether it is \
 complete or right. Names, street addresses and e-mail addresses are replaced by the marks ［name］, \
-［address］ and ［email］, dates of birth and mobile numbers by ［date］ and ［phone］. Cite the page \
-and its original_url.";
+［address］ and ［email］, dates of birth and mobile numbers by ［date］ and ［phone］, in full-width \
+brackets (U+FF3B ［ and U+FF3D ］, not ASCII [ and ]). Cite the page and its original_url.";
 
 #[derive(Deserialize, JsonSchema)]
 #[schemars(crate = "rmcp::schemars")]
@@ -273,16 +278,17 @@ impl Archive {
         let document = documents::get(&self.state.db, &args.sha256, &self.state.site.public_url)
             .await
             .map_err(internal)?;
-        self.count(
-            "get_document",
-            started,
-            if document.is_some() { 200 } else { 404 },
-            None,
-        );
-        Ok(CallToolResult::structured(match document {
-            Some(d) => serde_json::to_value(d).unwrap_or(Value::Null),
-            None => json!({"error": "not found"}),
-        }))
+        let Some(document) = document else {
+            self.count("get_document", started, 404, None);
+            return Ok(refused(
+                "get_document",
+                "no document has this sha256; search_documents and search_text find documents",
+            ));
+        };
+        self.count("get_document", started, 200, None);
+        Ok(CallToolResult::structured(
+            serde_json::to_value(document).unwrap_or(Value::Null),
+        ))
     }
 
     #[tool(
@@ -480,7 +486,7 @@ impl Archive {
 
 #[tool_handler(
     name = "tractanda",
-    instructions = "Tractanda is an open archive of the documents Swiss communes publish on their websites: minutes, decisions, budgets, accounts, vote results and other papers of assemblies, parliaments and councils. Each file is listed once, with a fixed label and a link to the original on the commune's website. Use list_communes with a canton or part of a name to find a commune's BFS number (without either it gives only counts per canton), get_commune for one commune's coverage, search_documents to filter documents by commune, section type, kind, body, year and label, and get_document for one document. To find what the pages say, use search_text, then read the pages around a hit with read_pages, then cite the document and the page: each page has an original_url, a full link that opens the file at that page. The documents are in German, French, Italian and Romansh and are not translated: to search every language, join each language's words with OR in search_text. The page text is machine-extracted (the PDF's text layer, or OCR) and no person has checked it: quote it with care and point to the page. Names, street addresses and e-mail addresses in the page text are replaced by ［name］, ［address］ and ［email］. Kinds, bodies, dates and sections come from an automatic classification by a language model that no person has checked yet. Coverage is partial and growing: no result does not mean that no document exists."
+    instructions = "Tractanda is an open archive of the documents Swiss communes publish on their websites: minutes, decisions, budgets, accounts, vote results and other papers of assemblies, parliaments and councils. Each file is listed once, with a fixed label and a link to the original on the commune's website. Use list_communes with a canton or part of a name to find a commune's BFS number (without either it gives only counts per canton), get_commune for one commune's coverage, search_documents to filter documents by commune, section type, kind, body, year and label, and get_document for one document. To find what the pages say, use search_text, then read the pages around a hit with read_pages, then cite the document and the page: each page has an original_url, a full link that opens the file at that page. The documents are in German, French, Italian and Romansh and are not translated: to search every language, join each language's words with OR in search_text. The page text is machine-extracted (the PDF's text layer, or OCR) and no person has checked it: quote it with care and point to the page. Names, street addresses and e-mail addresses in the page text are replaced by ［name］, ［address］ and ［email］, in full-width brackets (U+FF3B and U+FF3D, not ASCII [ ]); titles write private names as [name] in ASCII brackets. Kinds, bodies, dates and sections come from an automatic classification by a language model that no person has checked yet. Coverage is partial and growing: no result does not mean that no document exists."
 )]
 impl ServerHandler for Archive {}
 
