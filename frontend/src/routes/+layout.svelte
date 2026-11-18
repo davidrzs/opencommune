@@ -8,6 +8,7 @@
   import { page } from '$app/state';
   import { onMount } from 'svelte';
   import { copy, href, type Lang } from '$lib/i18n';
+  import { release } from '$lib/release';
   let { children } = $props();
   let lang = $derived((page.params.lang || 'de') as Lang);
   let t = $derived(copy[lang]);
@@ -131,6 +132,14 @@
         >
       </li>
       <li><a class="hover:text-foreground" href="/tractanda-paper.pdf">{t.paper}</a></li>
+      {#if release.commit}<li>
+          <a
+            class="hover:text-foreground"
+            href="https://github.com/davidrzs/tractanda/commit/{release.commit}"
+            >{lang === 'it' ? 'Versione' : 'Version'}
+            <span class="font-mono">{release.commit}{release.dirty ? '-dirty' : ''}</span></a
+          >
+        </li>{/if}
     </ul>
   </div>
 </footer>
