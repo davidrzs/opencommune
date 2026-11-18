@@ -62,5 +62,24 @@ export const apiPage = {
       'Tutti gli endpoint con i loro parametri e le risposte. Le richieste inviate dal riferimento vanno direttamente a questo sito.',
     loading: 'Caricamento del riferimento …',
     failed: 'Non è stato possibile caricare il riferimento.'
+  },
+  en: {
+    title: 'API',
+    intro: 'Tractanda provides all its data as a JSON API: read-only, with no key and no account.',
+    license: 'The data are released under CC0 1.0 and may be used without conditions.',
+    caveat:
+      'Titles, bodies, dates and parts come from an automatic classification that no person has checked yet. Names of private individuals appear as [name].',
+    openapi: 'OpenAPI description (JSON)',
+    mcpTitle: 'For AI assistants (MCP)',
+    mcp: 'AI assistants can use the same data through MCP, at {url} (Streamable HTTP). The tools are called search_documents, get_document, list_communes, search_text (full-text search) and read_pages (read the text of pages).',
+    mcpConfig: 'Entry for an assistant’s MCP configuration:',
+    mcpConnector: 'In Claude or ChatGPT, the address can be added as a custom connector.',
+    copy: 'Copy',
+    copied: 'Copied',
+    referenceTitle: 'Reference',
+    referenceNote:
+      'All endpoints with their parameters and responses. Requests from the reference go directly to this website.',
+    loading: 'Loading the reference …',
+    failed: 'The reference could not be loaded.'
   }
 };

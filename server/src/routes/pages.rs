@@ -2,7 +2,7 @@
 //! `llms.txt`, and the HTML of the start, commune, about, privacy and search pages.
 
 use axum::extract::State;
-use axum::http::{StatusCode, header};
+use axum::http::{HeaderMap, StatusCode, header};
 use axum::response::{Html, IntoResponse, Redirect, Response};
 use serde_json::json;
 
@@ -138,8 +138,30 @@ fn llms_search(base: &str) -> String {
 }
 
 /// The front end chooses the language; the start page without one is the German one.
-pub async fn root() -> Redirect {
-    Redirect::temporary("/de")
+/// The start page in the browser's language (`Accept-Language`, in its order), German when it
+/// names none of the site's.
+pub async fn root(headers: HeaderMap) -> Response {
+    let wanted = headers
+        .get(header::ACCEPT_LANGUAGE)
+        .and_then(|v| v.to_str().ok())
+        .unwrap_or("");
+    let lang = wanted
+        .split(',')
+        .filter_map(|part| part.split(';').next())
+        .map(|tag| {
+            tag.trim()
+                .split('-')
+                .next()
+                .unwrap_or("")
+                .to_ascii_lowercase()
+        })
+        .find_map(|code| Lang::ALL.into_iter().find(|l| l.code() == code))
+        .unwrap_or(Lang::De);
+    (
+        [(header::VARY, "Accept-Language")],
+        Redirect::temporary(&format!("/{}", lang.code())),
+    )
+        .into_response()
 }
 
 pub async fn home(state: AppState, lang: Lang) -> Result<Response, ApiError> {

@@ -73,6 +73,24 @@ export const licensesPage = {
     creditsTitle: 'Ringraziamenti',
     creditsIntro:
       'Tractanda si basa su software, modelli e dati aperti. Ringraziamo tutte le persone che li hanno creati e li mantengono.'
+  },
+  en: {
+    title: 'Licences and thanks',
+    intro:
+      'This page names the licences of the code and the data, and the work of others on which Tractanda builds.',
+    ownTitle: 'Tractanda’s code and data',
+    code: 'Source code',
+    codeText: 'Crawler, processing, server and website.',
+    codeWhere: 'GitHub',
+    data: 'Data',
+    dataText:
+      'The information Tractanda draws from the documents: register, titles, bodies, dates and parts.',
+    dataWhere: 'Hugging Face and API',
+    ownNote:
+      'CC0 1.0 means that the data may be used without conditions. Citing the source is not required, but welcome. The documents themselves are publications of the municipalities; Tractanda links to the original.',
+    creditsTitle: 'Thanks',
+    creditsIntro:
+      'Tractanda is built on open software, open models and open data. We thank everyone who has created and maintains them.'
   }
 };
 
@@ -81,7 +99,8 @@ export const credits: CreditGroup[] = [
     title: {
       de: 'Dokumente lesen und erschliessen',
       fr: 'Lire et exploiter les documents',
-      it: 'Leggere e indicizzare i documenti'
+      it: 'Leggere e indicizzare i documenti',
+      en: 'Reading and indexing the documents'
     },
     credits: [
       {
@@ -92,23 +111,29 @@ export const credits: CreditGroup[] = [
         use: {
           de: 'Findet im Text der Seiten die Namen von Privatpersonen. Im Suchindex werden sie durch Platzhalter ersetzt.',
           fr: 'Repère dans le texte des pages les noms de personnes privées. Dans l’index de recherche, ils sont remplacés par des marques.',
-          it: 'Individua nel testo delle pagine i nomi di persone private. Nell’indice di ricerca vengono sostituiti da segnaposto.'
+          it: 'Individua nel testo delle pagine i nomi di persone private. Nell’indice di ricerca vengono sostituiti da segnaposto.',
+          en: 'Finds the names of private individuals in the text of the pages. In the search index they are replaced by placeholders.'
         },
         parts: [
           {
-            label: { de: 'Modell', fr: 'Modèle', it: 'Modello' },
+            label: { de: 'Modell', fr: 'Modèle', it: 'Modello', en: 'Model' },
             name: 'gheim-ch-560m',
             href: 'https://huggingface.co/joelbarmettler/gheim-ch-560m',
             license: 'Apache-2.0'
           },
           {
-            label: { de: 'Datensatz', fr: 'Jeu de données', it: 'Dataset' },
+            label: { de: 'Datensatz', fr: 'Jeu de données', it: 'Dataset', en: 'Dataset' },
             name: 'gheim-ch-pii-212k',
             href: 'https://huggingface.co/datasets/joelbarmettler/gheim-ch-pii-212k',
             license: 'CC BY 4.0'
           },
           {
-            label: { de: 'Grundmodell', fr: 'Modèle de base', it: 'Modello di base' },
+            label: {
+              de: 'Grundmodell',
+              fr: 'Modèle de base',
+              it: 'Modello di base',
+              en: 'Base model'
+            },
             name: 'XLM-RoBERTa large (Facebook AI)',
             href: 'https://huggingface.co/FacebookAI/xlm-roberta-large',
             license: 'MIT'
@@ -123,11 +148,12 @@ export const credits: CreditGroup[] = [
         use: {
           de: 'Erkennt den Text von Seiten ohne Textebene, etwa von eingescannten Seiten.',
           fr: 'Reconnaît le texte des pages sans couche de texte, par exemple des pages numérisées.',
-          it: 'Riconosce il testo delle pagine senza livello di testo, per esempio delle pagine scansionate.'
+          it: 'Riconosce il testo delle pagine senza livello di testo, per esempio delle pagine scansionate.',
+          en: 'Recognises the text of pages without a text layer, such as scanned pages.'
         },
         parts: [
           {
-            label: { de: 'Betrieben mit', fr: 'Exécuté avec', it: 'Eseguito con' },
+            label: { de: 'Betrieben mit', fr: 'Exécuté avec', it: 'Eseguito con', en: 'Run with' },
             name: 'vLLM',
             href: 'https://github.com/vllm-project/vllm',
             license: 'Apache-2.0'
@@ -142,32 +168,41 @@ export const credits: CreditGroup[] = [
         use: {
           de: 'Liest die PDF-Dateien: die Textebene jeder Seite und die Seitenbilder für die Einordnung und die Texterkennung.',
           fr: 'Lit les fichiers PDF : la couche de texte de chaque page et les images des pages pour la classification et la reconnaissance de texte.',
-          it: 'Legge i file PDF: il livello di testo di ogni pagina e le immagini delle pagine per la classificazione e il riconoscimento del testo.'
+          it: 'Legge i file PDF: il livello di testo di ogni pagina e le immagini delle pagine per la classificazione e il riconoscimento del testo.',
+          en: 'Reads the PDF files: the text layer of every page and the page images for classification and text recognition.'
         }
       },
       {
         name: {
           de: 'Sprachmodell',
           fr: 'Modèle de langage',
-          it: 'Modello linguistico'
+          it: 'Modello linguistico',
+          en: 'Language model'
         },
         href: 'https://openai.com/api/',
         by: 'OpenAI',
         license: {
           de: 'Kommerzieller Dienst',
           fr: 'Service commercial',
-          it: 'Servizio commerciale'
+          it: 'Servizio commerciale',
+          en: 'Commercial service'
         },
         use: {
           de: 'Ordnet die Dokumente ein: Dokumentart, Teile, Gremium und Jahr. Die Anfragen gehen über die OpenAI-API; hochgeladene Seitenbilder werden nach der Auswertung beim Anbieter gelöscht.',
           fr: 'Classe les documents : type de document, parties, organe et année. Les requêtes passent par l’API d’OpenAI ; les images de pages envoyées sont effacées chez le fournisseur après le traitement.',
-          it: 'Classifica i documenti: tipo di documento, parti, organo e anno. Le richieste passano per l’API di OpenAI; le immagini delle pagine inviate vengono cancellate presso il fornitore dopo l’elaborazione.'
+          it: 'Classifica i documenti: tipo di documento, parti, organo e anno. Le richieste passano per l’API di OpenAI; le immagini delle pagine inviate vengono cancellate presso il fornitore dopo l’elaborazione.',
+          en: 'Classifies the documents: document type, parts, body and year. The requests go through the OpenAI API; uploaded page images are deleted at the provider once they have been processed.'
         }
       }
     ]
   },
   {
-    title: { de: 'Karte und Gemeinden', fr: 'Carte et communes', it: 'Mappa e comuni' },
+    title: {
+      de: 'Karte und Gemeinden',
+      fr: 'Carte et communes',
+      it: 'Mappa e comuni',
+      en: 'Map and municipalities'
+    },
     credits: [
       {
         name: 'swissBOUNDARIES3D',
@@ -175,21 +210,29 @@ export const credits: CreditGroup[] = [
         by: {
           de: 'Bundesamt für Landestopografie swisstopo',
           fr: 'Office fédéral de topographie swisstopo',
-          it: 'Ufficio federale di topografia swisstopo'
+          it: 'Ufficio federale di topografia swisstopo',
+          en: 'Federal Office of Topography swisstopo'
         },
         license: {
           de: 'Freie Geodaten, © swisstopo',
           fr: 'Géodonnées libres, © swisstopo',
-          it: 'Geodati liberi, © swisstopo'
+          it: 'Geodati liberi, © swisstopo',
+          en: 'Free geodata, © swisstopo'
         },
         use: {
           de: 'Die Grenzen der Gemeinden und Kantone auf der Karte (Stand 1. Januar 2026).',
           fr: 'Les limites des communes et des cantons sur la carte (état au 1er janvier 2026).',
-          it: 'I confini dei comuni e dei cantoni sulla mappa (stato al 1° gennaio 2026).'
+          it: 'I confini dei comuni e dei cantoni sulla mappa (stato al 1° gennaio 2026).',
+          en: 'The boundaries of the municipalities and cantons on the map (as of 1 January 2026).'
         },
         parts: [
           {
-            label: { de: 'Aufbereitet mit', fr: 'Préparé avec', it: 'Preparato con' },
+            label: {
+              de: 'Aufbereitet mit',
+              fr: 'Préparé avec',
+              it: 'Preparato con',
+              en: 'Prepared with'
+            },
             name: 'swiss-maps 4.7.0 (Interactive Things)',
             href: 'https://github.com/interactivethings/swiss-maps',
             license: 'BSD-3-Clause'
@@ -200,23 +243,27 @@ export const credits: CreditGroup[] = [
         name: {
           de: 'Amtliches Gemeindeverzeichnis der Schweiz',
           fr: 'Répertoire officiel des communes de Suisse',
-          it: 'Elenco ufficiale dei Comuni della Svizzera'
+          it: 'Elenco ufficiale dei Comuni della Svizzera',
+          en: 'Swiss official commune register'
         },
         href: 'https://www.agvchapp.bfs.admin.ch',
         by: {
           de: 'Bundesamt für Statistik (BFS)',
           fr: 'Office fédéral de la statistique (OFS)',
-          it: 'Ufficio federale di statistica (UST)'
+          it: 'Ufficio federale di statistica (UST)',
+          en: 'Federal Statistical Office (FSO)'
         },
         license: {
           de: 'Freie Nutzung, Quellenangabe Pflicht',
           fr: 'Utilisation libre, indication de la source obligatoire',
-          it: 'Libero utilizzo, indicazione della fonte obbligatoria'
+          it: 'Libero utilizzo, indicazione della fonte obbligatoria',
+          en: 'Free use, citing the source required'
         },
         use: {
           de: 'Die Liste aller Gemeinden mit ihren Nummern, Stand 1. Januar 2026.',
           fr: 'La liste de toutes les communes avec leur numéro, état au 1er janvier 2026.',
-          it: 'L’elenco di tutti i comuni con il loro numero, stato al 1° gennaio 2026.'
+          it: 'L’elenco di tutti i comuni con il loro numero, stato al 1° gennaio 2026.',
+          en: 'The list of all municipalities with their numbers, as of 1 January 2026.'
         }
       }
     ]
@@ -244,5 +291,12 @@ export const errorPage = {
     errorTitle: 'Archivio non raggiungibile',
     status: 'Errore',
     home: 'Alla pagina iniziale'
+  },
+  en: {
+    notFoundTitle: 'Page not found',
+    notFound: 'There is no page and no municipality in the archive at this address.',
+    errorTitle: 'Archive not reachable',
+    status: 'Error',
+    home: 'To the start page'
   }
 };

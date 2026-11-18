@@ -21,15 +21,16 @@
     const facts = document.getElementById('oc-facts');
     if (facts && !facts.dataset.keep) facts.remove();
   });
-  const languages: Lang[] = ['de', 'fr', 'it'];
+  const languages: Lang[] = ['de', 'fr', 'it', 'en'];
   const licences = {
     de: 'Lizenzen und Dank',
     fr: 'Licences et remerciements',
-    it: 'Licenze e ringraziamenti'
+    it: 'Licenze e ringraziamenti',
+    en: 'Licences and thanks'
   };
   function switchTo(next: Lang) {
     return (
-      href(page.url.pathname.replace(/^\/(de|fr|it)(?=\/|$)/, '') || '/', next) + page.url.search
+      href(page.url.pathname.replace(/^\/(de|fr|it|en)(?=\/|$)/, '') || '/', next) + page.url.search
     );
   }
   let path = $derived(page.url.pathname);
@@ -40,7 +41,7 @@
       current: path === href('/', lang) || path.includes('/gemeinden/')
     },
     { to: href('/suche', lang), label: t.search, current: path.includes('/suche') },
-    { to: href('/api', lang), label: 'API', current: /^\/(de|fr|it)\/api$/.test(path) }
+    { to: href('/api', lang), label: 'API', current: /^\/(de|fr|it|en)\/api$/.test(path) }
   ]);
 </script>
 

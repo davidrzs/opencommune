@@ -109,5 +109,42 @@ export const about = {
     privacyTitle: 'Protezione dei dati',
     privacy:
       'Il sito non usa cookie e non carica nulla da terzi. Per le statistiche d’uso il server conta gli accessi per giorno e per tipo di pagina e, per i link da altri siti, solo il loro dominio; non registra né indirizzi IP, né termini di ricerca, né gli indirizzi completi delle pagine visitate. Il numero di visitatori al giorno è stimato con una chiave che cambia ogni giorno, così nessuno può essere riconosciuto da un giorno all’altro. Chi invia «Do Not Track» o «Global Privacy Control» non viene considerato né in questa stima né nel conteggio dei domini. I conteggi giornalieri vengono conservati senza limiti di tempo e non contengono dati personali.'
+  },
+  en: {
+    title: 'About Tractanda',
+    intro: 'A data foundation for studying democracy in Swiss municipalities more closely.',
+    purposeTitle: 'Why this archive?',
+    purpose:
+      'Municipalities decide on schools, local planning, infrastructure and much more. The documents on these decisions are scattered across individual municipal websites. Anyone who wants to study and compare democratic processes across several municipalities or years has so far had to gather them with considerable effort.',
+    aim: 'Tractanda collects these documents and makes their contents accessible. With it we want to create a shared data foundation that makes research, journalistic work and public insight into municipal decisions easier.',
+    sourcesTitle: 'Where does the data come from?',
+    sources:
+      'The documents come from publicly accessible publications of the municipalities and their parliaments. Each document links to its source.',
+    methodTitle: 'What is already possible?',
+    method:
+      'The archive lists the documents of the municipalities with a link to the original. A language model classifies each document: what kind of document it is, which parts it consists of and which body it comes from. This classification is not checked item by item. It serves as a way into the original sources, not as a fully verified research dataset.',
+    classificationTitle: 'How the documents are classified',
+    classification:
+      'A language model sees the pages of each document as images. It determines the document type, the parts with their pages, the body and the year. No one checks this information item by item. Each run has a fixed prompt and fixed settings; what they mean for the data is stated with the run.',
+    model: 'Model',
+    limits:
+      'Tractanda is a work in progress. A municipality counts as part of the archive as soon as at least one document is available. Coverage and time periods vary accordingly. Missing documents do not mean that there were no corresponding meetings or decisions. Comparisons must take these gaps into account.',
+    teamTitle: 'Who is behind it?',
+    team: 'Tractanda is a project by David Zollikofer.',
+    contact:
+      'Questions, pointers to missing sources, corrections or concerns about personal data can be sent to us by e-mail. We also welcome exchange with researchers, journalists and municipalities.',
+    email: 'Send David an e-mail',
+    emailSubject: 'Contact',
+    sourceLink: 'See the open source code',
+    dataTitle: 'Using the data',
+    data: 'The data is published under CC0 1.0 and may be used without conditions. Citing the source is not legally required, but very welcome. The source code is open under the MIT licence.',
+    api: 'JSON API, no key needed',
+    mcp: 'MCP server for AI assistants such as Claude or ChatGPT',
+    dataset: 'Dataset on Hugging Face',
+    paper: 'Working paper, a first draft (PDF)',
+    llms: 'Short description for AI agents (llms.txt)',
+    privacyTitle: 'Privacy',
+    privacy:
+      'The website sets no cookies and loads nothing from third parties. For the usage statistics, the server counts requests per day and page type, and for links from other websites only their domain; it does not store IP addresses, search terms or the full addresses of the pages requested. The number of visitors per day is estimated with a key that changes daily, so that no one can be recognised from one day to the next. Anyone who sends “Do Not Track” or “Global Privacy Control” is included neither in this estimate nor in the count of domains. The counts per day are kept permanently; they contain no information about persons.'
   }
 };

@@ -51,5 +51,17 @@ export const searchCopy: Record<
     pageOf: 'Pagina {n} di {total}',
     tips: 'Consigli di ricerca',
     firstFamily: 'Prima parte:'
+  },
+  en: {
+    about: 'for “{q}”',
+    inText: 'Searched in the text of the pages',
+    inTitles: 'Searched in the titles',
+    bestFirst: 'Best matches first',
+    newestFirst: 'Newest first',
+    filters: 'Filters',
+    pages: 'Result pages',
+    pageOf: 'Page {n} of {total}',
+    tips: 'Search tips',
+    firstFamily: 'First part:'
   }
 };

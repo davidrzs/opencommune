@@ -1,5 +1,5 @@
 import type { BodyKind, Family, Language, SectionType } from './types';
-export type Lang = 'de' | 'fr' | 'it';
+export type Lang = 'de' | 'fr' | 'it' | 'en';
 export const href = (path: string, lang: Lang) => `/${lang}${path === '/' ? '' : path}`;
 export const fmt = (n: number, lang: Lang) => new Intl.NumberFormat(`${lang}-CH`).format(n);
 export const when = (value: string | null, lang: Lang) =>
@@ -386,6 +386,129 @@ export const copy = {
     communeSearch: 'Cerca nei testi di questo comune',
     communeSearchPlaceholder: 'Parole chiave …',
     searchButton: 'Cerca'
+  },
+  en: {
+    accessRestricted: 'Collection partly restricted',
+    accessNotice:
+      'The robots.txt of this website restricts the automatic collection of some documents.',
+    accessTemporary: 'Automatic collection is temporarily disrupted.',
+    accessRate: 'The website is currently limiting requests.',
+    accessUnavailable: 'The robots.txt could not be checked reliably.',
+    accessChecked: 'Last checked',
+    accessEarlier: 'A restriction was found earlier; a new check is pending.',
+    accessStale: 'This observation is more than seven days old.',
+    accessSource: 'Website',
+    accessEmpty: 'No documents from this municipality are published here yet.',
+
+    report: 'Report a problem',
+    reportPrompt: 'What is wrong or missing?',
+    reportPage: 'Page',
+    reportEntry: 'Entry',
+    reportAddress: 'Email address',
+    reportHint: 'Opens your email program',
+    unavailable: 'The archive cannot be reached at the moment. Please try again.',
+    communes: 'Municipalities',
+    commune: 'Municipality',
+    search: 'Search documents',
+    archive: 'THE OPEN MUNICIPAL ARCHIVE',
+    title: 'Switzerland.',
+    subtitle: 'Municipality by municipality.',
+    intro: 'Documents from Swiss municipalities.',
+    intro2: 'In one place, with a link to the source.',
+    find: 'Find a municipality',
+    placeholder: 'Name of the municipality …',
+    noMatch: 'No municipality found in the archive.',
+    mapChoose: 'Choose a municipality on the map',
+    missing: 'No documents yet',
+    borders: 'Boundaries',
+    collection: 'THE COLLECTION',
+    coverageNote: 'Depending on the municipality, single documents or longer periods are covered.',
+    gaps: 'The collection is growing; the archives may have gaps.',
+    topicLink: 'Browse the documents',
+    discover: 'Explore the municipalities',
+    moreCommunes: 'Show more municipalities',
+    allCantons: 'All cantons',
+    mapLabel: 'Map of Switzerland: municipalities with collected documents',
+    withDocuments: 'municipalities with collected documents',
+    documentsKey: 'Documents collected',
+    footer: 'Public documents. Accessible to all.',
+    disclaimer: 'The original document is always authoritative.',
+    openSource: 'Open source code',
+    dataset: 'Dataset',
+    paper: 'Working paper (draft, PDF)',
+    maintainedBy: 'A project by',
+    wip: 'Work in progress: the data are read from the documents automatically and added to continually.',
+    documents: 'Documents',
+    documentOne: 'Document',
+    original: 'Open original',
+    undated: 'No date given',
+    allYears: 'All years',
+    allSections: 'All parts',
+    allBodies: 'All bodies',
+    yearLabel: 'Year',
+    sectionLabel: 'Part',
+    bodyLabel: 'Body',
+    noValue: 'not given',
+    filter: 'Filter',
+    docSearch: 'Search document titles …',
+    noResults: 'No matching entries found.',
+    prev: 'Previous',
+    next: 'Next',
+    source: 'Source',
+    official: 'Municipal website',
+    back: 'All municipalities',
+    local: 'MUNICIPAL ARCHIVE',
+    scope: 'Published documents of this municipality.',
+    note: 'Titles are given as printed, as read by the language model. Names of private individuals appear as [name].',
+    across: 'Across municipal boundaries.',
+    searchIntro: 'The collected documents of all municipalities, in their original language.',
+    classificationNote:
+      'Title, body, date and parts come from an automatic classification by a language model and have not been checked by a person.',
+    classificationLink: 'About the classification',
+    runLink: 'Classification',
+    contains: 'Contains:',
+    fiscalYear: 'Financial year {year}',
+    openAt: 'open at p. {n}',
+    asData: 'This list as data:',
+    apiLink: 'About the API',
+    holdingsTitle: 'COLLECTION BY YEAR',
+    holdingsNote:
+      'Documents with at least one part of the family, per year. Clicking a number shows these documents in the list.',
+    familyLabel: 'Family:',
+    removeFilter: 'Remove filter',
+    languagesLabel: 'Languages',
+    sections: 'Parts of the document',
+    pageAbbr: 'p.',
+    onePage: '1 page',
+    pages: '{n} pages',
+    partlyUnseen: 'Some pages not seen by the classifier',
+    partlyUnseenTip: 'For long documents, the classifier saw at most 150 pages.',
+    result: 'results',
+    resultOne: 'result',
+    skip: 'Skip to content',
+    originalLanguage: 'Documents stay in their original language.',
+    reset: 'Reset filters',
+    unknownDate: 'Undated PDFs appear only without a year filter.',
+    textSearch: 'Search the text of the documents …',
+    textHelp:
+      'All words must appear on the page. "Words in quotes" search for exactly this sequence. word* finds all words that begin this way.',
+    textScope:
+      'The search covers minutes, decisions, vote results, budgets, annual accounts, proposals, agendas and members’ motions. The text is read automatically and has not been checked.',
+    textUnavailable:
+      'Text search is not available here at the moment. The titles were searched instead.',
+    textInvalid: 'This search is not possible.',
+    textInvalidWhy:
+      'A search needs at least one word and at most ten words or phrases. A * must follow at least three letters or digits.',
+    capped:
+      'The search matches {n} pages or more. Only the documents of the {n} best pages are counted and shown. Another word or a filter narrows the search.',
+    matchingPages: '{n} matching pages',
+    matchingPageOne: '1 matching page',
+    cantonLabel: 'Canton',
+    allCommunes: 'All municipalities',
+    communeFilter: 'Municipality: {name}',
+    communeSearch: 'Search the texts of this municipality',
+    communeSearchPlaceholder: 'Search terms …',
+    searchButton: 'Search'
   }
 } satisfies Record<Lang, Record<string, string>>;
 
@@ -530,6 +653,51 @@ export const labels = {
       rm: 'romancio',
       en: 'inglese',
       other: 'altra lingua'
+    }
+  },
+  en: {
+    section: {
+      minutes: 'Minutes',
+      decisions: 'Decisions',
+      vote_result: 'Vote result',
+      budget: 'Budget',
+      accounts: 'Annual accounts',
+      invitation_agenda: 'Invitation and agenda',
+      proposal: 'Proposal',
+      member_request: 'Member’s motion',
+      regulation: 'Regulation',
+      report: 'Report',
+      notice: 'Announcement',
+      plan_or_map: 'Plan or map',
+      news: 'News',
+      other: 'Other',
+      unclear: 'Unclear'
+    },
+    body: {
+      parliament: 'Parliament',
+      citizens_assembly: 'Voters',
+      executive: 'Executive',
+      commission: 'Committee',
+      commune: 'Municipality or administration',
+      other_public_body: 'Other public body',
+      private: 'Private',
+      unknown: 'Body unknown'
+    },
+    family: {
+      deliberation: 'Meetings & votes',
+      money: 'Finances',
+      proposals: 'Proposals',
+      rules: 'Rules',
+      information: 'Information',
+      other: 'Other'
+    },
+    language: {
+      de: 'German',
+      fr: 'French',
+      it: 'Italian',
+      rm: 'Romansh',
+      en: 'English',
+      other: 'other language'
     }
   }
 } satisfies Record<Lang, Labels>;

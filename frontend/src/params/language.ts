@@ -1,1 +1,1 @@
-export const match = (param: string) => ['de', 'fr', 'it'].includes(param);
+export const match = (param: string) => ['de', 'fr', 'it', 'en'].includes(param);

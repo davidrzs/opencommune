@@ -22,16 +22,18 @@ pub enum Lang {
     De,
     Fr,
     It,
+    En,
 }
 
 impl Lang {
-    pub const ALL: [Lang; 3] = [Lang::De, Lang::Fr, Lang::It];
+    pub const ALL: [Lang; 4] = [Lang::De, Lang::Fr, Lang::It, Lang::En];
 
     pub fn code(self) -> &'static str {
         match self {
             Lang::De => "de",
             Lang::Fr => "fr",
             Lang::It => "it",
+            Lang::En => "en",
         }
     }
 
@@ -41,6 +43,7 @@ impl Lang {
             Lang::De => "de_CH",
             Lang::Fr => "fr_CH",
             Lang::It => "it_CH",
+            Lang::En => "en_GB",
         }
     }
 
@@ -49,6 +52,7 @@ impl Lang {
             Lang::De => &DE,
             Lang::Fr => &FR,
             Lang::It => &IT,
+            Lang::En => &EN,
         }
     }
 
@@ -197,6 +201,40 @@ const IT: Words = Words {
     licences: "Licenze e ringraziamenti",
     licences_text: "Le licenze del codice (MIT) e dei dati (CC0 1.0), e il software, i modelli e \
                     i dati aperti su cui si basa Tractanda.",
+};
+
+const EN: Words = Words {
+    site: "Open archive of the documents of Swiss municipalities: minutes, decisions, budgets, \
+           accounts and other records of citizens' assemblies, municipal parliaments and \
+           municipal councils, with links to the originals.",
+    totals: "{documents} documents from {communes} municipalities, linked to the originals. They \
+             are sorted automatically by title, body and sections; nobody has checked this \
+             sorting yet.",
+    with_documents: "Municipalities with documents",
+    commune_line: "{name} ({canton}): {documents} documents in the open archive Tractanda.",
+    commune_title: "{name}: minutes, agendas and budgets of the municipality",
+    commune_description: "{name} ({canton}): minutes, agendas, budgets and accounts{years}, \
+                          {documents} documents, full-text search and links to the originals.",
+    by_year: "Documents by year",
+    no_year: "no year",
+    untitled: "Untitled document",
+    recent: "Latest documents",
+    website: "Municipality website",
+    about: "About Tractanda",
+    about_text: "Tractanda collects the public documents of Swiss municipalities from their \
+                 websites, sorts them automatically by type, body and sections and links to the \
+                 originals. The entries are open data (CC0).",
+    privacy: "Privacy",
+    privacy_text: "No cookies, nothing from third parties; the usage statistics count visits \
+                   without IP addresses or search terms. The archive names no private persons: \
+                   documents carry fixed designations, and naturalisation records are not listed.",
+    search: "Search",
+    api: "API and MCP server",
+    api_text: "Query the archive without a key: a JSON API and an MCP server for AI assistants, \
+               with full-text search in the pages of the documents.",
+    licences: "Licences and thanks",
+    licences_text: "The licences of the code (MIT) and the data (CC0 1.0), and the open software, \
+                    models and data Tractanda builds on.",
 };
 
 /// One page as the server sends it: what goes into `<head>` and the fact sheet.

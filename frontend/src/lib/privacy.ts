@@ -1,8 +1,10 @@
 // The privacy page (/datenschutz). It describes what the server and the site actually do:
 // server/src/usage.rs for the statistics, server/src/site.rs and the front end for the rest.
+import type { Lang } from '$lib/i18n';
+
 type Section = { title: string; paragraphs: string[] };
 export const privacy: Record<
-  'de' | 'fr' | 'it',
+  Lang,
   { title: string; updated: string; intro: string; sections: Section[]; contact: string }
 > = {
   de: {
@@ -154,5 +156,55 @@ export const privacy: Record<
       }
     ],
     contact: 'Scrivere un’e-mail sulla protezione dei dati'
+  },
+  en: {
+    title: 'Privacy',
+    updated: 'As of 15 November 2026',
+    intro:
+      'This page explains which data Tractanda processes when the website is visited and when the API and the MCP server are used, and how people who appear in the documents of the municipalities are treated.',
+    sections: [
+      {
+        title: 'Responsible party',
+        paragraphs: [
+          'Tractanda is a project by David Zollikofer. Questions and concerns about data protection can be sent to us by e-mail.'
+        ]
+      },
+      {
+        title: 'Visiting the website',
+        paragraphs: [
+          'The website sets no cookies, uses no analytics or advertising services and loads nothing from third parties; the font, too, is loaded from our own server.',
+          'For the usage statistics, the server counts requests per day, page type and response status, and for automated requests also the name of the program (for example “Googlebot”). If someone arrives through a link on another website, it counts only that website’s domain (for example “google.com”), likewise per day and without reference to any person. IP addresses, full addresses of the requested and of the linking pages, and search terms are not stored. The number of visitors per day is estimated from a hash of the IP address and the browser identifier, computed with a key that changes daily; the key is deleted the following day, so that no one can be recognised from one day to the next. The estimate is made twice: for everyone who requests a page, and for those whose browser also runs the website; this distinguishes people from programs that only fetch pages. Anyone who sends “Do Not Track” or “Global Privacy Control” is included neither in these estimates nor in the count of domains. The counts per day are kept permanently; they contain no information about persons. A day’s hashes are deleted the following day; only their number remains.',
+          'The server logs contain only the page type of a request, no addresses and no search terms.'
+        ]
+      },
+      {
+        title: 'API and MCP server',
+        paragraphs: [
+          'Like page requests, requests to the API and to the MCP server are only counted, per day and query; search terms are not stored, only whether a search returned results.',
+          'Anyone who uses Tractanda through an AI assistant such as Claude or ChatGPT enters their questions there. These entries are subject to the privacy policy of the provider concerned; Tractanda receives only the query that the assistant sends to the MCP server.'
+        ]
+      },
+      {
+        title: 'People in the documents',
+        paragraphs: [
+          'The archive is based on publicly accessible documents of the municipalities and their parliaments and links to the original on the municipality’s website. In the titles, names of private individuals appear as [name].',
+          'For the full-text search, an automatic procedure replaces names, street addresses, e-mail addresses, dates of birth and mobile phone numbers in the text of the pages with placeholders, including where a name occurs again in the same document. Individual details may be missed.',
+          'Anyone who finds information about a person that does not belong here can write to us. We review every report and remove the information where necessary.'
+        ]
+      },
+      {
+        title: 'Your rights',
+        paragraphs: [
+          'Under the Swiss Data Protection Act, you can request information about data relating to you and ask for it to be corrected or deleted. An e-mail is enough.'
+        ]
+      },
+      {
+        title: 'Links to other websites',
+        paragraphs: [
+          'Links lead to the websites of the municipalities, to GitHub and to Hugging Face, and on the “Licences and thanks” page also to the projects on which Tractanda builds. These websites are subject to their own privacy policies.'
+        ]
+      }
+    ],
+    contact: 'Send an e-mail about data protection'
   }
 };

@@ -1187,6 +1187,22 @@ async fn start_about_privacy_and_search_pages() {
     let (status, headers, _) = send(&f.router, request).await;
     assert_eq!(status, StatusCode::TEMPORARY_REDIRECT);
     assert_eq!(headers[header::LOCATION], "/de");
+    // the browser's language, in its order, when the site has it
+    for (accept, to) in [
+        ("en-US,en;q=0.9", "/en"),
+        ("fr-CH, fr;q=0.9, de;q=0.8", "/fr"),
+        ("es-ES,it;q=0.8", "/it"),
+        ("es", "/de"),
+    ] {
+        let request = Request::get("/")
+            .header(header::ACCEPT_LANGUAGE, accept)
+            .body(Body::empty())
+            .unwrap();
+        let (status, headers, _) = send(&f.router, request).await;
+        assert_eq!(status, StatusCode::TEMPORARY_REDIRECT);
+        assert_eq!(headers[header::LOCATION], to, "{accept}");
+        assert_eq!(headers[header::VARY], "Accept-Language");
+    }
 }
 
 #[tokio::test]
@@ -1204,7 +1220,7 @@ async fn robots_sitemap_and_llms_txt() {
     assert!(
         robots.contains("User-agent: *\nDisallow: /api/\nDisallow: /mcp\nDisallow: /original/\n")
     );
-    assert!(robots.contains("Disallow: /it/suche\nAllow: /\n"));
+    assert!(robots.contains("Disallow: /it/suche\nDisallow: /en/suche\nAllow: /\n"));
     assert_eq!(robots.matches("User-agent:").count(), 1);
     assert!(robots.contains("# https://huggingface.co/datasets/davidrzs/tractanda\n"));
     assert!(
