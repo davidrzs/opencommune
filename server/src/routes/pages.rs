@@ -273,14 +273,43 @@ pub async fn commune(state: AppState, lang: Lang, id: String) -> Result<Response
     if let Some(site) = website {
         place["sameAs"] = json!(site);
     }
+    // the span of years the documents concern, for the description in search results
+    let known: Vec<i64> = documents
+        .facets
+        .years
+        .iter()
+        .filter_map(|y| y.value)
+        .collect();
+    let years = match (known.iter().min(), known.iter().max()) {
+        (Some(first), Some(last)) if first < last => format!(" {first}–{last}"),
+        (Some(year), _) => format!(" {year}"),
+        _ => String::new(),
+    };
+    let description = if c.documents > 0 {
+        fill(
+            w.commune_description,
+            &[
+                ("name", c.name.clone()),
+                ("canton", c.canton.clone()),
+                ("years", years),
+                ("documents", lang.number(c.documents)),
+            ],
+        )
+    } else {
+        line
+    };
     let page = Page {
         lang,
-        title: format!("{} — Tractanda", c.name),
-        description: line,
+        title: format!(
+            "{} — Tractanda",
+            fill(w.commune_title, &[("name", c.name.clone())])
+        ),
+        description,
         path,
         json_ld: Some(place),
         facts,
-        noindex: !state.site.index_communes,
+        // a commune without documents has nothing to find yet
+        noindex: !state.site.index_communes || c.documents == 0,
     };
     Ok(html(&state, StatusCode::OK, &page).await)
 }

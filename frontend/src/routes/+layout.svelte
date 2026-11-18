@@ -15,8 +15,12 @@
     document.documentElement.lang = lang;
   });
   // the server's fact sheet for crawlers (server/src/site.rs); the app renders the same facts. The
-  // server's <title> stays: Svelte writes each page's title into it.
-  onMount(() => document.getElementById('oc-facts')?.remove());
+  // server's <title> stays: Svelte writes each page's title into it. The error page keeps the fact
+  // sheet when the app has no data (+error.svelte).
+  onMount(() => {
+    const facts = document.getElementById('oc-facts');
+    if (facts && !facts.dataset.keep) facts.remove();
+  });
   const languages: Lang[] = ['de', 'fr', 'it'];
   const licences = {
     de: 'Lizenzen und Dank',
@@ -125,6 +129,7 @@
           >{t.dataset} ↗</a
         >
       </li>
+      <li><a class="hover:text-foreground" href="/tractanda-paper.pdf">{t.paper}</a></li>
     </ul>
   </div>
 </footer>

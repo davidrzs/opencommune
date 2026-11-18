@@ -2,7 +2,13 @@ import { defineConfig } from '@playwright/test';
 export default defineConfig({
   testDir: './tests',
   // the offline tests: the static build against tests/access-fixture.py
-  testMatch: ['access.spec.ts', 'documents.spec.ts', 'api.spec.ts', 'search.spec.ts'],
+  testMatch: [
+    'access.spec.ts',
+    'documents.spec.ts',
+    'api.spec.ts',
+    'search.spec.ts',
+    'facts.spec.ts'
+  ],
   workers: 1,
   use: { baseURL: 'http://127.0.0.1:5174', viewport: { width: 1440, height: 1000 } },
   webServer: [

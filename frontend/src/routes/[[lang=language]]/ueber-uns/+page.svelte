@@ -94,6 +94,9 @@
           >
         </li>
         <li class="py-3">
+          <a class={linkClass} href="/tractanda-paper.pdf">{t.paper}</a>
+        </li>
+        <li class="py-3">
           <a class={linkClass} href="/llms.txt">{t.llms}</a>
         </li>
         <li class="py-3">

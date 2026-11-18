@@ -244,14 +244,14 @@
         >
         <span class="mt-1 text-sm text-zinc-600">{s.dataText}</span>
       </a>
-      <div class={card}>
+      <a href="/tractanda-paper.pdf" class={cardLink}>
         <FileText class="size-5 text-zinc-700" strokeWidth={1.8} aria-hidden="true" />
         <span class="mt-4 inline-flex items-center gap-2 font-medium"
           >{s.paperTitle}
-          <Badge variant="secondary" class="font-normal text-zinc-600">{s.soon}</Badge></span
+          <Badge variant="secondary" class="font-normal text-zinc-600">{s.draft}</Badge></span
         >
         <span class="mt-1 text-sm text-zinc-600">{s.paperText}</span>
-      </div>
+      </a>
       <a href={href('/api', lang)} class={cardLink}>
         <CodeXml class="size-5 text-zinc-700" strokeWidth={1.8} aria-hidden="true" />
         <span class="mt-4 font-medium">{s.apiTitle}</span>

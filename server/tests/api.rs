@@ -1102,14 +1102,19 @@ async fn commune_pages_carry_their_facts_for_crawlers() {
     assert_eq!(status, StatusCode::OK);
     assert_eq!(headers["x-robots-tag"], "noindex, nofollow"); // indexing is off by default
     assert!(html.starts_with("<!doctype html><html lang=\"fr\">"));
-    assert!(html.contains("<title>Zürich — Tractanda</title>"));
+    let title = "Zürich : procès-verbaux, ordres du jour et budgets de la commune — Tractanda";
+    assert!(html.contains(&format!("<title>{title}</title>")));
+    assert!(html.contains(
+        "<meta name=\"description\" content=\"Zürich (ZH) : procès-verbaux, ordres du jour, budgets \
+         et comptes 2023–2024, 4 documents, recherche en texte intégral et liens vers les originaux.\">"
+    ));
     assert!(
         html.contains("<link rel=\"canonical\" href=\"https://example.test/fr/gemeinden/261\">")
     );
     assert!(html.contains("hreflang=\"de\" href=\"https://example.test/de/gemeinden/261\""));
     assert!(html.contains("\"@type\":\"AdministrativeArea\""));
     // link previews in the page's language
-    assert!(html.contains("<meta property=\"og:title\" content=\"Zürich — Tractanda\">"));
+    assert!(html.contains(&format!("<meta property=\"og:title\" content=\"{title}\">")));
     assert!(html.contains("<meta property=\"og:locale\" content=\"fr_CH\">"));
     assert!(html.contains("<meta property=\"og:locale:alternate\" content=\"de_CH\">"));
     // commune pages are not indexed until SEARCH_INDEX_COMMUNES is set
@@ -1238,11 +1243,15 @@ async fn robots_sitemap_and_llms_txt() {
     let (_, _, html) = page(&communes.router, "/de/gemeinden/261").await;
     assert!(!html.contains("<meta name=\"robots\""));
     let (_, _, xml) = page(&communes.router, "/sitemap.xml").await;
-    for id in [261, 5938, 4001] {
+    for id in [261, 5938] {
         assert!(xml.contains(&format!(
             "<loc>https://example.test/de/gemeinden/{id}</loc>"
         )));
     }
+    // a commune without documents stays out of the sitemap and is not indexed
+    assert!(!xml.contains("/gemeinden/4001"));
+    let (_, _, html) = page(&communes.router, "/de/gemeinden/4001").await;
+    assert!(html.contains("<meta name=\"robots\" content=\"noindex\">"));
     assert!(!xml.contains("/gemeinden/4176")); // only in the register
 }
 

@@ -30,6 +30,7 @@ export const about = {
     api: 'JSON-API, ohne Schlüssel',
     mcp: 'MCP-Server für KI-Assistenten wie Claude oder ChatGPT',
     dataset: 'Datensatz auf Hugging Face',
+    paper: 'Arbeitspapier, ein erster Entwurf (PDF)',
     llms: 'Kurzbeschreibung für KI-Agenten (llms.txt)',
     privacyTitle: 'Datenschutz',
     privacy:
@@ -66,6 +67,7 @@ export const about = {
     api: 'API JSON, sans clé',
     mcp: 'Serveur MCP pour les assistants IA comme Claude ou ChatGPT',
     dataset: 'Jeu de données sur Hugging Face',
+    paper: 'Document de travail, premier projet (PDF)',
     llms: 'Description courte pour les agents IA (llms.txt)',
     privacyTitle: 'Protection des données',
     privacy:
@@ -102,6 +104,7 @@ export const about = {
     api: 'API JSON, senza chiave',
     mcp: 'Server MCP per assistenti IA come Claude o ChatGPT',
     dataset: 'Dataset su Hugging Face',
+    paper: 'Documento di lavoro, prima bozza (PDF)',
     llms: 'Descrizione breve per agenti IA (llms.txt)',
     privacyTitle: 'Protezione dei dati',
     privacy:

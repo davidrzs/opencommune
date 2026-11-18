@@ -27,11 +27,15 @@ pub async fn communes_with_documents(pool: &SqlitePool) -> sqlx::Result<Vec<Comm
     .await
 }
 
-/// The sitemap's communes: every commune of the archive.
+/// The sitemap's communes: those of the archive with documents.
 pub async fn sitemap(pool: &SqlitePool) -> sqlx::Result<Vec<i64>> {
-    sqlx::query_scalar("SELECT bfs_id FROM communes ORDER BY bfs_id")
-        .fetch_all(pool)
-        .await
+    // communes with documents only: a page without any has nothing to find
+    sqlx::query_scalar(
+        "SELECT bfs_id FROM communes c WHERE EXISTS \
+         (SELECT 1 FROM document_communes dc WHERE dc.bfs_id = c.bfs_id) ORDER BY bfs_id",
+    )
+    .fetch_all(pool)
+    .await
 }
 
 /// A commune with the first page of its documents, as `/api/documents?commune=` gives it; None

@@ -73,6 +73,10 @@ pub struct Words {
     pub totals: &'static str,
     pub with_documents: &'static str,
     pub commune_line: &'static str,
+    /// The commune page's title in search results, with the words people search for.
+    pub commune_title: &'static str,
+    /// The commune page's description in search results; `{years}` is " 2016–2026" or empty.
+    pub commune_description: &'static str,
     pub by_year: &'static str,
     pub no_year: &'static str,
     pub untitled: &'static str,
@@ -98,6 +102,9 @@ const DE: Words = Words {
              hat noch niemand geprüft.",
     with_documents: "Gemeinden mit Dokumenten",
     commune_line: "{name} ({canton}): {documents} Dokumente im offenen Archiv Tractanda.",
+    commune_title: "{name}: Protokolle, Traktanden und Budgets der Gemeinde",
+    commune_description: "{name} ({canton}): Protokolle, Traktandenlisten, Budgets und Rechnungen{years}, \
+                          {documents} Dokumente, im Volltext durchsuchbar, mit Links zu den Originalen.",
     by_year: "Dokumente nach Jahr",
     no_year: "ohne Jahr",
     untitled: "Dokument ohne Titel",
@@ -129,6 +136,10 @@ const FR: Words = Words {
              vérifié ce classement.",
     with_documents: "Communes avec des documents",
     commune_line: "{name} ({canton}) : {documents} documents dans l’archive ouverte Tractanda.",
+    commune_title: "{name} : procès-verbaux, ordres du jour et budgets de la commune",
+    commune_description: "{name} ({canton}) : procès-verbaux, ordres du jour, budgets et \
+                          comptes{years}, {documents} documents, recherche en texte intégral et liens \
+                          vers les originaux.",
     by_year: "Documents par année",
     no_year: "sans année",
     untitled: "Document sans titre",
@@ -161,6 +172,10 @@ const IT: Words = Words {
              verificato questa classificazione.",
     with_documents: "Comuni con documenti",
     commune_line: "{name} ({canton}): {documents} documenti nell’archivio aperto Tractanda.",
+    commune_title: "{name}: verbali, ordini del giorno e preventivi del comune",
+    commune_description: "{name} ({canton}): verbali, ordini del giorno, preventivi e \
+                          consuntivi{years}, {documents} documenti, ricerca a testo integrale e link \
+                          agli originali.",
     by_year: "Documenti per anno",
     no_year: "senza anno",
     untitled: "Documento senza titolo",
