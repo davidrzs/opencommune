@@ -1,6 +1,7 @@
-//! MCP server over streamable HTTP at `/mcp`: the commune list, the document search, one document,
-//! the full-text search and the page reader, on the same queries as the REST API. Stateless: every
-//! request is answered on its own, no session is kept.
+//! MCP server over streamable HTTP at `/mcp`: the commune list, one commune, the document search,
+//! one document, the full-text search and the page reader, on the same queries as the REST API.
+//! The searches and the commune list answer in a shorter form than the API, for a model to read.
+//! Stateless: every request is answered on its own, no session is kept.
 
 use std::sync::Arc;
 use std::time::Instant;
@@ -16,12 +17,32 @@ use serde_json::{Value, json};
 
 use crate::AppState;
 use crate::db::communes;
-use crate::db::documents::{self, Search};
+use crate::db::documents::{self, Search, text};
 use crate::db::fulltext::{self, PageRange, TextSearch, UNAVAILABLE};
+use crate::models::{BriefDocumentPage, BriefTextPage};
 use crate::usage::Hit;
 
+const LIST_COMMUNES_DESCRIPTION: &str = "Find communes and their BFS numbers, which the other tools \
+take. Without a filter it gives only the number of communes and of documents per canton (2,000 \
+and more communes would be a long list). `canton` (a code such as ZH) lists the communes of a \
+canton; `q` lists the communes whose name contains it, ignoring case and accents (zurich and \
+zuerich find Zürich); both together combine. The answer is a table: a header line with the \
+fields, then one commune per line: bfs_id, name, canton, language, documents (in the archive) \
+and register_status: configured (collected), candidate (a listing was seen, not collected yet), \
+not_published (the commune publishes no minutes or decisions online), not_found, blocked_robots, \
+blocked_js, blocked_waf, blocked_network (its website cannot be collected), needs_feature (the \
+crawler cannot read its listing yet) or not_examined. get_commune gives one commune's details.";
+
+const GET_COMMUNE_DESCRIPTION: &str = "One commune by its BFS number (from list_communes): name, \
+canton, language, website and the software behind it (vendor), coordinates, the number of \
+documents, `register` (the coverage register's entry: status, notes, and per body what the \
+commune publishes and whether the archive collects it), `access` (problems the crawler met on \
+its website, such as rate limits or robots.txt rules) and `holdings`: documents and pages per \
+year and section family. The holdings come from an automatic classification by a language \
+model that no person has checked yet.";
+
 const SEARCH_DESCRIPTION: &str = "Search the archive's documents, newest first. Every filter is \
-optional; filters combine with AND. `commune`: a BFS number from list_communes. `section`: \
+optional; filters combine with AND. `commune`: a BFS number (list_communes finds it). `section`: \
 documents with at least one section of this type (minutes, decisions, vote_result, budget, \
 accounts, invitation_agenda, proposal, member_request, regulation, report, notice, plan_or_map, \
 news, other, unclear). `family`: documents with at least one section of this family \
@@ -32,11 +53,12 @@ commune's listing date. `q`: text the document's title contains, ignoring case (
 3 characters on); search_text searches the text of the pages. `limit` 0 to 100 (default 20) \
 and `offset` page through the results. Returns `total`, `facets` (documents per \
 year, section type and body, each counted with every filter except its own) and `items`: title \
-and body as printed (private names appear as [name]), dates, pages, sections with their family \
-and pages, the communes that link the document, and `original_url`, a full link on this site \
-that redirects to the file on the commune's website (add `?page=N` to open it at a page). Titles, \
-bodies, dates and sections come from an automatic classification by a language model that no \
-person has checked yet.";
+and body as printed (private names appear as [name]), dates, pages, sections as their type and \
+pages (as minutes 2-11, with (partly unseen) when the classifier saw only some of their pages), \
+the communes that link the document, and `original_url`, a full link on this site that redirects \
+to the file on the commune's website (add `?page=N` to open it at a page). get_document gives \
+every field. Titles, bodies, dates and sections come from an automatic classification by a \
+language model that no person has checked yet.";
 
 const GET_DESCRIPTION: &str = "Fetch one document by its sha256 (from search_documents) with \
 every field and `run`: the classification run that gave its title, body, dates and sections, with \
@@ -59,7 +81,7 @@ are in German, French, Italian and Romansh and there is no translation: to cover
 join each language's words with OR, as Kunstrasen* OR \"gazon synthétique\" OR \"campo \
 sintetico\". Case and accents do not matter. Refused with an error: a * other than at the end of \
 a word (words that end in a word cannot be searched), -word and NOT. Filters, all optional, \
-combine with AND: `commune` (a BFS number from list_communes), `canton` (such as ZH), `year`, \
+combine with AND: `commune` (a BFS number; list_communes finds it), `canton` (such as ZH), `year`, \
 `from` and `to` (the document's date, YYYY-MM-DD, inclusive), `language` (de, fr, it, rm; \
 comma-separated for several), `section` and `family` (comma-separated: only pages inside a \
 section of one of these types or families match), `exclude_section` and `exclude_family` \
@@ -71,9 +93,9 @@ document). `sort`: relevance (default), newest or oldest (by the document's date
 many communes the commune facet lists. Returns `total` (documents), `facets` (documents per year, \
 section type, canton, and the communes with the most), and `items`: documents as in \
 search_documents, each with `matching_pages` and `pages`, its best pages: `page`, \
-`section_types`, `snippet` (plain text: one or two passages that show as many of the matched \
-words as fit), `highlights` (the matches in the snippet as [start, end) character ranges) and \
-`original_url` (a full link that opens the file at that page). The search takes at most the \
+`section_types` and `snippet` (plain text: one or two passages that show as many of the matched \
+words as fit). The document's `original_url` with `?page=N` opens the file at a page. The \
+search takes at most the \
 20,000 first matching pages (the best, or the newest or oldest with `sort`); when more match, \
 `capped` is true and the total and the facets count only the documents of those pages. The same \
 text can appear twice: a proposal as its own file and inside an assembly booklet. Next, read the \
@@ -109,6 +131,24 @@ pub struct ReadPagesArgs {
 
 #[derive(Deserialize, JsonSchema)]
 #[schemars(crate = "rmcp::schemars")]
+pub struct CommuneFilter {
+    /// A canton's code, such as ZH: its communes.
+    #[serde(default)]
+    canton: Option<String>,
+    /// Part of a commune's name, ignoring case and accents: the communes whose name contains it.
+    #[serde(default)]
+    q: Option<String>,
+}
+
+#[derive(Deserialize, JsonSchema)]
+#[schemars(crate = "rmcp::schemars")]
+pub struct CommuneArgs {
+    /// The commune's BFS number, from list_communes.
+    bfs_id: i64,
+}
+
+#[derive(Deserialize, JsonSchema)]
+#[schemars(crate = "rmcp::schemars")]
 pub struct DocumentArgs {
     /// The document's sha256, from search_documents.
     sha256: String,
@@ -139,6 +179,40 @@ impl Archive {
 fn internal(error: sqlx::Error) -> ErrorData {
     tracing::error!(%error, "database query failed");
     ErrorData::internal_error("database query failed", None)
+}
+
+/// A result whose text, the part a model reads, is `text` rather than the JSON of `structured`.
+fn with_text(text: String, structured: Value) -> CallToolResult {
+    let mut result = CallToolResult::structured(structured);
+    result.content = vec![ContentBlock::text(text)];
+    result
+}
+
+/// Rows as a TOON table: `name[N]{fields}:`, then one row per line, its values separated by
+/// commas. A string that could be read as another value or that holds a comma or a quote is
+/// written as a JSON string.
+fn table(name: &str, fields: &[&str], rows: &[Vec<Value>]) -> String {
+    let mut out = format!("{name}[{}]{{{}}}:", rows.len(), fields.join(","));
+    for row in rows {
+        let cells: Vec<String> = row
+            .iter()
+            .map(|value| match value {
+                Value::String(s)
+                    if !(s.is_empty()
+                        || s.trim() != s
+                        || s.contains([',', '"', '\n'])
+                        || matches!(s.as_str(), "null" | "true" | "false")
+                        || s.parse::<f64>().is_ok()) =>
+                {
+                    s.clone()
+                }
+                other => other.to_string(),
+            })
+            .collect();
+        out.push_str("\n  ");
+        out.push_str(&cells.join(","));
+    }
+    out
 }
 
 /// A tool error the agent can read and act on.
@@ -176,7 +250,7 @@ impl Archive {
         let total = search.is_search().then_some(page.total);
         self.count("search_documents", started, 200, total);
         Ok(CallToolResult::structured(
-            serde_json::to_value(page).unwrap_or(Value::Null),
+            serde_json::to_value(BriefDocumentPage::from(page)).unwrap_or(Value::Null),
         ))
     }
 
@@ -244,7 +318,7 @@ impl Archive {
         let total = (search.offset == 0).then_some(page.total);
         self.count("search_text", started, 200, total);
         Ok(CallToolResult::structured(
-            serde_json::to_value(page).unwrap_or(Value::Null),
+            serde_json::to_value(BriefTextPage::from(page)).unwrap_or(Value::Null),
         ))
     }
 
@@ -298,11 +372,9 @@ impl Archive {
         ))
     }
 
-    /// List the communes in the archive with canton, language, website, coordinates, number of
-    /// documents and the coverage register's status and note. Use it to find a commune's BFS
-    /// number.
     #[tool(
         title = "List communes",
+        description = LIST_COMMUNES_DESCRIPTION,
         annotations(
             title = "List communes",
             read_only_hint = true,
@@ -311,17 +383,104 @@ impl Archive {
             open_world_hint = false
         )
     )]
-    async fn list_communes(&self) -> Result<CallToolResult, ErrorData> {
+    async fn list_communes(
+        &self,
+        Parameters(filter): Parameters<CommuneFilter>,
+    ) -> Result<CallToolResult, ErrorData> {
         let started = Instant::now();
-        let list = communes::list(&self.state.db).await.map_err(internal)?;
+        let (canton, q) = (text(&filter.canton), text(&filter.q));
+        let result = if canton.is_none() && q.is_none() {
+            let cantons = communes::per_canton(&self.state.db)
+                .await
+                .map_err(internal)?;
+            let total: i64 = cantons.iter().map(|c| c.communes).sum();
+            let note = format!(
+                "The archive has {total} communes in {} cantons. Pass canton (such as ZH) or q \
+                 (part of a name) to list communes with their BFS numbers.",
+                cantons.len()
+            );
+            let rows: Vec<Vec<Value>> = cantons
+                .iter()
+                .map(|c| vec![json!(c.canton), json!(c.communes), json!(c.documents)])
+                .collect();
+            let text = format!(
+                "{note}\n{}",
+                table("cantons", &["canton", "communes", "documents"], &rows)
+            );
+            with_text(text, json!({"note": note, "cantons": cantons}))
+        } else {
+            let list = communes::brief(&self.state.db, canton, q)
+                .await
+                .map_err(internal)?;
+            let rows: Vec<Vec<Value>> = list
+                .iter()
+                .map(|c| {
+                    vec![
+                        json!(c.bfs_id),
+                        json!(c.name),
+                        json!(c.canton),
+                        json!(c.language),
+                        json!(c.documents),
+                        json!(c.register_status),
+                    ]
+                })
+                .collect();
+            let fields = [
+                "bfs_id",
+                "name",
+                "canton",
+                "language",
+                "documents",
+                "register_status",
+            ];
+            let mut text = table("communes", &fields, &rows);
+            if list.is_empty() {
+                text = format!(
+                    "No commune matches. canton takes a code such as ZH, q part of a name.\n{text}"
+                );
+            }
+            with_text(text, json!({"communes": list}))
+        };
         self.count("list_communes", started, 200, None);
-        Ok(CallToolResult::structured(json!({ "result": list })))
+        Ok(result)
+    }
+
+    #[tool(
+        title = "Get a commune",
+        description = GET_COMMUNE_DESCRIPTION,
+        annotations(
+            title = "Get a commune",
+            read_only_hint = true,
+            destructive_hint = false,
+            idempotent_hint = true,
+            open_world_hint = false
+        )
+    )]
+    async fn get_commune(
+        &self,
+        Parameters(args): Parameters<CommuneArgs>,
+    ) -> Result<CallToolResult, ErrorData> {
+        let started = Instant::now();
+        let commune = communes::detail(&self.state.db, args.bfs_id)
+            .await
+            .map_err(internal)?;
+        let Some(commune) = commune else {
+            self.count("get_commune", started, 404, None);
+            return Ok(refused(
+                "get_commune",
+                "the archive has no commune with this BFS number; list_communes finds it",
+            ));
+        };
+        self.count("get_commune", started, 200, None);
+        Ok(CallToolResult::structured(
+            serde_json::to_value(commune).unwrap_or(Value::Null),
+        ))
     }
 }
 
 #[tool_handler(
     name = "tractanda",
-    instructions = "Tractanda is an open archive of the documents Swiss communes publish on their websites: minutes, decisions, budgets, accounts, vote results and other papers of assemblies, parliaments and councils. Each file is listed once, with a fixed label and a link to the original on the commune's website. Use list_communes to see coverage and to find a commune's BFS number, search_documents to filter documents by commune, section type, kind, body, year and label, and get_document for one document. To find what the pages say, use search_text, then read the pages around a hit with read_pages, then cite the document and the page: each page has an original_url, a full link that opens the file at that page. The documents are in German, French, Italian and Romansh and are not translated: to search every language, join each language's words with OR in search_text. The page text is machine-extracted (the PDF's text layer, or OCR) and no person has checked it: quote it with care and point to the page. Names, street addresses and e-mail addresses in the page text are replaced by ［name］, ［address］ and ［email］. Kinds, bodies, dates and sections come from an automatic classification by a language model that no person has checked yet. Coverage is partial and growing: no result does not mean that no document exists."
+    instructions = "Tractanda is an open archive of the documents Swiss communes publish on their websites: minutes, decisions, budgets, accounts, vote results and other papers of assemblies, parliaments and councils. Each file is listed once, with a fixed label and a link to the original on the commune's website. Use list_communes with a canton or part of a name to find a commune's BFS number (without either it gives only counts per canton), get_commune for one commune's coverage, search_documents to filter documents by commune, section type, kind, body, year and label, and get_document for one document. To find what the pages say, use search_text, then read the pages around a hit with read_pages, then cite the document and the page: each page has an original_url, a full link that opens the file at that page. The documents are in German, French, Italian and Romansh and are not translated: to search every language, join each language's words with OR in search_text. The page text is machine-extracted (the PDF's text layer, or OCR) and no person has checked it: quote it with care and point to the page. Names, street addresses and e-mail addresses in the page text are replaced by ［name］, ［address］ and ［email］. Kinds, bodies, dates and sections come from an automatic classification by a language model that no person has checked yet. Coverage is partial and growing: no result does not mean that no document exists."
 )]
 impl ServerHandler for Archive {}
 

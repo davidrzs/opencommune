@@ -4,7 +4,9 @@ use std::collections::HashMap;
 
 use sqlx::{QueryBuilder, Sqlite, SqlitePool};
 
-use crate::models::{Commune, CommuneDetail, Publication, RegisterEntry, RegisterRow};
+use crate::models::{
+    BriefCommune, CantonCount, Commune, CommuneDetail, Publication, RegisterEntry, RegisterRow,
+};
 
 /// Every commune of the archive, by canton and name, with its number of documents and its
 /// register status.
@@ -18,6 +20,87 @@ pub async fn list(pool: &SqlitePool) -> sqlx::Result<Vec<Commune>> {
     )
     .fetch_all(pool)
     .await
+}
+
+/// The MCP tool `list_communes` with a filter: the communes of `canton`, or whose name contains
+/// `q` (`name_matches`), or both, by canton and name, with their number of documents and their
+/// register status.
+pub async fn brief(
+    pool: &SqlitePool,
+    canton: Option<&str>,
+    q: Option<&str>,
+) -> sqlx::Result<Vec<BriefCommune>> {
+    let mut qb = QueryBuilder::new(
+        "SELECT c.bfs_id, c.name, c.canton, c.language, \
+         (SELECT count(*) FROM document_communes dc WHERE dc.bfs_id = c.bfs_id) AS documents, \
+         r.status AS register_status \
+         FROM communes c LEFT JOIN register r ON r.bfs_id = c.bfs_id WHERE 1",
+    );
+    if let Some(canton) = canton {
+        qb.push(" AND c.canton = ")
+            .push_bind(canton.to_ascii_uppercase());
+    }
+    qb.push(" ORDER BY c.canton, c.name");
+    let rows: Vec<BriefCommune> = qb.build_query_as().fetch_all(pool).await?;
+    Ok(match q {
+        Some(q) => rows
+            .into_iter()
+            .filter(|c| name_matches(&c.name, q))
+            .collect(),
+        None => rows,
+    })
+}
+
+/// The MCP tool `list_communes` without a filter: per canton, its communes and the documents they
+/// link, a document linked by two of them counted once.
+pub async fn per_canton(pool: &SqlitePool) -> sqlx::Result<Vec<CantonCount>> {
+    sqlx::query_as(
+        "SELECT c.canton, count(DISTINCT c.bfs_id) AS communes, \
+         count(DISTINCT dc.sha256) AS documents \
+         FROM communes c LEFT JOIN document_communes dc ON dc.bfs_id = c.bfs_id \
+         GROUP BY c.canton ORDER BY c.canton",
+    )
+    .fetch_all(pool)
+    .await
+}
+
+/// Whether a commune's name contains `q`, comparing letters and digits only, without case and
+/// accents, with ä, ö and ü also read as ae, oe and ue: `zurich` and `zuerich` find Zürich,
+/// `st stephan` finds St. Stephan. A `q` without a letter or a digit matches nothing.
+pub fn name_matches(name: &str, q: &str) -> bool {
+    let q = fold(q, false);
+    !q.is_empty() && (fold(name, false).contains(&q) || fold(name, true).contains(&q))
+}
+
+/// Letters and digits in lower case without accents (spaces, punctuation and combining marks
+/// left out); with `umlauts`, ä, ö and ü become ae, oe and ue.
+fn fold(text: &str, umlauts: bool) -> String {
+    let mut out = String::with_capacity(text.len());
+    for c in text.chars().flat_map(char::to_lowercase) {
+        match c {
+            'ä' | 'ö' | 'ü' if umlauts => {
+                out.push(match c {
+                    'ä' => 'a',
+                    'ö' => 'o',
+                    _ => 'u',
+                });
+                out.push('e');
+            }
+            'à' | 'á' | 'â' | 'ã' | 'ä' | 'å' => out.push('a'),
+            'ç' => out.push('c'),
+            'è' | 'é' | 'ê' | 'ë' => out.push('e'),
+            'ì' | 'í' | 'î' | 'ï' => out.push('i'),
+            'ñ' => out.push('n'),
+            'ò' | 'ó' | 'ô' | 'õ' | 'ö' => out.push('o'),
+            'ù' | 'ú' | 'û' | 'ü' => out.push('u'),
+            'ÿ' => out.push('y'),
+            'œ' => out.push_str("oe"),
+            'æ' => out.push_str("ae"),
+            c if c.is_alphanumeric() => out.push(c),
+            _ => {}
+        }
+    }
+    out
 }
 
 /// One commune of the archive with its register entry and its access observations, newest
@@ -98,4 +181,29 @@ async fn entries(pool: &SqlitePool, bfs_id: Option<i64>) -> sqlx::Result<Vec<Reg
             RegisterEntry::new(r, publications)
         })
         .collect())
+}
+
+#[cfg(test)]
+mod tests {
+    use super::name_matches;
+
+    #[test]
+    fn names_match_without_case_and_accents() {
+        for q in ["Zürich", "zurich", "ZUERICH", "rich"] {
+            assert!(name_matches("Zürich", q), "{q}");
+        }
+        assert!(name_matches("Zürich", "Zu\u{308}rich")); // a decomposed ü
+        assert!(name_matches("Genève", "geneve"));
+        assert!(name_matches("Delémont", "DELEMONT"));
+        assert!(name_matches("Biel/Bienne", "bienne"));
+        // punctuation and spaces do not count
+        assert!(name_matches("St. Stephan", "St Stephan"));
+        assert!(name_matches("Wangen-Brüttisellen", "wangen bruettisellen"));
+        assert!(name_matches("Wangen-Brüttisellen", "Wangen Brüttisellen"));
+        assert!(name_matches("L'Isle", "L’Isle"));
+        assert!(name_matches("Rickenbach (ZH)", "rickenbach zh"));
+        assert!(name_matches("Wil (SG)", " wil "));
+        assert!(!name_matches("Bern", "basel"));
+        assert!(!name_matches("Bern", "-")); // no letter: nothing, not everything
+    }
 }

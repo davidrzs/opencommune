@@ -303,13 +303,27 @@ linkable URL, the first by BFS id. Only absolute http(s) URLs are used; 404 when
 
 Streamable HTTP, stateless (no session kept), JSON responses. Tools:
 
-1. `list_communes()`: as `/api/communes`, wrapped as `{"result": [...]}`.
-2. `search_documents(commune, section, family, first_family, body, year, q, offset, limit)`: the parameters and
-   the result of `/api/documents`; an offset or limit out of range is a tool error with a reason.
-3. `get_document(sha256)`: as `/api/documents/{sha256}`; `{"error": "not found"}` when unknown.
-4. `search_text(q, commune, canton, year, from, to, section, family, body, offset, limit)`: the
-   parameters and the result of `/api/pages`. A refused query is a tool error with the reason.
-5. `read_pages(sha256, from, to)`: as `/api/documents/{sha256}/pages`. A bad range or an unknown
+1. `list_communes(canton, q)`: without either, only the number of communes and of documents per
+   canton (`{"note", "cantons": [{canton, communes, documents}]}`), so that an agent does not read
+   2,000 and more communes to find one. With `canton` (a code, any case) or `q` (part of the name:
+   letters and digits compared without case and accents, ä, ö and ü also as ae, oe and ue), or
+   both: `{"communes": [{bfs_id, name, canton, language, documents, register_status}]}`, by
+   canton and name. The text the model reads is a TOON table: `communes[N]{fields}:`, then one
+   commune per line, values separated by commas. Programs get every commune from
+   `/api/communes`.
+2. `get_commune(bfs_id)`: as `/api/communes/{bfs_id}`; an unknown number is a tool error.
+3. `search_documents(commune, section, family, first_family, body, year, q, offset, limit)`: the
+   parameters of `/api/documents`, an offset or limit out of range a tool error with a reason. The
+   result in a shorter form for a model: documents without `first_seen`, `pages_seen`, `run_id` and
+   `personal_data`, and `sections` as labels: `minutes 2-11`, `vote_result 12`, `budget 1-200
+   (partly unseen)`.
+4. `get_document(sha256)`: as `/api/documents/{sha256}`; `{"error": "not found"}` when unknown.
+5. `search_text(q, commune, canton, year, from, to, language, section, family, exclude_section,
+   exclude_family, body, document, sort, offset, limit, pages_per_document, commune_facets)`: the
+   parameters of `/api/pages`; a refused query is a tool error with the reason. The result in the
+   shorter form: documents as in `search_documents`, pages without `highlights` and without a link
+   of their own (the document's `original_url` with `?page=<n>`).
+6. `read_pages(sha256, from, to)`: as `/api/documents/{sha256}/pages`. A bad range or an unknown
    sha256 is a tool error.
 
 Without the full-text index, `search_text` and `read_pages` answer with a tool error that says so.
@@ -318,7 +332,8 @@ The server's instructions tell agents to search with `search_text`, read the pag
 (PDF text layer or OCR) and unchecked. The descriptions of the tools other than `list_communes` say
 that no person has checked the classification, and for the full-text tools the text, yet. Every
 tool has a title and is marked read-only and idempotent (`readOnlyHint`, `idempotentHint`). Results
-are `structuredContent` plus the same JSON as text.
+are `structuredContent` plus the same JSON as text, except `list_communes`, whose text is the
+table.
 
 ## Pages for search engines and AI assistants
 

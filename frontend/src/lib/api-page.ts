@@ -9,7 +9,7 @@ export const apiPage = {
       'Titel, Gremien, Datumsangaben und Teile stammen aus einer automatischen Klassifikation, die noch keine Person geprüft hat. Namen von Privatpersonen erscheinen als [name].',
     openapi: 'OpenAPI-Beschreibung (JSON)',
     mcpTitle: 'Für KI-Assistenten (MCP)',
-    mcp: 'KI-Assistenten können dieselben Daten über MCP nutzen, unter {url} (Streamable HTTP). Die Werkzeuge heissen search_documents, get_document, list_communes, search_text (Volltextsuche) und read_pages (den Text von Seiten lesen).',
+    mcp: 'KI-Assistenten können dieselben Daten über MCP nutzen, unter {url} (Streamable HTTP). Die Werkzeuge heissen search_documents, get_document, list_communes, get_commune, search_text (Volltextsuche) und read_pages (den Text von Seiten lesen).',
     mcpConfig: 'Eintrag für die MCP-Konfiguration eines Assistenten:',
     mcpConnector:
       'In Claude oder ChatGPT lässt sich die Adresse als benutzerdefinierter Connector hinzufügen.',
@@ -30,7 +30,7 @@ export const apiPage = {
       'Les titres, organes, dates et parties proviennent d’une classification automatique qu’aucune personne n’a encore vérifiée. Les noms de personnes privées apparaissent sous la forme [name].',
     openapi: 'Description OpenAPI (JSON)',
     mcpTitle: 'Pour les assistants IA (MCP)',
-    mcp: 'Les assistants IA peuvent utiliser les mêmes données via MCP, à l’adresse {url} (HTTP streamable). Les outils s’appellent search_documents, get_document, list_communes, search_text (recherche plein texte) et read_pages (lire le texte des pages).',
+    mcp: 'Les assistants IA peuvent utiliser les mêmes données via MCP, à l’adresse {url} (HTTP streamable). Les outils s’appellent search_documents, get_document, list_communes, get_commune, search_text (recherche plein texte) et read_pages (lire le texte des pages).',
     mcpConfig: 'Entrée pour la configuration MCP d’un assistant :',
     mcpConnector:
       'Dans Claude ou ChatGPT, l’adresse peut être ajoutée comme connecteur personnalisé.',
@@ -51,7 +51,7 @@ export const apiPage = {
       'Titoli, organi, date e parti provengono da una classificazione automatica che nessuna persona ha ancora verificato. I nomi di persone private appaiono come [name].',
     openapi: 'Descrizione OpenAPI (JSON)',
     mcpTitle: 'Per assistenti IA (MCP)',
-    mcp: 'Gli assistenti IA possono usare gli stessi dati tramite MCP, all’indirizzo {url} (HTTP streamable). Gli strumenti si chiamano search_documents, get_document, list_communes, search_text (ricerca a testo integrale) e read_pages (leggere il testo delle pagine).',
+    mcp: 'Gli assistenti IA possono usare gli stessi dati tramite MCP, all’indirizzo {url} (HTTP streamable). Gli strumenti si chiamano search_documents, get_document, list_communes, get_commune, search_text (ricerca a testo integrale) e read_pages (leggere il testo delle pagine).',
     mcpConfig: 'Voce per la configurazione MCP di un assistente:',
     mcpConnector:
       'In Claude o ChatGPT l’indirizzo si può aggiungere come connettore personalizzato.',
@@ -71,7 +71,7 @@ export const apiPage = {
       'Titles, bodies, dates and parts come from an automatic classification that no person has checked yet. Names of private individuals appear as [name].',
     openapi: 'OpenAPI description (JSON)',
     mcpTitle: 'For AI assistants (MCP)',
-    mcp: 'AI assistants can use the same data through MCP, at {url} (Streamable HTTP). The tools are called search_documents, get_document, list_communes, search_text (full-text search) and read_pages (read the text of pages).',
+    mcp: 'AI assistants can use the same data through MCP, at {url} (Streamable HTTP). The tools are called search_documents, get_document, list_communes, get_commune, search_text (full-text search) and read_pages (read the text of pages).',
     mcpConfig: 'Entry for an assistant’s MCP configuration:',
     mcpConnector: 'In Claude or ChatGPT, the address can be added as a custom connector.',
     copy: 'Copy',

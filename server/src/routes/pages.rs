@@ -90,7 +90,7 @@ pub async fn llms(State(state): State<AppState>) -> Result<Response, ApiError> {
          ## Query it\n\n\
          - [MCP server]({base}/mcp): streamable HTTP, no key. Tools: `search_documents` (filters by \
          commune, section type, section family, body, year and title, with counts per value), \
-         `get_document`, `list_communes`{text_tools}.\n\
+         `get_document`, `list_communes` (by canton or name), `get_commune`{text_tools}.\n\
          - [JSON API]({SOURCE}/blob/main/server/API.md): for example \
          `{base}/api/documents?commune=261&section=budget`, `{base}/api/documents/{{sha256}}`, \
          `{base}/api/communes`; described in `{base}/api/openapi.json`.\n\n\

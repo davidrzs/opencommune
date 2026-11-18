@@ -318,6 +318,164 @@ pub fn page_url(base: &str, sha256: &str, page: i64) -> String {
     format!("{base}/original/{sha256}?page={page}")
 }
 
+// --- MCP: the shorter answers a model reads -------------------------------------------------------
+
+/// A document as the MCP search tools give it to a model: the `Document` without the fields a
+/// model does not use (`first_seen`, `pages_seen`, `run_id`, `personal_data`), its sections as
+/// short labels.
+#[derive(Serialize)]
+pub struct BriefDocument {
+    pub sha256: String,
+    pub title: Option<String>,
+    pub body_name: Option<String>,
+    pub listing_date: Option<String>,
+    pub date: Option<String>,
+    pub year: Option<i64>,
+    pub years: Vec<i64>,
+    pub page_count: Option<i64>,
+    pub body_kind: Option<String>,
+    pub languages: Vec<String>,
+    /// `type pages`, as `minutes 2-11` or `vote_result 12`, with ` (partly unseen)` when the
+    /// classifier saw only some of its pages.
+    pub sections: Vec<String>,
+    pub communes: Vec<CommuneRef>,
+    /// The link to the file; `?page=<n>` opens it at a page.
+    pub original_url: String,
+}
+
+impl From<Document> for BriefDocument {
+    fn from(d: Document) -> Self {
+        BriefDocument {
+            sections: d.sections.iter().map(section_label).collect(),
+            sha256: d.sha256,
+            title: d.title,
+            body_name: d.body_name,
+            listing_date: d.listing_date,
+            date: d.date,
+            year: d.year,
+            years: d.years,
+            page_count: d.page_count,
+            body_kind: d.body_kind,
+            languages: d.languages,
+            communes: d.communes,
+            original_url: d.original_url,
+        }
+    }
+}
+
+/// `minutes 2-11`, `vote_result 12`, `budget 1-200 (partly unseen)`.
+fn section_label(s: &Section) -> String {
+    let pages = if s.first_page == s.last_page {
+        s.first_page.to_string()
+    } else {
+        format!("{}-{}", s.first_page, s.last_page)
+    };
+    let unseen = if s.partly_unseen {
+        " (partly unseen)"
+    } else {
+        ""
+    };
+    format!("{} {pages}{unseen}", s.section_type)
+}
+
+/// The MCP tool `search_documents`: `DocumentPage` with brief documents.
+#[derive(Serialize)]
+pub struct BriefDocumentPage {
+    pub total: i64,
+    pub offset: i64,
+    pub limit: i64,
+    pub facets: Facets,
+    pub items: Vec<BriefDocument>,
+}
+
+impl From<DocumentPage> for BriefDocumentPage {
+    fn from(p: DocumentPage) -> Self {
+        BriefDocumentPage {
+            total: p.total,
+            offset: p.offset,
+            limit: p.limit,
+            facets: p.facets,
+            items: p.items.into_iter().map(BriefDocument::from).collect(),
+        }
+    }
+}
+
+/// A matching page for a model: no highlight offsets and no link of its own (the document's link
+/// with `?page=<n>`).
+#[derive(Serialize)]
+pub struct BriefHit {
+    pub page: i64,
+    pub section_types: Vec<String>,
+    pub snippet: String,
+}
+
+#[derive(Serialize)]
+pub struct BriefTextDocument {
+    #[serde(flatten)]
+    pub document: BriefDocument,
+    pub matching_pages: i64,
+    pub pages: Vec<BriefHit>,
+}
+
+/// The MCP tool `search_text`: `TextPage` with brief documents and pages.
+#[derive(Serialize)]
+pub struct BriefTextPage {
+    pub total: i64,
+    pub capped: bool,
+    pub offset: i64,
+    pub limit: i64,
+    pub facets: TextFacets,
+    pub items: Vec<BriefTextDocument>,
+}
+
+impl From<TextPage> for BriefTextPage {
+    fn from(p: TextPage) -> Self {
+        BriefTextPage {
+            total: p.total,
+            capped: p.capped,
+            offset: p.offset,
+            limit: p.limit,
+            facets: p.facets,
+            items: p
+                .items
+                .into_iter()
+                .map(|d| BriefTextDocument {
+                    document: d.document.into(),
+                    matching_pages: d.matching_pages,
+                    pages: d
+                        .pages
+                        .into_iter()
+                        .map(|h| BriefHit {
+                            page: h.page,
+                            section_types: h.section_types,
+                            snippet: h.snippet,
+                        })
+                        .collect(),
+                })
+                .collect(),
+        }
+    }
+}
+
+/// A commune in the MCP tool `list_communes`; `get_commune` gives the rest.
+#[derive(FromRow, Serialize)]
+pub struct BriefCommune {
+    pub bfs_id: i64,
+    pub name: String,
+    pub canton: String,
+    pub language: Option<String>,
+    pub documents: i64,
+    pub register_status: Option<String>,
+}
+
+/// A canton's communes and their documents, in `list_communes` without a filter.
+#[derive(FromRow, Serialize)]
+pub struct CantonCount {
+    pub canton: String,
+    pub communes: i64,
+    pub documents: i64,
+}
+
 // --- runs --------------------------------------------------------------------------------------
 
 /// The run named by a document.

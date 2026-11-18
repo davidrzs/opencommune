@@ -1000,6 +1000,7 @@ async fn mcp_lists_the_tools_and_answers_a_search() {
     assert_eq!(
         names,
         [
+            "get_commune",
             "get_document",
             "list_communes",
             "read_pages",
@@ -1051,9 +1052,35 @@ async fn mcp_lists_the_tools_and_answers_a_search() {
         page["items"][0]["title"],
         "Protokoll Gemeindeversammlung 2024"
     );
-    // the same result as the API
+    // the result of the API, shorter for a model
     let (_, api) = get(&f.router, "/api/documents?q=protokoll").await;
-    assert_eq!(page, &api);
+    assert_eq!(page, &brief(&api));
+    assert_eq!(
+        keys(&page["items"][0]),
+        [
+            "sha256",
+            "title",
+            "body_name",
+            "listing_date",
+            "date",
+            "year",
+            "years",
+            "page_count",
+            "body_kind",
+            "languages",
+            "sections",
+            "communes",
+            "original_url"
+        ]
+    );
+    assert_eq!(
+        page["items"][0]["sections"],
+        json!(["invitation_agenda 1", "minutes 2-11", "vote_result 12"])
+    );
+    // the text a model reads is the same JSON
+    let text: Value =
+        serde_json::from_str(body["result"]["content"][0]["text"].as_str().unwrap()).unwrap();
+    assert_eq!(&text, page);
 
     let (_, _, body) = send(
         &f.router,
@@ -1073,12 +1100,6 @@ async fn mcp_lists_the_tools_and_answers_a_search() {
         body["result"]["structuredContent"]["run"]["model"],
         "model-a"
     );
-    let (_, _, body) = send(&f.router, call(6, "list_communes", json!({}))).await;
-    let body: Value = serde_json::from_slice(&body).unwrap();
-    assert_eq!(
-        body["result"]["structuredContent"]["result"][2]["name"],
-        "Zürich"
-    );
 
     // another Host is refused (DNS rebinding guard)
     let mut request = post(json!({"jsonrpc": "2.0", "id": 7, "method": "tools/list"}));
@@ -1087,6 +1108,134 @@ async fn mcp_lists_the_tools_and_answers_a_search() {
         .insert(header::HOST, "evil.example".parse().unwrap());
     let (status, _, _) = send(&f.router, request).await;
     assert!(status.is_client_error());
+}
+
+/// An API answer of `/api/documents` or `/api/pages` as the MCP search tools give it: documents
+/// without the fields a model does not use, sections as labels, pages without highlights and links.
+fn brief(api: &Value) -> Value {
+    let mut page = api.clone();
+    for item in page["items"].as_array_mut().unwrap() {
+        let item = item.as_object_mut().unwrap();
+        for key in ["first_seen", "pages_seen", "run_id", "personal_data"] {
+            item.remove(key);
+        }
+        let sections: Vec<Value> = item["sections"]
+            .as_array()
+            .unwrap()
+            .iter()
+            .map(|s| {
+                let (first, last) = (
+                    s["first_page"].as_i64().unwrap(),
+                    s["last_page"].as_i64().unwrap(),
+                );
+                let pages = if first == last {
+                    first.to_string()
+                } else {
+                    format!("{first}-{last}")
+                };
+                let unseen = if s["partly_unseen"] == true {
+                    " (partly unseen)"
+                } else {
+                    ""
+                };
+                json!(format!("{} {pages}{unseen}", s["type"].as_str().unwrap()))
+            })
+            .collect();
+        item.insert("sections".into(), json!(sections));
+        if let Some(pages) = item.get_mut("pages") {
+            for p in pages.as_array_mut().unwrap() {
+                let p = p.as_object_mut().unwrap();
+                p.remove("highlights");
+                p.remove("original_url");
+            }
+        }
+    }
+    page
+}
+
+#[tokio::test]
+async fn mcp_finds_communes_by_canton_or_name_and_gives_one() {
+    let f = fixture(false).await;
+    // without a filter: the number of communes and documents per canton, not the communes
+    let result = call_tool(&f.router, "list_communes", json!({})).await;
+    assert_eq!(
+        result["structuredContent"]["cantons"],
+        json!([
+            {"canton": "AG", "communes": 1, "documents": 0},
+            {"canton": "VD", "communes": 1, "documents": 2},
+            {"canton": "ZH", "communes": 1, "documents": 4}
+        ])
+    );
+    let text = result["content"][0]["text"].as_str().unwrap();
+    assert!(
+        text.starts_with("The archive has 3 communes in 3 cantons. Pass canton"),
+        "{text}"
+    );
+    assert!(
+        text.ends_with("cantons[3]{canton,communes,documents}:\n  AG,1,0\n  VD,1,2\n  ZH,1,4"),
+        "{text}"
+    );
+    // by canton, in any case: a table for the model, JSON for programs
+    let result = call_tool(&f.router, "list_communes", json!({"canton": "zh"})).await;
+    assert_eq!(
+        result["content"][0]["text"],
+        "communes[1]{bfs_id,name,canton,language,documents,register_status}:\n  \
+         261,Zürich,ZH,de,4,configured"
+    );
+    assert_eq!(
+        result["structuredContent"]["communes"],
+        json!([{"bfs_id": 261, "name": "Zürich", "canton": "ZH", "language": "de",
+                "documents": 4, "register_status": "configured"}])
+    );
+    let found = |arguments: Value| {
+        let router = f.router.clone();
+        async move {
+            let result = call_tool(&router, "list_communes", arguments).await;
+            result["structuredContent"]["communes"]
+                .as_array()
+                .unwrap()
+                .iter()
+                .map(|c| c["bfs_id"].as_i64().unwrap())
+                .collect::<Vec<_>>()
+        }
+    };
+    // by name: without case, accents and punctuation; ü also as ue
+    for q in ["zurich", "ZUERICH", "Zürich", "rich"] {
+        assert_eq!(found(json!({"q": q})).await, [261], "{q}");
+    }
+    assert_eq!(found(json!({"q": "yverdon les bains"})).await, [5938]);
+    assert_eq!(found(json!({"q": "a"})).await, [4001, 5938]); // Aarau, Yverdon-les-Bains
+    assert_eq!(found(json!({"q": "a", "canton": "VD"})).await, [5938]);
+    // a commune without language or register entry
+    let result = call_tool(&f.router, "list_communes", json!({"q": "aarau"})).await;
+    assert!(
+        result["content"][0]["text"]
+            .as_str()
+            .unwrap()
+            .ends_with("\n  4001,Aarau,AG,null,0,null")
+    );
+    // nothing found says how to search
+    let result = call_tool(&f.router, "list_communes", json!({"canton": "Zürich"})).await;
+    assert!(
+        result["content"][0]["text"]
+            .as_str()
+            .unwrap()
+            .starts_with("No commune matches. canton takes a code such as ZH")
+    );
+    assert_eq!(result["structuredContent"]["communes"], json!([]));
+    // one commune: as the API gives it
+    let result = call_tool(&f.router, "get_commune", json!({"bfs_id": 261})).await;
+    let (_, api) = get(&f.router, "/api/communes/261").await;
+    assert_eq!(result["structuredContent"], api);
+    assert_eq!(api["register"]["status"], "configured");
+    let result = call_tool(&f.router, "get_commune", json!({"bfs_id": 9})).await;
+    assert_eq!(result["isError"], true);
+    assert!(
+        result["content"][0]["text"]
+            .as_str()
+            .unwrap()
+            .contains("list_communes finds it")
+    );
 }
 
 async fn page(router: &Router, uri: &str) -> (StatusCode, header::HeaderMap, String) {
@@ -1687,7 +1836,7 @@ async fn full_text_filters_by_language_and_lists_of_sections_and_sorts_by_date()
         &format!("{steuerfuss}&sort=oldest&exclude_section=accounts&commune_facets=1"),
     )
     .await;
-    assert_eq!(result["structuredContent"], api);
+    assert_eq!(result["structuredContent"], brief(&api));
 }
 
 #[tokio::test]
@@ -1991,8 +2140,17 @@ async fn mcp_searches_and_reads_the_text_as_the_api_does() {
     )
     .await;
     let (_, api) = get(&f.router, "/api/pages?q=Steuerfuss&canton=ZH").await;
-    assert_eq!(result["structuredContent"], api);
+    assert_eq!(result["structuredContent"], brief(&api));
     assert_eq!(api["total"], 2);
+    // a page: its number, its sections and the snippet; the document's link opens it
+    let hit = &result["structuredContent"]["items"][0]["pages"][0];
+    assert_eq!(keys(hit), ["page", "section_types", "snippet"]);
+    assert!(
+        result["structuredContent"]["items"][0]["original_url"]
+            .as_str()
+            .unwrap()
+            .starts_with("https://example.test/original/")
+    );
     let result = call_tool(
         &f.router,
         "read_pages",
