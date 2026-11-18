@@ -9,15 +9,24 @@ py=.venv/bin/python
 oc=.venv/bin/opencommune
 data_dir=$($py -c 'from opencommune.config import settings; print(settings.data_dir.resolve())')
 mkdir -p "$data_dir/logs"
+mode=${1:-backlog}
 exec 9>"$data_dir/download-jobs.lock"
-flock -w 14400 9
+if [ "$mode" = backlog ]; then
+  # The backlog yields: when another job holds the lock it waits for its timer's next turn (ten
+  # minutes after this run), so that the daily and weekly passes never queue behind it.
+  if ! flock -n 9; then
+    echo "Download lock taken by another job; the backlog waits for its next turn"
+    exit 0
+  fi
+else
+  flock -w 14400 9
+fi
 # Complete the issuer chains some commune sites leave out, anchored in the public roots.
 if download_ca=$($py scripts/build_download_ca_bundle.py); then
   export SSL_CERT_FILE="$download_ca"
 else
   echo "Issuer bundle unavailable; using the normal TLS roots" >&2
 fi
-mode=${1:-backlog}
 workers=${OPENCOMMUNE_DOWNLOAD_WORKERS:-2}
 run_stage() {
   # Do not spend requests when the raw directory is below its configured reserve.
